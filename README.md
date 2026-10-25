@@ -54,17 +54,19 @@ hardware (see [Performance](#performance)).
 
 ## Install
 
-1. Download this repository, or build a zip yourself:
-
-   ```sh
-   git clone https://github.com/mikedamoiseau/skin.lumen.git
-   cd skin.lumen
-   zip -r skin.lumen.zip skin.lumen -x '*.DS_Store'
-   ```
-
-2. In Kodi: *Settings → Add-ons → Install from zip file* and pick `skin.lumen.zip`.
-   You may need to allow *Unknown sources* first.
+1. Download `skin.lumen-<version>.zip` from the
+   [latest release](https://github.com/mikedamoiseau/skin.lumen/releases/latest).
+2. In Kodi: *Settings → Add-ons → Install from zip file* and pick the zip.
+   You may need to allow *Unknown sources* first (*Settings → System → Add-ons*).
 3. *Settings → Interface → Skin* → choose **Lumen**.
+
+To build the zip yourself from a checkout:
+
+```sh
+git clone https://github.com/mikedamoiseau/skin.lumen.git
+cd skin.lumen
+git archive --format=zip -o skin.lumen.zip HEAD skin.lumen
+```
 
 ### Recommended Kodi settings
 
