@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Lumen background-task pill (library scans etc.), bottom right. Kodi fills 30 heading, 31 detail, 32 progress. -->
+<window>
+	<zorder>3</zorder>
+	<controls>
+		<control type="group">
+			<depth>DepthBars</depth>
+			<right>80</right>
+			<top>966</top>
+			<width>560</width>
+			<height>90</height>
+			<visible>!Window.IsVisible(FullscreenVideo) + !Window.IsVisible(FullscreenGame)</visible>
+			<animation type="WindowOpen" reversible="false">
+				<effect type="fade" start="0" end="100" time="260" />
+				<effect type="slide" start="0,30" end="0,0" time="420" tween="cubic" easing="out" />
+			</animation>
+			<animation type="WindowClose" reversible="false">
+				<effect type="fade" start="100" end="0" time="240" />
+				<effect type="slide" start="0,0" end="0,30" time="300" tween="cubic" easing="in" />
+			</animation>
+			<animation effect="fade" time="200">VisibleChange</animation>
+			<control type="image">
+				<left>-46</left>
+				<top>-34</top>
+				<width>652</width>
+				<height>170</height>
+				<texture border="52">lumen/shadow_card.png</texture>
+			</control>
+			<control type="image">
+				<width>560</width>
+				<height>90</height>
+				<texture border="28" colordiffuse="glass_strong">lumen/rr28.png</texture>
+			</control>
+			<control type="image">
+				<width>560</width>
+				<height>90</height>
+				<texture border="28" colordiffuse="stroke">lumen/rr28_stroke1.png</texture>
+			</control>
+			<control type="image">
+				<left>24</left>
+				<top>25</top>
+				<width>40</width>
+				<height>40</height>
+				<texture colordiffuse="accent">lumen/spinner.png</texture>
+				<animation effect="rotate" center="auto" start="360" end="0" time="1200" loop="true" condition="true">Conditional</animation>
+			</control>
+			<control type="label" id="30">
+				<left>84</left>
+				<top>12</top>
+				<width>370</width>
+				<height>32</height>
+				<font>lm_label_bold</font>
+				<textcolor>text</textcolor>
+				<aligny>center</aligny>
+			</control>
+			<control type="label">
+				<right>24</right>
+				<top>12</top>
+				<width>90</width>
+				<height>32</height>
+				<align>right</align>
+				<aligny>center</aligny>
+				<font>lm_caption_bold</font>
+				<textcolor>text_dim</textcolor>
+				<label>$INFO[Control.GetLabel(32),,%]</label>
+			</control>
+			<control type="label" id="31">
+				<left>84</left>
+				<top>40</top>
+				<width>452</width>
+				<height>26</height>
+				<font>lm_caption</font>
+				<textcolor>text_mute</textcolor>
+				<aligny>center</aligny>
+			</control>
+			<control type="image">
+				<left>84</left>
+				<top>74</top>
+				<width>452</width>
+				<height>4</height>
+				<texture border="2" colordiffuse="26FFFFFF">lumen/pill_s.png</texture>
+			</control>
+			<control type="progress" id="32">
+				<left>84</left>
+				<top>74</top>
+				<width>452</width>
+				<height>4</height>
+				<texturebg border="2" colordiffuse="00FFFFFF">lumen/pill_s.png</texturebg>
+				<midtexture border="2" colordiffuse="accent">lumen/pill_s.png</midtexture>
+			</control>
+		</control>
+	</controls>
+</window>

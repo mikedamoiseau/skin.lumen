@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Lumen detail page. Kodi wires: 8 play/browse, 11 trailer, 14 versions, 15 extras, 10 artwork, 6 refresh, 50 cast (or set movies). -->
+<window>
+	<defaultcontrol always="true">8</defaultcontrol>
+	<controls>
+		<!-- backdrop -->
+		<control type="group">
+			<animation effect="fade" start="0" end="100" time="360" tween="sine" easing="out">WindowOpen</animation>
+			<animation effect="fade" start="100" end="0" time="220">WindowClose</animation>
+			<control type="image">
+				<include>FullScreenDimensions</include>
+				<texture colordiffuse="background">lumen/white.png</texture>
+			</control>
+			<control type="group">
+				<include>LumenKenBurns</include>
+				<animation effect="zoom" start="104" end="100" center="960,540" time="1400" tween="cubic" easing="out">WindowOpen</animation>
+				<control type="image">
+					<include>FullScreenDimensions</include>
+					<aspectratio>scale</aspectratio>
+					<fadetime>400</fadetime>
+					<texture background="true">$VAR[LumenInfoFanart]</texture>
+				</control>
+			</control>
+			<control type="image">
+				<include>FullScreenDimensions</include>
+				<texture>lumen/hero_scrim.png</texture>
+			</control>
+			<control type="image">
+				<include>FullScreenDimensions</include>
+				<texture colordiffuse="99000000">lumen/white.png</texture>
+				<animation effect="fade" start="0" end="100" time="400" tween="sine" easing="out" condition="Control.HasFocus(50)">Conditional</animation>
+			</control>
+		</control>
+
+		<!-- page content; slides up when the cast row takes focus -->
+		<control type="group">
+			<animation effect="slide" end="0,-340" time="460" tween="cubic" easing="out" condition="Control.HasFocus(50)">Conditional</animation>
+			<control type="group">
+				<left>lm_margin</left>
+				<top>130</top>
+				<animation type="WindowOpen" reversible="false">
+					<effect type="fade" start="0" end="100" time="480" delay="120" tween="sine" easing="out" />
+					<effect type="slide" start="0,40" end="0,0" time="620" delay="120" tween="cubic" easing="out" />
+				</animation>
+				<animation effect="fade" start="100" end="0" time="200">WindowClose</animation>
+				<animation effect="fade" start="100" end="20" time="400" condition="Control.HasFocus(50)">Conditional</animation>
+				<!-- logo / title -->
+				<control type="image">
+					<width>720</width>
+					<height>230</height>
+					<aspectratio align="left" aligny="bottom">keep</aspectratio>
+					<texture background="true">$VAR[LumenInfoLogo]</texture>
+				</control>
+				<control type="textbox">
+					<top>30</top>
+					<width>1100</width>
+					<height>200</height>
+					<aligny>bottom</aligny>
+					<font>lm_title_l</font>
+					<textcolor>text</textcolor>
+					<shadowcolor>text_shadow</shadowcolor>
+					<label>$VAR[LumenInfoTitle]</label>
+					<visible>String.IsEmpty(ListItem.Art(clearlogo)) + String.IsEmpty(ListItem.Art(tvshow.clearlogo))</visible>
+				</control>
+				<!-- text block, anchored to the buttons -->
+				<control type="grouplist">
+					<top>240</top>
+					<width>1100</width>
+					<height>330</height>
+					<orientation>vertical</orientation>
+					<align>right</align>
+					<itemgap>14</itemgap>
+					<usecontrolcoords>true</usecontrolcoords>
+					<control type="label">
+						<width>1100</width>
+						<height>40</height>
+						<font>lm_headline</font>
+						<textcolor>text</textcolor>
+						<label>$VAR[LumenInfoSubtitle]</label>
+						<visible>!String.IsEmpty(ListItem.Tagline) | String.IsEqual(ListItem.DBType,season)</visible>
+					</control>
+					<control type="group">
+						<width>1100</width>
+						<height>34</height>
+						<include content="LumenMetaLine">
+							<param name="item" value="ListItem" />
+						</include>
+					</control>
+					<control type="textbox">
+						<width>960</width>
+						<height min="38" max="158">auto</height>
+						<font>lm_body_l</font>
+						<textcolor>text_dim</textcolor>
+						<label>$INFO[ListItem.Plot]</label>
+						<autoscroll delay="8000" time="3000" repeat="8000">!Control.HasFocus(50)</autoscroll>
+					</control>
+					<control type="label">
+						<width>960</width>
+						<height>30</height>
+						<font>lm_caption</font>
+						<textcolor>text_mute</textcolor>
+						<label>$INFO[ListItem.Director,Director  ,]$INFO[ListItem.Studio,     Studio  ,]</label>
+						<visible>!String.IsEmpty(ListItem.Director) | !String.IsEmpty(ListItem.Studio)</visible>
+					</control>
+				</control>
+
+				<!-- actions -->
+				<control type="grouplist" id="9000">
+					<top>584</top>
+					<width>1300</width>
+					<height>96</height>
+					<orientation>horizontal</orientation>
+					<itemgap>18</itemgap>
+					<usecontrolcoords>true</usecontrolcoords>
+					<ondown>50</ondown>
+					<control type="group" id="9001">
+						<width>264</width>
+						<height>80</height>
+						<animation effect="zoom" start="100" end="106" center="132,40" time="200" tween="cubic" easing="out" reversible="false" condition="Control.HasFocus(8)">Conditional</animation>
+						<control type="image">
+							<left>-30</left>
+							<top>-20</top>
+							<width>324</width>
+							<height>124</height>
+							<texture border="52">lumen/shadow_card.png</texture>
+							<visible>Control.HasFocus(8)</visible>
+						</control>
+						<control type="button" id="8">
+							<width>264</width>
+							<height>80</height>
+							<label>$VAR[LumenInfoPlayLabel]</label>
+							<font>lm_label_bold</font>
+							<textoffsetx>86</textoffsetx>
+							<aligny>center</aligny>
+							<textcolor>text</textcolor>
+							<focusedcolor>focus_text</focusedcolor>
+							<texturefocus border="32" colordiffuse="FFFFFFFF">lumen/pill.png</texturefocus>
+							<texturenofocus border="32" colordiffuse="2EFFFFFF">lumen/pill.png</texturenofocus>
+							<onup>noop</onup>
+							<ondown>50</ondown>
+						</control>
+						<control type="image">
+							<left>40</left>
+							<top>24</top>
+							<width>32</width>
+							<height>32</height>
+							<texture colordiffuse="focus_text">$VAR[LumenInfoPlayIcon]</texture>
+							<visible>Control.HasFocus(8)</visible>
+						</control>
+						<control type="image">
+							<left>40</left>
+							<top>24</top>
+							<width>32</width>
+							<height>32</height>
+							<texture colordiffuse="text">$VAR[LumenInfoPlayIcon]</texture>
+							<visible>!Control.HasFocus(8)</visible>
+						</control>
+						<control type="group">
+							<left>40</left>
+							<top>68</top>
+							<visible>ListItem.IsResumable</visible>
+							<include content="LumenProgress">
+								<param name="width" value="184" />
+								<param name="height" value="4" />
+								<param name="info" value="ListItem.PercentPlayed" />
+							</include>
+						</control>
+					</control>
+					<include content="LumenPillButton">
+						<param name="id" value="11" />
+						<param name="label" value="$LOCALIZE[20410]" />
+						<param name="visible" value="!String.IsEmpty(ListItem.Trailer)" />
+					</include>
+					<include content="LumenPillButton">
+						<param name="id" value="14" />
+						<param name="label" value="$LOCALIZE[40000]" />
+						<param name="visible" value="String.IsEqual(ListItem.DBType,movie) + ListItem.HasVideoVersions" />
+					</include>
+					<include content="LumenPillButton">
+						<param name="id" value="15" />
+						<param name="label" value="$LOCALIZE[40211]" />
+						<param name="visible" value="String.IsEqual(ListItem.DBType,movie) + ListItem.HasVideoExtras" />
+					</include>
+					<include content="LumenPillButton">
+						<param name="id" value="443" />
+						<param name="label" value="Collection" />
+						<param name="onclick" value="Dialog.Close(all,true)" />
+						<param name="onclick2" value="ActivateWindow(Videos,videodb://movies/sets/$INFO[ListItem.SetId]/?setid=$INFO[ListItem.SetId],return)" />
+						<param name="visible" value="!String.IsEmpty(ListItem.SetID) + !String.IsEqual(ListItem.SetID,0)" />
+					</include>
+					<include content="LumenPillButtonSmall">
+						<param name="id" value="10" />
+						<param name="label" value="$LOCALIZE[13511]" />
+						<param name="visible" value="Control.IsEnabled(10)" />
+					</include>
+					<include content="LumenPillButtonSmall">
+						<param name="id" value="6" />
+						<param name="label" value="$LOCALIZE[184]" />
+						<param name="visible" value="Control.IsEnabled(6)" />
+					</include>
+				</control>
+			</control>
+
+			<!-- technical details, right column -->
+			<control type="group">
+				<right>80</right>
+				<top>714</top>
+				<width>560</width>
+				<animation effect="fade" start="0" end="100" time="500" delay="300">WindowOpen</animation>
+				<animation effect="fade" start="100" end="0" time="200">WindowClose</animation>
+				<visible>!String.IsEmpty(ListItem.VideoCodec) | !String.IsEmpty(ListItem.AudioCodec)</visible>
+				<animation effect="fade" start="100" end="0" time="300" condition="Control.HasFocus(50)">Conditional</animation>
+				<control type="label">
+					<width>560</width>
+					<height>34</height>
+					<align>right</align>
+					<font>lm_caption</font>
+					<textcolor>text_mute</textcolor>
+					<label>$VAR[LumenInfoVideoLine]</label>
+				</control>
+				<control type="label">
+					<top>34</top>
+					<width>560</width>
+					<height>34</height>
+					<align>right</align>
+					<font>lm_caption</font>
+					<textcolor>text_mute</textcolor>
+					<label>$VAR[LumenInfoAudioLine]</label>
+				</control>
+				<control type="label">
+					<top>68</top>
+					<width>560</width>
+					<height>34</height>
+					<align>right</align>
+					<font>lm_caption</font>
+					<textcolor>text_mute</textcolor>
+					<label>$INFO[ListItem.SubtitleLanguage,Subtitles  ]</label>
+				</control>
+			</control>
+
+			<!-- cast & crew / movies in set -->
+			<control type="group">
+				<top>820</top>
+				<visible>Integer.IsGreater(Container(50).NumItems,0) | Container(50).IsUpdating</visible>
+				<animation effect="fade" start="0" end="100" time="500" delay="260">WindowOpen</animation>
+				<animation effect="fade" start="100" end="0" time="200">WindowClose</animation>
+				<control type="label">
+					<left>lm_margin</left>
+					<width>1000</width>
+					<height>44</height>
+					<font>lm_headline</font>
+					<textcolor>E6FFFFFF</textcolor>
+					<label>$VAR[LumenInfoRowHeader]</label>
+				</control>
+				<control type="list" id="50">
+					<left>80</left>
+					<top>52</top>
+					<width>1840</width>
+					<height>420</height>
+					<orientation>horizontal</orientation>
+					<scrolltime tween="cubic" easing="out">320</scrolltime>
+					<onup>9000</onup>
+					<ondown>noop</ondown>
+					<onback>8</onback>
+					<!-- people -->
+					<itemlayout width="216" height="320" condition="!String.IsEqual(ListItem.DBType,set)">
+						<include content="LumenPersonCard" />
+					</itemlayout>
+					<focusedlayout width="216" height="320" condition="!String.IsEqual(ListItem.DBType,set)">
+						<control type="group">
+							<include content="LumenCardFocus">
+								<param name="cx" value="108" />
+								<param name="cy" value="110" />
+							</include>
+							<include content="LumenPersonCard">
+								<param name="focused" value="Control.HasFocus(50)" />
+							</include>
+						</control>
+					</focusedlayout>
+					<!-- movies in a collection -->
+					<itemlayout width="240" height="420" condition="String.IsEqual(ListItem.DBType,set)">
+						<control type="group">
+							<left>30</left>
+							<top>14</top>
+							<include>LumenPosterCard</include>
+						</control>
+					</itemlayout>
+					<focusedlayout width="240" height="420" condition="String.IsEqual(ListItem.DBType,set)">
+						<control type="group">
+							<left>30</left>
+							<top>14</top>
+							<include content="LumenCardFocus">
+								<param name="cx" value="105" />
+								<param name="cy" value="157" />
+							</include>
+							<include content="LumenPosterCard">
+								<param name="focused" value="Control.HasFocus(50)" />
+							</include>
+						</control>
+					</focusedlayout>
+				</control>
+			</control>
+		</control>
+		<include>LumenClock</include>
+	</controls>
+</window>

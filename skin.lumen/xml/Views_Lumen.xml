@@ -1,0 +1,451 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Lumen library views (used by MyVideoNav). -->
+<includes>
+	<variable name="LumenLibraryTitle">
+		<value condition="Container.Content(movies) + String.StartsWith(Container.FolderPath,videodb://movies/sets/)">$INFO[Container.FolderName]</value>
+		<value condition="Container.Content(movies)">$LOCALIZE[342]</value>
+		<value condition="Container.Content(tvshows)">$LOCALIZE[20343]</value>
+		<value condition="Container.Content(sets)">Collections</value>
+		<value condition="Container.Content(seasons) | Container.Content(episodes)">$INFO[Container.ShowTitle]</value>
+		<value condition="!String.IsEmpty(Container.PluginName)">$INFO[Container.FolderName]</value>
+		<value>$INFO[Container.FolderName]</value>
+	</variable>
+	<variable name="LumenLibraryFanart">
+		<value condition="!String.IsEmpty(ListItem.Art(fanart))">$INFO[ListItem.Art(fanart)]</value>
+		<value condition="!String.IsEmpty(ListItem.Art(tvshow.fanart))">$INFO[ListItem.Art(tvshow.fanart)]</value>
+		<value condition="!String.IsEmpty(Container.Art(fanart))">$INFO[Container.Art(fanart)]</value>
+		<value condition="!String.IsEmpty(Container.Art(tvshow.fanart))">$INFO[Container.Art(tvshow.fanart)]</value>
+	</variable>
+	<variable name="LumenListThumb">
+		<value condition="!String.IsEmpty(ListItem.Art(poster))">$INFO[ListItem.Art(poster)]</value>
+		<value condition="!String.IsEmpty(ListItem.Art(thumb))">$INFO[ListItem.Art(thumb)]</value>
+		<value>$INFO[ListItem.Icon]</value>
+	</variable>
+	<variable name="LumenEpisodeTitle">
+		<value condition="String.IsEqual(ListItem.DBType,episode)">$INFO[ListItem.Episode,,.  ]$INFO[ListItem.Title]</value>
+		<value>$INFO[ListItem.Label]</value>
+	</variable>
+	<variable name="LumenEpisodeSub">
+		<value condition="String.IsEqual(ListItem.DBType,episode) + !String.IsEqual(ListItem.Duration(h),0)">$INFO[ListItem.Duration(h),,h ]$INFO[ListItem.Duration(m),,m]$INFO[ListItem.Premiered,  ·  ]</value>
+		<value condition="String.IsEqual(ListItem.DBType,episode)">$INFO[ListItem.Duration(m),,m]$INFO[ListItem.Premiered,  ·  ]</value>
+		<value>$INFO[ListItem.Label2]</value>
+	</variable>
+
+	<!-- Header used by the grid / list views -->
+	<include name="LumenLibraryHeader">
+		<control type="group">
+			<include>LumenFadeInWindow</include>
+			<control type="label">
+				<left>lm_margin</left>
+				<top>52</top>
+				<width>1100</width>
+				<height>66</height>
+				<font>lm_title</font>
+				<textcolor>text</textcolor>
+				<label>$VAR[LumenLibraryTitle]</label>
+			</control>
+			<control type="label">
+				<left>lm_margin</left>
+				<top>118</top>
+				<width>1100</width>
+				<height>36</height>
+				<font>lm_caption</font>
+				<textcolor>text_mute</textcolor>
+				<label>$INFO[Container.NumItems,, items]$INFO[Container.SortMethod,  ·  $LOCALIZE[31022] ]</label>
+			</control>
+			<control type="group">
+				<left>720</left>
+				<top>112</top>
+				<width>1120</width>
+				<visible>!ListItem.IsFolder | ListItem.IsCollection | String.IsEqual(ListItem.DBType,tvshow)</visible>
+				<include content="LumenMetaLine">
+					<param name="item" value="ListItem" />
+					<param name="align" value="right" />
+					<param name="width" value="1120" />
+				</include>
+			</control>
+		</control>
+		<include>LumenClock</include>
+	</include>
+
+	<!-- 500: poster grid -->
+	<include name="View_Lumen_Posters">
+		<control type="panel" id="500">
+			<left>80</left>
+			<top>170</top>
+			<width>1760</width>
+			<height>910</height>
+			<onleft>9000</onleft>
+			<onright>noop</onright>
+			<onup>noop</onup>
+			<ondown>noop</ondown>
+			<orientation>vertical</orientation>
+			<scrolltime tween="cubic" easing="out">380</scrolltime>
+			<preloaditems>0</preloaditems>
+			<viewtype label="Posters">icon</viewtype>
+			<visible>Container.Content(movies) | Container.Content(sets) | Container.Content(tvshows) | Container.Content(actors) | Container.Content(directors)</visible>
+			<include>LumenRiseIn</include>
+			<itemlayout width="246" height="420">
+				<control type="group">
+					<left>30</left>
+					<top>26</top>
+					<include>LumenPosterCard</include>
+				</control>
+			</itemlayout>
+			<focusedlayout width="246" height="420">
+				<control type="group">
+					<left>30</left>
+					<top>26</top>
+					<include content="LumenCardFocus">
+						<param name="cx" value="105" />
+						<param name="cy" value="157" />
+					</include>
+					<include content="LumenPosterCard">
+						<param name="focused" value="Control.HasFocus(500)" />
+					</include>
+				</control>
+				<control type="label">
+					<left>10</left>
+					<top>364</top>
+					<width>250</width>
+					<height>40</height>
+					<align>center</align>
+					<font>lm_label_bold</font>
+					<textcolor>text</textcolor>
+					<label>$INFO[ListItem.Label]</label>
+					<visible>Control.HasFocus(500)</visible>
+				</control>
+			</focusedlayout>
+		</control>
+	</include>
+
+	<!-- 501 / 502: showcase — hero for the focused item + one row -->
+	<include name="View_Lumen_Showcase">
+		<control type="group">
+			<visible>Control.IsVisible(501) | Control.IsVisible(502)</visible>
+			<include content="LumenHero">
+				<param name="item" value="ListItem" />
+				<param name="top" value="150" />
+			</include>
+		</control>
+		<control type="list" id="501">
+			<left>80</left>
+			<top>644</top>
+			<width>1840</width>
+			<height>420</height>
+			<onleft>9000</onleft>
+			<onright>noop</onright>
+			<onup>noop</onup>
+			<ondown>noop</ondown>
+			<orientation>horizontal</orientation>
+			<scrolltime tween="cubic" easing="out">360</scrolltime>
+			<viewtype label="Showcase">wrap</viewtype>
+			<visible>Container.Content(seasons) | [Container.Content(movies) + String.StartsWith(Container.FolderPath,videodb://movies/sets/)]</visible>
+			<include>LumenRiseIn</include>
+			<itemlayout width="240" height="420">
+				<control type="group">
+					<left>30</left>
+					<top>14</top>
+					<include>LumenPosterCard</include>
+				</control>
+			</itemlayout>
+			<focusedlayout width="240" height="420">
+				<control type="group">
+					<left>30</left>
+					<top>14</top>
+					<include content="LumenCardFocus">
+						<param name="cx" value="105" />
+						<param name="cy" value="157" />
+					</include>
+					<include content="LumenPosterCard">
+						<param name="focused" value="Control.HasFocus(501)" />
+					</include>
+				</control>
+				<control type="label">
+					<left>10</left>
+					<top>352</top>
+					<width>250</width>
+					<height>40</height>
+					<align>center</align>
+					<font>lm_label_bold</font>
+					<textcolor>text</textcolor>
+					<label>$INFO[ListItem.Label]</label>
+					<visible>Control.HasFocus(501)</visible>
+				</control>
+			</focusedlayout>
+		</control>
+		<control type="list" id="502">
+			<left>80</left>
+			<top>644</top>
+			<width>1840</width>
+			<height>420</height>
+			<onleft>9000</onleft>
+			<onright>noop</onright>
+			<onup>noop</onup>
+			<ondown>noop</ondown>
+			<orientation>horizontal</orientation>
+			<scrolltime tween="cubic" easing="out">360</scrolltime>
+			<viewtype label="Episodes">list</viewtype>
+			<visible>Container.Content(episodes)</visible>
+			<include>LumenRiseIn</include>
+			<itemlayout width="414" height="420">
+				<control type="group">
+					<left>30</left>
+					<top>14</top>
+					<include content="LumenLandscapeCard">
+						<param name="titlecolor" value="text_dim" />
+						<param name="title" value="$VAR[LumenEpisodeTitle]" />
+						<param name="subtitle" value="$VAR[LumenEpisodeSub]" />
+					</include>
+				</control>
+			</itemlayout>
+			<focusedlayout width="414" height="420">
+				<control type="group">
+					<left>30</left>
+					<top>14</top>
+					<include content="LumenCardFocus">
+						<param name="cx" value="192" />
+						<param name="cy" value="108" />
+					</include>
+					<include content="LumenLandscapeCard">
+						<param name="focused" value="Control.HasFocus(502)" />
+						<param name="titlecolor" value="text" />
+						<param name="title" value="$VAR[LumenEpisodeTitle]" />
+						<param name="subtitle" value="$VAR[LumenEpisodeSub]" />
+					</include>
+				</control>
+			</focusedlayout>
+		</control>
+	</include>
+
+	<!-- 503: landscape grid (videos, add-ons, music videos) -->
+	<include name="View_Lumen_LandscapeGrid">
+		<control type="panel" id="503">
+			<left>80</left>
+			<top>170</top>
+			<width>1760</width>
+			<height>910</height>
+			<onleft>9000</onleft>
+			<onright>noop</onright>
+			<onup>noop</onup>
+			<ondown>noop</ondown>
+			<orientation>vertical</orientation>
+			<scrolltime tween="cubic" easing="out">380</scrolltime>
+			<viewtype label="Thumbnails">bigwrap</viewtype>
+			<visible>Container.Content(videos) | Container.Content(musicvideos) | Container.Content(episodes) | Container.Content(movies)</visible>
+			<include>LumenRiseIn</include>
+			<itemlayout width="438" height="330">
+				<control type="group">
+					<left>30</left>
+					<top>26</top>
+					<include content="LumenLandscapeCard">
+						<param name="titlecolor" value="text_dim" />
+						<param name="title" value="$VAR[LumenEpisodeTitle]" />
+						<param name="subtitle" value="$VAR[LumenEpisodeSub]" />
+					</include>
+				</control>
+			</itemlayout>
+			<focusedlayout width="438" height="330">
+				<control type="group">
+					<left>30</left>
+					<top>26</top>
+					<include content="LumenCardFocus">
+						<param name="cx" value="192" />
+						<param name="cy" value="108" />
+					</include>
+					<include content="LumenLandscapeCard">
+						<param name="focused" value="Control.HasFocus(503)" />
+						<param name="titlecolor" value="text" />
+						<param name="title" value="$VAR[LumenEpisodeTitle]" />
+						<param name="subtitle" value="$VAR[LumenEpisodeSub]" />
+					</include>
+				</control>
+			</focusedlayout>
+		</control>
+	</include>
+
+	<!-- Favourites tile: 300x240 glass card, icon + label -->
+	<include name="LumenFavTile">
+		<param name="focused">false</param>
+		<definition>
+			<control type="group">
+				<left>26</left>
+				<top>20</top>
+				<control type="image">
+					<left>-40</left>
+					<top>-30</top>
+					<width>380</width>
+					<height>320</height>
+					<texture border="52">lumen/shadow_card.png</texture>
+					<visible>$PARAM[focused]</visible>
+				</control>
+				<control type="image">
+					<width>300</width>
+					<height>240</height>
+					<texture border="20" colordiffuse="14FFFFFF">lumen/rr20.png</texture>
+				</control>
+				<control type="image">
+					<width>300</width>
+					<height>240</height>
+					<texture border="20" colordiffuse="26FFFFFF">lumen/rr20.png</texture>
+					<visible>$PARAM[focused]</visible>
+				</control>
+				<control type="image">
+					<width>300</width>
+					<height>240</height>
+					<texture border="20" colordiffuse="stroke">lumen/rr20_stroke1.png</texture>
+					<visible>!$PARAM[focused]</visible>
+				</control>
+				<control type="image">
+					<width>300</width>
+					<height>240</height>
+					<texture border="20">lumen/rr20_stroke.png</texture>
+					<visible>$PARAM[focused]</visible>
+				</control>
+				<control type="image">
+					<left>80</left>
+					<top>30</top>
+					<width>140</width>
+					<height>120</height>
+					<aspectratio>keep</aspectratio>
+					<texture background="true">$INFO[ListItem.Icon]</texture>
+				</control>
+				<control type="label">
+					<left>16</left>
+					<top>166</top>
+					<width>268</width>
+					<height>50</height>
+					<align>center</align>
+					<aligny>center</aligny>
+					<font>lm_label</font>
+					<textcolor>text</textcolor>
+					<label>$INFO[ListItem.Label]</label>
+				</control>
+			</control>
+		</definition>
+	</include>
+
+	<!-- 50: list with preview pane (files, genres, sources, add-ons...) -->
+	<include name="LumenListRow">
+		<param name="focused">false</param>
+		<definition>
+			<control type="image">
+				<left>0</left>
+				<top>4</top>
+				<width>960</width>
+				<height>72</height>
+				<texture border="20" colordiffuse="FFFFFFFF">lumen/rr20.png</texture>
+				<visible>$PARAM[focused]</visible>
+			</control>
+			<control type="image">
+				<left>16</left>
+				<top>14</top>
+				<width>52</width>
+				<height>52</height>
+				<aspectratio>keep</aspectratio>
+				<texture background="true" diffuse="lumen/mask_square.png">$INFO[ListItem.Icon]</texture>
+				<visible>!ListItem.IsParentFolder</visible>
+			</control>
+			<control type="image">
+				<left>26</left>
+				<top>24</top>
+				<width>32</width>
+				<height>32</height>
+				<texture colordiffuse="$PARAM[textcolor]">lumen/icons/chevron_left.png</texture>
+				<visible>ListItem.IsParentFolder</visible>
+			</control>
+			<control type="label">
+				<left>88</left>
+				<top>4</top>
+				<width>640</width>
+				<height>72</height>
+				<aligny>center</aligny>
+				<font>lm_label</font>
+				<textcolor>$PARAM[textcolor]</textcolor>
+				<label>$VAR[LumenListLabel]</label>
+			</control>
+			<control type="label">
+				<right>28</right>
+				<top>4</top>
+				<width>240</width>
+				<height>72</height>
+				<align>right</align>
+				<aligny>center</aligny>
+				<font>lm_caption</font>
+				<textcolor>$PARAM[textcolor2]</textcolor>
+				<label>$INFO[ListItem.Label2]</label>
+			</control>
+			<control type="image">
+				<right>-40</right>
+				<top>24</top>
+				<width>32</width>
+				<height>32</height>
+				<texture colordiffuse="$PARAM[textcolor2]">lumen/icons/check.png</texture>
+				<visible>Integer.IsGreater(ListItem.PlayCount,0)</visible>
+			</control>
+		</definition>
+	</include>
+	<include name="View_Lumen_List">
+		<control type="list" id="50">
+			<left>lm_margin</left>
+			<top>190</top>
+			<width>960</width>
+			<height>880</height>
+			<onleft>9000</onleft>
+			<onright>noop</onright>
+			<onup>noop</onup>
+			<ondown>noop</ondown>
+			<scrolltime tween="cubic" easing="out">260</scrolltime>
+			<viewtype label="List">biglist</viewtype>
+			<include>LumenRiseIn</include>
+			<itemlayout height="80" width="960">
+				<include content="LumenListRow">
+					<param name="textcolor" value="text_dim" />
+					<param name="textcolor2" value="text_mute" />
+				</include>
+			</itemlayout>
+			<focusedlayout height="80" width="960">
+				<include content="LumenListRow">
+					<param name="focused" value="Control.HasFocus(50)" />
+					<param name="textcolor" value="$VAR[LumenListFocusText]" />
+					<param name="textcolor2" value="$VAR[LumenListFocusText2]" />
+				</include>
+			</focusedlayout>
+		</control>
+		<control type="group">
+			<left>1180</left>
+			<top>190</top>
+			<width>640</width>
+			<visible>Control.IsVisible(50)</visible>
+			<include>LumenRiseIn</include>
+			<control type="image">
+				<width>640</width>
+				<height>480</height>
+				<aspectratio aligny="top">keep</aspectratio>
+				<fadetime>200</fadetime>
+				<texture background="true">$VAR[LumenListThumb]</texture>
+				<visible>!ListItem.IsParentFolder</visible>
+			</control>
+			<control type="textbox">
+				<top>510</top>
+				<width>640</width>
+				<height>340</height>
+				<font>lm_body</font>
+				<textcolor>text_dim</textcolor>
+				<label>$INFO[ListItem.Plot]</label>
+			</control>
+		</control>
+	</include>
+	<variable name="LumenListLabel">
+		<value condition="ListItem.IsParentFolder">Back</value>
+		<value>$INFO[ListItem.Label]</value>
+	</variable>
+	<variable name="LumenListFocusText">
+		<value condition="Control.HasFocus(50)">focus_text</value>
+		<value>text</value>
+	</variable>
+	<variable name="LumenListFocusText2">
+		<value condition="Control.HasFocus(50)">B30B0C10</value>
+		<value>text_mute</value>
+	</variable>
+</includes>

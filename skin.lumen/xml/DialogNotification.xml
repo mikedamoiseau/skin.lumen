@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Lumen toast: glass card that drops in under the clock. Kodi fills 400 icon, 401 title, 402 message. -->
+<window>
+	<zorder>3</zorder>
+	<controls>
+		<control type="group">
+			<depth>DepthMax</depth>
+			<top>120</top>
+			<right>80</right>
+			<width>640</width>
+			<height>136</height>
+			<visible>String.IsEmpty(Window(Home).Property(script.cinemavision.running))</visible>
+			<animation type="WindowOpen" reversible="false">
+				<effect type="fade" start="0" end="100" time="260" />
+				<effect type="slide" start="0,-36" end="0,0" time="460" tween="back" easing="out" />
+			</animation>
+			<animation type="WindowClose" reversible="false">
+				<effect type="fade" start="100" end="0" time="240" />
+				<effect type="slide" start="0,0" end="0,-24" time="300" tween="cubic" easing="in" />
+			</animation>
+			<control type="image">
+				<left>-46</left>
+				<top>-34</top>
+				<width>732</width>
+				<height>216</height>
+				<texture border="52">lumen/shadow_card.png</texture>
+			</control>
+			<control type="image">
+				<width>640</width>
+				<height>136</height>
+				<texture border="28" colordiffuse="glass_strong">lumen/rr28.png</texture>
+			</control>
+			<control type="image">
+				<width>640</width>
+				<height>136</height>
+				<texture border="28" colordiffuse="stroke">lumen/rr28_stroke1.png</texture>
+			</control>
+			<control type="image" id="400">
+				<description>avatar</description>
+				<left>30</left>
+				<top>32</top>
+				<width>72</width>
+				<height>72</height>
+				<aspectratio>keep</aspectratio>
+			</control>
+			<control type="fadelabel" id="401">
+				<description>Line 1 Label</description>
+				<left>126</left>
+				<top>26</top>
+				<width>484</width>
+				<height>40</height>
+				<font>lm_label_bold</font>
+				<textcolor>text</textcolor>
+				<aligny>center</aligny>
+				<scrollout>false</scrollout>
+				<pauseatend>2000</pauseatend>
+			</control>
+			<control type="fadelabel" id="402">
+				<description>Line 2 Label</description>
+				<left>126</left>
+				<top>68</top>
+				<width>484</width>
+				<height>40</height>
+				<font>lm_body_s</font>
+				<textcolor>text_dim</textcolor>
+				<aligny>center</aligny>
+				<scrollout>false</scrollout>
+				<pauseatend>2000</pauseatend>
+			</control>
+		</control>
+	</controls>
+</window>

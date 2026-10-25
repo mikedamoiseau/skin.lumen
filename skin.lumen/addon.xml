@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<addon id="skin.lumen" version="0.1.0" name="Lumen" provider-name="mike">
+	<requires>
+		<import addon="xbmc.gui" version="5.17.0"/>
+	</requires>
+	<extension point="xbmc.gui.skin" debugging="false">
+		<res width="1920" height="1080" aspect="16:9" default="true" folder="xml" />
+	</extension>
+	<extension point="xbmc.addon.metadata">
+		<platform>all</platform>
+		<license>GNU GENERAL PUBLIC LICENSE Version 2.0, CC BY-SA 4.0 (Estuary-derived parts), SIL OFL 1.1 (Inter font)</license>
+		<summary lang="en_GB">Lumen: a cinematic, glass-and-light skin inspired by modern tvOS media players.</summary>
+		<description lang="en_GB">Lumen is a fast, artwork-first skin built on Estuary's window coverage. Full-bleed backdrops, lifted poster cards, frosted dialogs and a minimal player overlay, tuned to stay smooth on low-power devices like the Raspberry Pi.</description>
+		<disclaimer lang="en_GB">Derived from Kodi's Estuary skin by phil65 and Piers.</disclaimer>
+		<assets>
+			<icon>resources/icon.png</icon>
+			<fanart>resources/fanart.jpg</fanart>
+		</assets>
+	</extension>
+</addon>

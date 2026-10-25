@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Lumen skin settings (Settings > Interface > Skin > Configure skin). -->
+<window>
+	<defaultcontrol always="true">9000</defaultcontrol>
+	<backgroundcolor>background</backgroundcolor>
+	<controls>
+		<include>DefaultBackground</include>
+		<control type="group">
+			<include>LumenFadeInWindow</include>
+			<control type="label">
+				<left>lm_margin</left>
+				<top>52</top>
+				<width>1100</width>
+				<height>66</height>
+				<font>lm_title</font>
+				<textcolor>text</textcolor>
+				<label>Lumen</label>
+			</control>
+			<control type="label">
+				<left>lm_margin</left>
+				<top>118</top>
+				<width>1100</width>
+				<height>36</height>
+				<font>lm_caption</font>
+				<textcolor>text_mute</textcolor>
+				<label>Skin settings$INFO[System.AddonVersion(skin.lumen),  ·  version ]</label>
+			</control>
+		</control>
+		<include>LumenClock</include>
+		<control type="grouplist" id="9000">
+			<left>80</left>
+			<top>200</top>
+			<width>960</width>
+			<height>800</height>
+			<onup>9000</onup>
+			<ondown>9000</ondown>
+			<include>LumenRiseIn</include>
+			<control type="radiobutton" id="901">
+				<label>Animated backdrops</label>
+				<include>DefaultSettingButton</include>
+				<selected>Skin.HasSetting(lumen_kenburns)</selected>
+				<onclick>Skin.ToggleSetting(lumen_kenburns)</onclick>
+			</control>
+		</control>
+		<!-- help card for the focused setting -->
+		<control type="group">
+			<left>1120</left>
+			<top>200</top>
+			<width>700</width>
+			<include>LumenRiseIn</include>
+			<control type="image">
+				<width>700</width>
+				<height>260</height>
+				<texture border="28" colordiffuse="glass">lumen/rr28.png</texture>
+			</control>
+			<control type="image">
+				<width>700</width>
+				<height>260</height>
+				<texture border="28" colordiffuse="stroke">lumen/rr28_stroke1.png</texture>
+			</control>
+			<control type="textbox">
+				<left>40</left>
+				<top>34</top>
+				<width>620</width>
+				<height>200</height>
+				<font>lm_body</font>
+				<textcolor>text_dim</textcolor>
+				<label>$VAR[LumenSkinSettingHelp]</label>
+			</control>
+		</control>
+	</controls>
+</window>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<colors>
+	<!-- Estuary-compatible names (remapped to the Lumen palette) -->
+	<color name="primary_background">FF0A0D13</color>
+	<color name="secondary_background">00000000</color>
+	<color name="dialog_tint">F5141821</color>
+	<color name="background">FF06070A</color>
+	<color name="bg_image">FF909090</color>
+	<color name="bg_overlay">14FFFFFF</color>
+	<color name="black">FF000000</color>
+	<color name="white">FFF5F5F7</color>
+	<color name="grey">FF9A9DA6</color>
+	<color name="blue">FF64D2FF</color>
+	<color name="red">FFFF453A</color>
+	<color name="button_focus">FFFFFFFF</color>
+	<color name="button_alt_focus">66FFFFFF</color>
+	<color name="text_shadow">66000000</color>
+	<color name="border_alpha">26FFFFFF</color>
+	<color name="disabled">4DFFFFFF</color>
+	<color name="selected">FFFF9F0A</color>
+	<color name="invalid">FFFF453A</color>
+	<!-- Lumen tokens -->
+	<color name="accent">FFFF9F0A</color>
+	<color name="accent_soft">40FF9F0A</color>
+	<color name="text">FFF5F5F7</color>
+	<color name="text_dim">B3F5F5F7</color>
+	<color name="text_mute">80F5F5F7</color>
+	<color name="focus_text">FF0B0C10</color>
+	<color name="glass">B30F1218</color>
+	<color name="glass_light">1AFFFFFF</color>
+	<color name="glass_strong">EB12151C</color>
+	<color name="stroke">24FFFFFF</color>
+	<color name="scrim">CC000000</color>
+	<color name="card_bg">FF1A1E27</color>
+	<color name="shadow">B3000000</color>
+</colors>

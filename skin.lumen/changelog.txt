@@ -1,0 +1,2 @@
+[B]0.1.0[/B]
+• First release: Infuse-style Home with docking rows, poster/landscape library views, cinematic detail page, minimal player overlay and OSD, glass dialogs. Built on Estuary (Kodi 21 Omega).

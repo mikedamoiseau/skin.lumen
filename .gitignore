@@ -1,0 +1,8 @@
+# local reference checkouts (Estuary source, fonts) — not part of the skin
+_ref/
+# tooling
+tools/.venv/
+__pycache__/
+shots/
+*.zip
+.DS_Store

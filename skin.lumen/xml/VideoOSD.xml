@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Lumen OSD: round glass transport buttons over the seek bar (DialogSeekBar draws bar/times/title). -->
+<window>
+	<onload condition="!Player.PauseEnabled">SetFocus(603)</onload>
+	<defaultcontrol always="true">602</defaultcontrol>
+	<depth>DepthOSD</depth>
+	<controls>
+		<control type="button">
+			<description>background close area</description>
+			<left>0</left>
+			<top>0</top>
+			<width>100%</width>
+			<bottom>300</bottom>
+			<texturefocus />
+			<texturenofocus />
+			<onclick>Action(close)</onclick>
+		</control>
+		<control type="group">
+			<visible>![Window.IsVisible(SliderDialog) | Window.IsVisible(1110) | Window.IsVisible(osdaudiosettings) | Window.IsVisible(osdvideosettings) | Window.IsVisible(osdsubtitlesettings) | Window.IsVisible(VideoBookmarks) | Window.IsVisible(playerprocessinfo) | Window.IsVisible(osdcmssettings) | Window.IsVisible(PVROSDChannels) | Window.IsVisible(pvrchannelguide) | Window.IsVisible(1101)]</visible>
+			<animation effect="fade" time="200">VisibleChange</animation>
+			<animation type="WindowOpen" reversible="false">
+				<effect type="fade" start="0" end="100" time="260" />
+				<effect type="slide" start="0,40" end="0,0" time="380" tween="cubic" easing="out" />
+			</animation>
+			<animation type="WindowClose" reversible="false">
+				<effect type="fade" start="100" end="0" time="220" />
+				<effect type="slide" start="0,0" end="0,40" time="300" tween="cubic" easing="in" />
+			</animation>
+			<!-- hint -->
+			<control type="label">
+				<left>0</left>
+				<top>1030</top>
+				<width>1920</width>
+				<height>34</height>
+				<align>center</align>
+				<font>lm_caption</font>
+				<textcolor>text_mute</textcolor>
+				<label>$VAR[OSDHelpTextVar]</label>
+			</control>
+			<!-- transport -->
+			<control type="grouplist" id="201">
+				<left>0</left>
+				<top>752</top>
+				<width>1920</width>
+				<height>104</height>
+				<align>center</align>
+				<itemgap>22</itemgap>
+				<orientation>horizontal</orientation>
+				<usecontrolcoords>true</usecontrolcoords>
+				<onup>87</onup>
+				<ondown>87</ondown>
+				<onleft>70048</onleft>
+				<onright>70043</onright>
+				<include content="LumenOSDButton">
+					<param name="id" value="600" />
+					<param name="icon" value="osd/fullscreen/buttons/previous.png" />
+					<param name="onclick" value="PlayerControl(Previous)" />
+					<param name="visible" value="Player.HasSceneMarkers | Player.ChapterCount | Integer.IsGreater(Playlist.Length(video),1)" />
+				</include>
+				<include content="LumenOSDButton">
+					<param name="id" value="601" />
+					<param name="icon" value="osd/fullscreen/buttons/rewind.png" />
+					<param name="onclick" value="PlayerControl(Rewind)" />
+					<param name="visible" value="Player.SeekEnabled + !VideoPlayer.Content(livetv)" />
+				</include>
+				<include content="LumenOSDButton">
+					<param name="id" value="602" />
+					<param name="icon" value="osd/fullscreen/buttons/play.png" />
+					<param name="icon_on" value="osd/fullscreen/buttons/pause.png" />
+					<param name="selected" value="Player.Playing" />
+					<param name="onclick" value="PlayerControl(Play)" />
+					<param name="visible" value="Player.PauseEnabled" />
+				</include>
+				<include content="LumenOSDButton">
+					<param name="id" value="603" />
+					<param name="icon" value="osd/fullscreen/buttons/stop.png" />
+					<param name="onclick" value="PlayerControl(Stop)" />
+				</include>
+				<include content="LumenOSDButton">
+					<param name="id" value="606" />
+					<param name="icon" value="osd/fullscreen/buttons/forward.png" />
+					<param name="onclick" value="PlayerControl(Forward)" />
+					<param name="visible" value="Player.SeekEnabled + !VideoPlayer.Content(livetv)" />
+				</include>
+				<include content="LumenOSDButton">
+					<param name="id" value="607" />
+					<param name="icon" value="osd/fullscreen/buttons/next.png" />
+					<param name="onclick" value="PlayerControl(Next)" />
+					<param name="visible" value="Player.HasSceneMarkers | Player.ChapterCount | Integer.IsGreater(Playlist.Length(video),1)" />
+				</include>
+				<control type="image">
+					<width>40</width>
+					<height>104</height>
+					<texture />
+				</control>
+				<include content="LumenOSDButton">
+					<param name="id" value="70046" />
+					<param name="icon" value="osd/fullscreen/buttons/settings-subtitle.png" />
+					<param name="onclick" value="ActivateWindow(osdsubtitlesettings)" />
+				</include>
+				<include content="LumenOSDButton">
+					<param name="id" value="70048" />
+					<param name="icon" value="osd/fullscreen/buttons/settings.png" />
+					<param name="onclick" value="SetProperty(settingslist_content,osd,home)" />
+					<param name="onclick2" value="SetProperty(settingslist_header,$LOCALIZE[5],home)" />
+					<param name="onclick3" value="ActivateWindow(1101)" />
+				</include>
+				<include content="LumenOSDButton">
+					<param name="id" value="70044" />
+					<param name="icon" value="osd/fullscreen/buttons/bookmarks.png" />
+					<param name="onclick" value="ActivateWindow(videobookmarks)" />
+					<param name="visible" value="!VideoPlayer.Content(livetv)" />
+				</include>
+				<include content="LumenOSDButton">
+					<param name="id" value="70042" />
+					<param name="icon" value="osd/fullscreen/buttons/playlist.png" />
+					<param name="onclick" value="Dialog.Close(all, true)" />
+					<param name="onclick2" value="ActivateWindow(videoplaylist)" />
+					<param name="visible" value="Integer.IsGreater(Playlist.Length(video),1)" />
+				</include>
+				<include content="LumenOSDButton">
+					<param name="id" value="804" />
+					<param name="icon" value="osd/fullscreen/buttons/home.png" />
+					<param name="onclick" value="PlayerControl(ShowVideoMenu)" />
+					<param name="visible" value="VideoPlayer.HasMenu" />
+				</include>
+				<include content="LumenOSDButton">
+					<param name="id" value="70043" />
+					<param name="icon" value="osd/fullscreen/buttons/information.png" />
+					<param name="onclick" value="Info" />
+				</include>
+			</control>
+			<!-- scrubbing: sits exactly on DialogSeekBar's bar -->
+			<control type="group">
+				<left>lm_margin</left>
+				<top>942</top>
+				<visible>Player.SeekEnabled + !VideoPlayer.Content(livetv)</visible>
+				<control type="button" id="87">
+					<include>HiddenObject</include>
+					<onup>201</onup>
+					<ondown>201</ondown>
+					<onleft>StepBack</onleft>
+					<onright condition="!Player.Paused">StepForward</onright>
+					<onright condition="Player.Paused">PlayerControl(FrameAdvance(1))</onright>
+				</control>
+				<control type="image">
+					<left>-4</left>
+					<top>-4</top>
+					<width>1708</width>
+					<height>16</height>
+					<texture border="8" colordiffuse="33FFFFFF">lumen/pill_s.png</texture>
+					<visible>Control.HasFocus(87)</visible>
+					<animation effect="fade" time="200">VisibleChange</animation>
+				</control>
+				<control type="slider">
+					<left>-16</left>
+					<top>-12</top>
+					<width>1732</width>
+					<height>32</height>
+					<texturesliderbar colordiffuse="00FFFFFF">lumen/dot.png</texturesliderbar>
+					<textureslidernib colordiffuse="FFFFFFFF">lumen/dot.png</textureslidernib>
+					<textureslidernibfocus colordiffuse="accent">lumen/dot.png</textureslidernibfocus>
+					<info>Player.Progress</info>
+					<action>seek</action>
+					<onup>201</onup>
+					<ondown>201</ondown>
+				</control>
+			</control>
+		</control>
+	</controls>
+</window>

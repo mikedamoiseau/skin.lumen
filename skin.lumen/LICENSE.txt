@@ -1,0 +1,15 @@
+Lumen by mikedamoiseau, a modified version of Estuary (Kodi 21 Omega).
+Lumen's changes are released under the same terms as Estuary below.
+
+Inter font by Rasmus Andersson is licensed under the SIL Open Font License 1.1 (fonts/inter_license.txt).
+
+Estuary by phil65 (Team Kodi)
+
+Estuary Artwork is licensed under a
+Creative Commons Attribution-ShareAlike 4.0 Unported License.
+You can find the license details here: <http://creativecommons.org/licenses/by-sa/4.0/>.
+
+Estuary code work is licensed under
+GNU General Public License (GPL), Version 2.0
+You can find the license details here: <https://www.gnu.org/licenses/gpl-2.0>.
+

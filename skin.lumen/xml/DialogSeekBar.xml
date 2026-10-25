@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Lumen player overlay: title on top, thin progress bar + times at the bottom. -->
+<window>
+	<visible>Window.IsActive(fullscreenvideo) | Window.IsActive(visualisation)</visible>
+	<visible>![Window.IsActive(sliderdialog) | Window.IsActive(pvrosdchannels) | Window.IsActive(pvrchannelguide) | Window.IsActive(pvrguideinfo) | Window.IsActive(1110) | Window.IsActive(osdsubtitlesettings) | Window.IsActive(osdaudiosettings) | Window.IsActive(osdvideosettings) | Window.IsActive(1101) | Window.IsActive(videobookmarks) | Window.IsActive(playerprocessinfo)]</visible>
+	<visible>Player.Seeking | Player.HasPerformedSeek(3) | [Player.Paused + !Player.Caching] | Player.Forwarding | Player.Rewinding | Player.ShowInfo | Window.IsActive(fullscreeninfo) | Player.ShowTime | Window.IsActive(videoosd) | Window.IsActive(musicosd) | !String.IsEmpty(Player.SeekNumeric) | !String.IsEmpty(PVR.ChannelNumberInput)</visible>
+	<depth>DepthOSD</depth>
+	<zorder>0</zorder>
+	<animation effect="fade" start="0" end="100" time="260" tween="sine" easing="out">WindowOpen</animation>
+	<animation effect="fade" start="100" end="0" time="260" tween="sine" easing="in">WindowClose</animation>
+	<controls>
+		<include>PVRChannelNumberInput</include>
+		<!-- scrims -->
+		<control type="image">
+			<left>0</left>
+			<top>0</top>
+			<width>1920</width>
+			<height>320</height>
+			<texture flipy="true" colordiffuse="C8000000">lumen/grad_v.png</texture>
+		</control>
+		<control type="image">
+			<left>0</left>
+			<bottom>0</bottom>
+			<width>1920</width>
+			<height>440</height>
+			<texture colordiffuse="E0000000">lumen/grad_v.png</texture>
+		</control>
+
+		<!-- top: title -->
+		<control type="group">
+			<left>lm_margin</left>
+			<top>70</top>
+			<animation effect="slide" start="0,-30" end="0,0" time="380" tween="cubic" easing="out">WindowOpen</animation>
+			<control type="grouplist">
+				<width>1300</width>
+				<height>260</height>
+				<orientation>vertical</orientation>
+				<itemgap>10</itemgap>
+				<usecontrolcoords>true</usecontrolcoords>
+				<control type="image">
+					<width>520</width>
+					<height>140</height>
+					<aspectratio align="left" aligny="top">keep</aspectratio>
+					<texture background="true">$VAR[LumenPlayerLogo]</texture>
+					<visible>!String.IsEmpty(Player.Art(clearlogo)) | !String.IsEmpty(Player.Art(tvshow.clearlogo))</visible>
+				</control>
+				<control type="label">
+					<width>1300</width>
+					<height>70</height>
+					<font>lm_title</font>
+					<textcolor>text</textcolor>
+					<shadowcolor>text_shadow</shadowcolor>
+					<label>$VAR[LumenPlayerTitle]</label>
+					<visible>String.IsEmpty(Player.Art(clearlogo)) + String.IsEmpty(Player.Art(tvshow.clearlogo))</visible>
+				</control>
+				<control type="label">
+					<width>1300</width>
+					<height>40</height>
+					<font>lm_label</font>
+					<textcolor>text_dim</textcolor>
+					<label>$VAR[LumenPlayerSubtitle]</label>
+				</control>
+			</control>
+		</control>
+		<!-- top right: clock + end time -->
+		<control type="group">
+			<right>80</right>
+			<top>58</top>
+			<width>500</width>
+			<control type="label">
+				<width>500</width>
+				<height>50</height>
+				<align>right</align>
+				<font>lm_clock</font>
+				<textcolor>text</textcolor>
+				<label>$INFO[System.Time]</label>
+			</control>
+			<control type="label">
+				<top>50</top>
+				<width>500</width>
+				<height>34</height>
+				<align>right</align>
+				<font>lm_caption</font>
+				<textcolor>text_mute</textcolor>
+				<label>$INFO[Player.FinishTime,Ends at ]</label>
+				<visible>Player.SeekEnabled + !Player.ChannelPreviewActive</visible>
+			</control>
+		</control>
+
+		<!-- "i": glass info card -->
+		<control type="group">
+			<left>lm_margin</left>
+			<top>560</top>
+			<width>1100</width>
+			<height>290</height>
+			<visible>[Window.IsActive(fullscreeninfo) | Player.ShowInfo] + !Window.IsActive(videoosd) + !String.IsEmpty(VideoPlayer.Plot)</visible>
+			<animation type="Visible" reversible="false">
+				<effect type="fade" start="0" end="100" time="260" />
+				<effect type="slide" start="0,30" end="0,0" time="360" tween="cubic" easing="out" />
+			</animation>
+			<animation effect="fade" start="100" end="0" time="200">Hidden</animation>
+			<control type="image">
+				<texture border="28" colordiffuse="glass">lumen/rr28.png</texture>
+			</control>
+			<control type="image">
+				<texture border="28" colordiffuse="stroke">lumen/rr28_stroke1.png</texture>
+			</control>
+			<control type="label">
+				<left>40</left>
+				<top>30</top>
+				<width>1020</width>
+				<height>34</height>
+				<font>lm_label</font>
+				<textcolor>text_dim</textcolor>
+				<label>$INFO[VideoPlayer.Year]$INFO[VideoPlayer.Genre,  ·  ]$INFO[VideoPlayer.Rating,  ·  ★ ]$INFO[VideoPlayer.Director,  ·  ]</label>
+			</control>
+			<control type="textbox">
+				<left>40</left>
+				<top>78</top>
+				<width>1020</width>
+				<height>180</height>
+				<font>lm_body</font>
+				<textcolor>text</textcolor>
+				<label>$INFO[VideoPlayer.Plot]</label>
+				<autoscroll delay="6000" time="3000" repeat="6000">true</autoscroll>
+			</control>
+		</control>
+		<!-- bottom: badges, seek offset, bar, times -->
+		<control type="group">
+			<left>lm_margin</left>
+			<top>880</top>
+			<width>1700</width>
+			<animation effect="slide" start="0,40" end="0,0" time="380" tween="cubic" easing="out">WindowOpen</animation>
+			<control type="grouplist">
+				<right>0</right>
+				<top>0</top>
+				<width>1000</width>
+				<height>34</height>
+				<align>right</align>
+				<orientation>horizontal</orientation>
+				<itemgap>10</itemgap>
+				<usecontrolcoords>true</usecontrolcoords>
+				<include content="LumenBadge">
+					<param name="label" value="$INFO[VideoPlayer.VideoResolution]$VAR[LumenPlayerResSuffix]" />
+					<param name="visible" value="!String.IsEmpty(VideoPlayer.VideoResolution)" />
+				</include>
+				<include content="LumenBadge">
+					<param name="label" value="$VAR[LumenPlayerHdr]" />
+					<param name="visible" value="!String.IsEmpty(VideoPlayer.HdrType)" />
+				</include>
+				<include content="LumenBadge">
+					<param name="label" value="[UPPERCASE]$INFO[VideoPlayer.AudioCodec][/UPPERCASE]$VAR[LumenPlayerChannels]" />
+					<param name="visible" value="!String.IsEmpty(VideoPlayer.AudioCodec)" />
+				</include>
+				<include content="LumenBadge">
+					<param name="label" value="[UPPERCASE]$INFO[VideoPlayer.AudioLanguage][/UPPERCASE]" />
+					<param name="visible" value="!String.IsEmpty(VideoPlayer.AudioLanguage) + !String.IsEqual(VideoPlayer.AudioLanguage,und)" />
+				</include>
+				<include content="LumenBadge">
+					<param name="label" value="CC [UPPERCASE]$INFO[VideoPlayer.SubtitlesLanguage][/UPPERCASE]" />
+					<param name="visible" value="VideoPlayer.SubtitlesEnabled + !String.IsEmpty(VideoPlayer.SubtitlesLanguage)" />
+				</include>
+			</control>
+			<!-- state + seek feedback, left above the bar -->
+			<control type="grouplist">
+				<left>0</left>
+				<top>0</top>
+				<width>800</width>
+				<height>34</height>
+				<orientation>horizontal</orientation>
+				<itemgap>12</itemgap>
+				<usecontrolcoords>true</usecontrolcoords>
+				<control type="image">
+					<top>4</top>
+					<width>26</width>
+					<height>26</height>
+					<texture colordiffuse="text">$VAR[LumenPlayerStateIcon]</texture>
+				</control>
+				<control type="label">
+					<width>auto</width>
+					<height>34</height>
+					<aligny>center</aligny>
+					<font>lm_label_bold</font>
+					<textcolor>text</textcolor>
+					<label>$VAR[LumenPlayerStateLabel]</label>
+				</control>
+				<control type="label">
+					<width>auto</width>
+					<height>34</height>
+					<aligny>center</aligny>
+					<font>lm_label_bold</font>
+					<textcolor>accent</textcolor>
+					<label>$INFO[Player.SeekOffset]$INFO[Player.SeekNumeric]</label>
+					<visible>Player.Seeking | Player.HasPerformedSeek(3) | !String.IsEmpty(Player.SeekNumeric)</visible>
+				</control>
+			</control>
+			<!-- bar -->
+			<control type="group">
+				<top>62</top>
+				<visible>Player.SeekEnabled + !VideoPlayer.Content(livetv)</visible>
+				<control type="image">
+					<width>1700</width>
+					<height>8</height>
+					<texture border="4" colordiffuse="40FFFFFF">lumen/pill_s.png</texture>
+				</control>
+				<control type="progress">
+					<width>1700</width>
+					<height>8</height>
+					<texturebg border="4" colordiffuse="00FFFFFF">lumen/pill_s.png</texturebg>
+					<midtexture border="4" colordiffuse="40FFFFFF">lumen/pill_s.png</midtexture>
+					<info>Player.ProgressCache</info>
+				</control>
+				<control type="progress">
+					<width>1700</width>
+					<height>8</height>
+					<texturebg border="4" colordiffuse="00FFFFFF">lumen/pill_s.png</texturebg>
+					<midtexture border="4" colordiffuse="FFFFFFFF">lumen/pill_s.png</midtexture>
+					<info>Player.Progress</info>
+				</control>
+				<control type="slider">
+					<left>-12</left>
+					<top>-8</top>
+					<width>1724</width>
+					<height>24</height>
+					<texturesliderbar colordiffuse="00FFFFFF">lumen/dot.png</texturesliderbar>
+					<textureslidernib colordiffuse="FFFFFFFF">lumen/dot.png</textureslidernib>
+					<textureslidernibfocus colordiffuse="FFFFFFFF">lumen/dot.png</textureslidernibfocus>
+					<info>Player.Progress</info>
+					<visible>!Window.IsActive(videoosd)</visible>
+				</control>
+			</control>
+			<control type="label">
+				<top>90</top>
+				<width>400</width>
+				<height>40</height>
+				<font>lm_osd_time</font>
+				<textcolor>text_dim</textcolor>
+				<label>$VAR[LumenPlayerElapsed]</label>
+			</control>
+			<control type="label">
+				<right>0</right>
+				<top>90</top>
+				<width>400</width>
+				<height>40</height>
+				<align>right</align>
+				<font>lm_osd_time</font>
+				<textcolor>text_dim</textcolor>
+				<label>$INFO[Player.TimeRemaining,-]</label>
+				<visible>Player.SeekEnabled + !VideoPlayer.Content(livetv)</visible>
+			</control>
+		</control>
+	</controls>
+</window>

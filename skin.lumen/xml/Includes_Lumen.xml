@@ -1,0 +1,1058 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Lumen component library: backdrop, tab bar, hero, metadata, cards, rows. -->
+<includes>
+	<constant name="lm_margin">110</constant>
+	<constant name="lm_poster_w">210</constant>
+	<constant name="lm_poster_h">315</constant>
+	<constant name="lm_land_w">384</constant>
+	<constant name="lm_land_h">216</constant>
+
+	<!-- ============ Animations ============ -->
+	<include name="LumenFadeInWindow">
+		<animation effect="fade" start="0" end="100" time="320" tween="sine" easing="out">WindowOpen</animation>
+		<animation effect="fade" start="100" end="0" time="200" tween="sine" easing="in">WindowClose</animation>
+	</include>
+	<include name="LumenRiseIn">
+		<param name="delay">0</param>
+		<definition>
+			<animation type="WindowOpen" reversible="false">
+				<effect type="fade" start="0" end="100" time="420" delay="$PARAM[delay]" tween="sine" easing="out" />
+				<effect type="slide" start="0,48" end="0,0" time="560" delay="$PARAM[delay]" tween="cubic" easing="out" />
+			</animation>
+			<animation effect="fade" start="100" end="0" time="180">WindowClose</animation>
+		</definition>
+	</include>
+	<include name="LumenKenBurns">
+		<animation effect="zoom" start="100" end="108" center="960,540" time="26000" tween="sine" easing="inout" pulse="true" condition="Skin.HasSetting(lumen_kenburns)">Conditional</animation>
+	</include>
+
+	<!-- ============ Backdrop ============ -->
+	<include name="LumenBackdrop">
+		<param name="image">$VAR[LumenHomeFanart]</param>
+		<param name="dim">FFFFFFFF</param>
+		<param name="scrim">lumen/hero_scrim.png</param>
+		<definition>
+			<control type="group">
+				<include>LumenKenBurns</include>
+				<control type="image">
+					<left>0</left>
+					<top>0</top>
+					<width>1920</width>
+					<height>1080</height>
+					<aspectratio>scale</aspectratio>
+					<fadetime>500</fadetime>
+					<texture background="true" colordiffuse="$PARAM[dim]">$PARAM[image]</texture>
+				</control>
+			</control>
+			<control type="image">
+				<include>FullScreenDimensions</include>
+				<texture>$PARAM[scrim]</texture>
+			</control>
+		</definition>
+	</include>
+
+	<!-- ============ Top bar: tvOS-style tabs + clock ============ -->
+	<include name="LumenTabButton">
+		<param name="nofocustex"></param>
+		<definition>
+			<control type="button" id="$PARAM[id]">
+				<width>auto</width>
+				<height>60</height>
+				<label>$PARAM[label]</label>
+				<font>lm_tab</font>
+				<textoffsetx>30</textoffsetx>
+				<align>center</align>
+				<aligny>center</aligny>
+				<textcolor>text_dim</textcolor>
+				<focusedcolor>focus_text</focusedcolor>
+				<texturefocus border="30" colordiffuse="FFFFFFFF">lumen/pill.png</texturefocus>
+				<texturenofocus border="30" colordiffuse="24FFFFFF">$PARAM[nofocustex]</texturenofocus>
+				<animation effect="zoom" start="100" end="106" center="auto" time="200" tween="cubic" easing="out" reversible="false">Focus</animation>
+				<animation effect="zoom" start="106" end="100" center="auto" time="200" tween="cubic" easing="out" reversible="false">UnFocus</animation>
+				<onclick>$PARAM[onclick]</onclick>
+				<visible>$PARAM[visible]</visible>
+			</control>
+		</definition>
+	</include>
+	<include name="LumenTabBar">
+		<param name="tex10"></param>
+		<param name="tex11"></param>
+		<param name="tex12"></param>
+		<param name="tex13"></param>
+		<param name="tex14"></param>
+		<param name="tex15"></param>
+		<param name="tex16"></param>
+		<param name="tex17"></param>
+		<param name="ondown">9100</param>
+		<definition>
+			<control type="group" id="9010">
+				<top>40</top>
+				<height>64</height>
+				<include>LumenFadeInWindow</include>
+				<control type="grouplist" id="9000">
+					<left>0</left>
+					<width>1920</width>
+					<height>64</height>
+					<top>2</top>
+					<orientation>horizontal</orientation>
+					<align>center</align>
+					<itemgap>6</itemgap>
+					<usecontrolcoords>true</usecontrolcoords>
+					<ondown>$PARAM[ondown]</ondown>
+					<onback>SetFocus($PARAM[ondown])</onback>
+					<include content="LumenTabButton">
+						<param name="id" value="10" />
+						<param name="nofocustex" value="$PARAM[tex10]" />
+						<param name="label" value="$LOCALIZE[10000]" />
+						<param name="onclick" value="ActivateWindow(home)" />
+						<param name="visible" value="true" />
+					</include>
+					<include content="LumenTabButton">
+						<param name="id" value="11" />
+						<param name="nofocustex" value="$PARAM[tex11]" />
+						<param name="label" value="$LOCALIZE[342]" />
+						<param name="onclick" value="ActivateWindow(Videos,videodb://movies/titles/,return)" />
+						<param name="visible" value="Library.HasContent(movies)" />
+					</include>
+					<include content="LumenTabButton">
+						<param name="id" value="12" />
+						<param name="nofocustex" value="$PARAM[tex12]" />
+						<param name="label" value="$LOCALIZE[20343]" />
+						<param name="onclick" value="ActivateWindow(Videos,videodb://tvshows/titles/,return)" />
+						<param name="visible" value="Library.HasContent(tvshows)" />
+					</include>
+					<include content="LumenTabButton">
+						<param name="id" value="13" />
+						<param name="nofocustex" value="$PARAM[tex13]" />
+						<param name="label" value="Collections" />
+						<param name="onclick" value="ActivateWindow(Videos,videodb://movies/sets/,return)" />
+						<param name="visible" value="Library.HasContent(moviesets)" />
+					</include>
+					<include content="LumenTabButton">
+						<param name="id" value="14" />
+						<param name="nofocustex" value="$PARAM[tex14]" />
+						<param name="label" value="$LOCALIZE[1036]" />
+						<param name="onclick" value="ActivateWindow(favouritesbrowser)" />
+						<param name="visible" value="true" />
+					</include>
+					<include content="LumenTabButton">
+						<param name="id" value="15" />
+						<param name="nofocustex" value="$PARAM[tex15]" />
+						<param name="label" value="$LOCALIZE[24001]" />
+						<param name="onclick" value="ActivateWindow(Videos,addons://sources/video/,return)" />
+						<param name="visible" value="true" />
+					</include>
+					<include content="LumenTabButton">
+						<param name="id" value="16" />
+						<param name="nofocustex" value="$PARAM[tex16]" />
+						<param name="label" value="$LOCALIZE[137]" />
+						<param name="onclick" value="ActivateWindow(1107)" />
+						<param name="visible" value="true" />
+					</include>
+					<include content="LumenTabButton">
+						<param name="id" value="17" />
+						<param name="nofocustex" value="$PARAM[tex17]" />
+						<param name="label" value="$LOCALIZE[5]" />
+						<param name="onclick" value="ActivateWindow(settings)" />
+						<param name="visible" value="true" />
+					</include>
+				</control>
+			</control>
+		</definition>
+	</include>
+	<include name="LumenClock">
+		<control type="group">
+			<right>80</right>
+			<top>48</top>
+			<width>300</width>
+			<height>50</height>
+			<include>LumenFadeInWindow</include>
+			<control type="label">
+				<right>0</right>
+				<width>300</width>
+				<height>50</height>
+				<align>right</align>
+				<aligny>center</aligny>
+				<font>lm_clock</font>
+				<textcolor>text</textcolor>
+				<label>$INFO[System.Time]</label>
+			</control>
+		</control>
+	</include>
+
+	<!-- ============ Metadata line (year · genre · runtime · rating · badges) ============ -->
+	<include name="LumenBadge">
+		<control type="button">
+			<width>auto</width>
+			<height>34</height>
+			<label>$PARAM[label]</label>
+			<font>lm_micro</font>
+			<textoffsetx>12</textoffsetx>
+			<align>center</align>
+			<aligny>center</aligny>
+			<textcolor>text</textcolor>
+			<disabledcolor>text</disabledcolor>
+			<texturenofocus border="6" colordiffuse="B3FFFFFF">lumen/rr6_stroke.png</texturenofocus>
+			<texturefocus border="6" colordiffuse="B3FFFFFF">lumen/rr6_stroke.png</texturefocus>
+			<enable>false</enable>
+			<visible>$PARAM[visible]</visible>
+		</control>
+	</include>
+	<include name="LumenMetaText">
+		<control type="label">
+			<width>auto</width>
+			<height>34</height>
+			<aligny>center</aligny>
+			<font>lm_label</font>
+			<textcolor>text_dim</textcolor>
+			<label>$PARAM[label]</label>
+			<visible>$PARAM[visible]</visible>
+		</control>
+	</include>
+	<include name="LumenMetaLine">
+		<!-- $PARAM[item] is "ListItem" or "Container(id).ListItem" -->
+		<param name="item">ListItem</param>
+		<param name="align">left</param>
+		<param name="width">1200</param>
+		<definition>
+			<control type="grouplist">
+				<orientation>horizontal</orientation>
+				<itemgap>14</itemgap>
+				<width>$PARAM[width]</width>
+				<height>34</height>
+				<align>$PARAM[align]</align>
+				<usecontrolcoords>true</usecontrolcoords>
+				<include content="LumenMetaText">
+					<param name="label" value="$INFO[$PARAM[item].Season,S, ]$INFO[$PARAM[item].Episode,E,  ·  ]$INFO[$PARAM[item].Title]" />
+					<param name="visible" value="String.IsEqual($PARAM[item].DBType,episode)" />
+				</include>
+				<include content="LumenMetaText">
+					<param name="label" value="$INFO[$PARAM[item].Label]" />
+					<param name="visible" value="String.IsEqual($PARAM[item].DBType,season)" />
+				</include>
+				<include content="LumenMetaText">
+					<param name="label" value="$INFO[$PARAM[item].Year]" />
+					<param name="visible" value="!String.IsEqual($PARAM[item].DBType,episode) + !String.IsEqual($PARAM[item].DBType,season) + !String.IsEmpty($PARAM[item].Year)" />
+				</include>
+				<include content="LumenMetaText">
+					<param name="label" value="$INFO[$PARAM[item].Year,·  ]" />
+					<param name="visible" value="String.IsEqual($PARAM[item].DBType,season) + !String.IsEmpty($PARAM[item].Year)" />
+				</include>
+				<include content="LumenMetaText">
+					<param name="label" value="$INFO[$PARAM[item].Genre,·  ]" />
+					<param name="visible" value="!String.IsEqual($PARAM[item].DBType,episode) + !String.IsEmpty($PARAM[item].Genre)" />
+				</include>
+				<include content="LumenMetaText">
+					<param name="label" value="·  $INFO[$PARAM[item].Duration(h),,h ]$INFO[$PARAM[item].Duration(m),,m]" />
+					<param name="visible" value="!String.IsEmpty($PARAM[item].Duration) + !String.IsEqual($PARAM[item].DBType,tvshow) + !String.IsEqual($PARAM[item].Duration(h),0)" />
+				</include>
+				<include content="LumenMetaText">
+					<param name="label" value="·  $INFO[$PARAM[item].Duration(m),,m]" />
+					<param name="visible" value="!String.IsEmpty($PARAM[item].Duration) + !String.IsEqual($PARAM[item].DBType,tvshow) + String.IsEqual($PARAM[item].Duration(h),0)" />
+				</include>
+				<include content="LumenMetaText">
+					<param name="label" value="$INFO[$PARAM[item].Property(TotalSeasons),·  , $LOCALIZE[33054]]" />
+					<param name="visible" value="String.IsEqual($PARAM[item].DBType,tvshow) + Integer.IsGreater($PARAM[item].Property(TotalSeasons),1)" />
+				</include>
+				<include content="LumenMetaText">
+					<param name="label" value="$INFO[$PARAM[item].Property(UnWatchedEpisodes),·  , $LOCALIZE[16101]]" />
+					<param name="visible" value="String.IsEqual($PARAM[item].DBType,tvshow) + Integer.IsGreater($PARAM[item].Property(UnWatchedEpisodes),0)" />
+				</include>
+				<control type="image">
+					<width>10</width>
+					<height>34</height>
+					<texture />
+				</control>
+				<control type="image">
+					<width>22</width>
+					<height>34</height>
+					<aspectratio>keep</aspectratio>
+					<texture colordiffuse="accent">lumen/icons/star.png</texture>
+					<visible>Integer.IsGreater($PARAM[item].Rating,0)</visible>
+				</control>
+				<include content="LumenMetaText">
+					<param name="label" value="$INFO[$PARAM[item].Rating]" />
+					<param name="visible" value="Integer.IsGreater($PARAM[item].Rating,0)" />
+				</include>
+				<control type="image">
+					<width>4</width>
+					<height>34</height>
+					<texture />
+				</control>
+				<include content="LumenBadge">
+					<param name="label" value="4K" />
+					<param name="visible" value="String.IsEqual($PARAM[item].VideoResolution,4K)" />
+				</include>
+				<include content="LumenBadge">
+					<param name="label" value="HD" />
+					<param name="visible" value="String.IsEqual($PARAM[item].VideoResolution,1080) | String.IsEqual($PARAM[item].VideoResolution,720)" />
+				</include>
+				<include content="LumenBadge">
+					<param name="label" value="DOLBY VISION" />
+					<param name="visible" value="String.IsEqual($PARAM[item].HdrType,dolbyvision)" />
+				</include>
+				<include content="LumenBadge">
+					<param name="label" value="HDR" />
+					<param name="visible" value="String.IsEqual($PARAM[item].HdrType,hdr10) | String.IsEqual($PARAM[item].HdrType,hlg)" />
+				</include>
+				<include content="LumenBadge">
+					<param name="label" value="7.1" />
+					<param name="visible" value="String.IsEqual($PARAM[item].AudioChannels,8)" />
+				</include>
+				<include content="LumenBadge">
+					<param name="label" value="5.1" />
+					<param name="visible" value="String.IsEqual($PARAM[item].AudioChannels,6)" />
+				</include>
+				<include content="LumenBadge">
+					<param name="label" value="CC" />
+					<param name="visible" value="!String.IsEmpty($PARAM[item].SubtitleLanguage)" />
+				</include>
+			</control>
+		</definition>
+	</include>
+
+	<!-- ============ Hero (logo / title, metadata, plot) ============ -->
+	<include name="LumenHero">
+		<param name="item">ListItem</param>
+		<param name="visible">true</param>
+		<param name="top">150</param>
+		<definition>
+			<control type="group">
+				<left>lm_margin</left>
+				<top>$PARAM[top]</top>
+				<width>900</width>
+				<height>420</height>
+				<visible>$PARAM[visible]</visible>
+				<animation effect="fade" time="260" tween="sine" easing="out">VisibleChange</animation>
+				<!-- clear logo, then the show's logo for episodes, then a big title -->
+				<control type="image">
+					<width>620</width>
+					<height>200</height>
+					<aspectratio align="left" aligny="bottom">keep</aspectratio>
+					<fadetime>300</fadetime>
+					<texture background="true">$INFO[$PARAM[item].Art(clearlogo)]</texture>
+				</control>
+				<control type="image">
+					<width>620</width>
+					<height>200</height>
+					<aspectratio align="left" aligny="bottom">keep</aspectratio>
+					<fadetime>300</fadetime>
+					<texture background="true">$INFO[$PARAM[item].Art(tvshow.clearlogo)]</texture>
+					<visible>String.IsEmpty($PARAM[item].Art(clearlogo))</visible>
+				</control>
+				<control type="textbox">
+					<top>20</top>
+					<width>880</width>
+					<height>180</height>
+					<aligny>bottom</aligny>
+					<font>lm_title_l</font>
+					<textcolor>text</textcolor>
+					<shadowcolor>text_shadow</shadowcolor>
+					<label>$INFO[$PARAM[item].TVShowTitle]</label>
+					<visible>String.IsEqual($PARAM[item].DBType,episode) + String.IsEmpty($PARAM[item].Art(clearlogo)) + String.IsEmpty($PARAM[item].Art(tvshow.clearlogo))</visible>
+				</control>
+				<control type="textbox">
+					<top>20</top>
+					<width>880</width>
+					<height>180</height>
+					<aligny>bottom</aligny>
+					<font>lm_title_l</font>
+					<textcolor>text</textcolor>
+					<shadowcolor>text_shadow</shadowcolor>
+					<label>$INFO[$PARAM[item].Label]</label>
+					<visible>!String.IsEqual($PARAM[item].DBType,episode) + String.IsEmpty($PARAM[item].Art(clearlogo)) + String.IsEmpty($PARAM[item].Art(tvshow.clearlogo))</visible>
+				</control>
+				<control type="group">
+					<top>232</top>
+					<include content="LumenMetaLine">
+						<param name="item" value="$PARAM[item]" />
+					</include>
+				</control>
+				<control type="textbox">
+					<top>290</top>
+					<width>860</width>
+					<height>100</height>
+					<font>lm_body</font>
+					<textcolor>text_dim</textcolor>
+					<label>$INFO[$PARAM[item].Plot]</label>
+				</control>
+			</control>
+		</definition>
+	</include>
+
+	<!-- ============ Cards ============ -->
+	<include name="LumenCardFocus">
+		<!-- lift + shadow: wraps a card that is $PARAM[w] x $PARAM[h] -->
+		<animation type="Focus" reversible="false">
+			<effect type="zoom" start="100" end="110" center="$PARAM[cx],$PARAM[cy]" time="260" tween="cubic" easing="out" />
+		</animation>
+		<animation type="UnFocus" reversible="false">
+			<effect type="zoom" start="110" end="100" center="$PARAM[cx],$PARAM[cy]" time="200" tween="cubic" easing="out" />
+		</animation>
+	</include>
+	<include name="LumenPosterCard">
+		<param name="focused">false</param>
+		<definition>
+			<control type="image">
+				<left>-40</left>
+				<top>-26</top>
+				<width>290</width>
+				<height>395</height>
+				<texture border="52">lumen/shadow_card.png</texture>
+				<visible>$PARAM[focused]</visible>
+			</control>
+			<control type="image">
+				<width>lm_poster_w</width>
+				<height>lm_poster_h</height>
+				<texture border="12" colordiffuse="card_bg">lumen/rr14.png</texture>
+				<visible>String.IsEmpty(ListItem.Art(poster)) + String.IsEmpty(ListItem.Art(tvshow.poster)) + String.IsEmpty(ListItem.Art(thumb)) + !ListItem.IsParentFolder</visible>
+			</control>
+			<control type="group">
+				<visible>ListItem.IsParentFolder</visible>
+				<control type="image">
+					<width>lm_poster_w</width>
+					<height>lm_poster_h</height>
+					<texture border="12" colordiffuse="1AFFFFFF">lumen/rr14.png</texture>
+				</control>
+				<control type="image">
+					<left>73</left>
+					<top>125</top>
+					<width>64</width>
+					<height>64</height>
+					<texture colordiffuse="text_dim">lumen/icons/chevron_left.png</texture>
+				</control>
+			</control>
+			<control type="label">
+				<left>16</left>
+				<width>178</width>
+				<height>lm_poster_h</height>
+				<align>center</align>
+				<aligny>center</aligny>
+				<wrapmultiline>true</wrapmultiline>
+				<font>lm_label_bold</font>
+				<textcolor>text_mute</textcolor>
+				<label>$INFO[ListItem.Label]</label>
+				<visible>String.IsEmpty(ListItem.Art(poster)) + String.IsEmpty(ListItem.Art(tvshow.poster)) + String.IsEmpty(ListItem.Art(thumb)) + !ListItem.IsParentFolder</visible>
+			</control>
+			<control type="image">
+				<width>lm_poster_w</width>
+				<height>lm_poster_h</height>
+				<aspectratio>scale</aspectratio>
+				<fadetime>200</fadetime>
+				<texture background="true" diffuse="lumen/mask_poster.png">$VAR[LumenPosterArt]</texture>
+			</control>
+			<control type="group">
+				<visible>$PARAM[focused]</visible>
+				<control type="image">
+					<width>lm_poster_w</width>
+					<height>lm_poster_h</height>
+					<texture>lumen/gloss_poster.png</texture>
+				</control>
+				<control type="image">
+					<width>lm_poster_w</width>
+					<height>lm_poster_h</height>
+					<texture border="12" colordiffuse="66FFFFFF">lumen/rr14_stroke1.png</texture>
+				</control>
+			</control>
+			<include>LumenCardBadges</include>
+			<control type="group">
+				<left>14</left>
+				<top>297</top>
+				<visible>ListItem.IsResumable + !String.IsEqual(ListItem.DBType,tvshow)</visible>
+				<include content="LumenProgress">
+					<param name="width" value="182" />
+					<param name="info" value="ListItem.PercentPlayed" />
+				</include>
+			</control>
+			<control type="group">
+				<left>14</left>
+				<top>297</top>
+				<visible>String.IsEqual(ListItem.DBType,tvshow) + Integer.IsGreater(ListItem.Property(WatchedEpisodePercent),0)</visible>
+				<include content="LumenProgress">
+					<param name="width" value="182" />
+					<param name="info" value="ListItem.Property(WatchedEpisodePercent)" />
+				</include>
+			</control>
+		</definition>
+	</include>
+	<include name="LumenCardBadges">
+		<!-- watched tick / unwatched-episode counter, top-right corner -->
+		<control type="group">
+			<right>10</right>
+			<top>10</top>
+			<width>40</width>
+			<height>40</height>
+			<visible>Integer.IsGreater(ListItem.PlayCount,0) + !String.IsEqual(ListItem.DBType,tvshow) + !String.IsEqual(ListItem.DBType,set)</visible>
+			<control type="image">
+				<texture colordiffuse="E6FFFFFF">lumen/dot.png</texture>
+			</control>
+			<control type="image">
+				<left>8</left>
+				<top>8</top>
+				<width>24</width>
+				<height>24</height>
+				<texture colordiffuse="focus_text">lumen/icons/check.png</texture>
+			</control>
+		</control>
+		<control type="group">
+			<right>10</right>
+			<top>10</top>
+			<width>52</width>
+			<height>34</height>
+			<visible>String.IsEqual(ListItem.DBType,tvshow) + Integer.IsGreater(ListItem.Property(UnWatchedEpisodes),0)</visible>
+			<control type="image">
+				<texture border="17" colordiffuse="accent">lumen/pill.png</texture>
+			</control>
+			<control type="label">
+				<align>center</align>
+				<aligny>center</aligny>
+				<font>lm_micro</font>
+				<textcolor>focus_text</textcolor>
+				<label>$INFO[ListItem.Property(UnWatchedEpisodes)]</label>
+			</control>
+		</control>
+	</include>
+	<include name="LumenProgress">
+		<param name="height">6</param>
+		<definition>
+			<control type="progress">
+				<width>$PARAM[width]</width>
+				<height>$PARAM[height]</height>
+				<texturebg border="3" colordiffuse="59FFFFFF">lumen/pill_s.png</texturebg>
+				<midtexture border="3" colordiffuse="accent">lumen/pill_s.png</midtexture>
+				<info>$PARAM[info]</info>
+			</control>
+		</definition>
+	</include>
+	<include name="LumenLandscapeCard">
+		<param name="focused">false</param>
+		<param name="title">$VAR[LumenCardTitle]</param>
+		<param name="subtitle">$VAR[LumenCardSubtitle]</param>
+		<definition>
+			<control type="image">
+				<left>-40</left>
+				<top>-26</top>
+				<width>464</width>
+				<height>296</height>
+				<texture border="52">lumen/shadow_card.png</texture>
+				<visible>$PARAM[focused]</visible>
+			</control>
+			<control type="image">
+				<width>lm_land_w</width>
+				<height>lm_land_h</height>
+				<texture border="12" colordiffuse="card_bg">lumen/rr14.png</texture>
+				<visible>String.IsEmpty(ListItem.Art(fanart)) + String.IsEmpty(ListItem.Art(thumb))</visible>
+			</control>
+			<control type="group">
+				<visible>ListItem.IsParentFolder</visible>
+				<control type="image">
+					<width>lm_land_w</width>
+					<height>lm_land_h</height>
+					<texture border="12" colordiffuse="1AFFFFFF">lumen/rr14.png</texture>
+				</control>
+				<control type="image">
+					<left>160</left>
+					<top>76</top>
+					<width>64</width>
+					<height>64</height>
+					<texture colordiffuse="text_dim">lumen/icons/chevron_left.png</texture>
+				</control>
+			</control>
+			<control type="image">
+				<width>lm_land_w</width>
+				<height>lm_land_h</height>
+				<aspectratio>scale</aspectratio>
+				<fadetime>200</fadetime>
+				<texture background="true" diffuse="lumen/mask_landscape.png">$VAR[LumenLandscapeArt]</texture>
+			</control>
+			<control type="image">
+				<left>40</left>
+				<top>30</top>
+				<width>304</width>
+				<height>156</height>
+				<aspectratio>keep</aspectratio>
+				<texture background="true">$INFO[ListItem.Art(clearlogo)]</texture>
+				<visible>String.IsEmpty(ListItem.Art(landscape)) + !String.IsEqual(ListItem.DBType,episode)</visible>
+			</control>
+			<control type="group">
+				<visible>$PARAM[focused]</visible>
+				<control type="image">
+					<width>lm_land_w</width>
+					<height>lm_land_h</height>
+					<texture>lumen/gloss_landscape.png</texture>
+				</control>
+				<control type="image">
+					<width>lm_land_w</width>
+					<height>lm_land_h</height>
+					<texture border="12" colordiffuse="66FFFFFF">lumen/rr14_stroke1.png</texture>
+				</control>
+			</control>
+			<include>LumenCardBadges</include>
+			<control type="group">
+				<left>16</left>
+				<top>196</top>
+				<visible>ListItem.IsResumable + !String.IsEqual(ListItem.DBType,tvshow)</visible>
+				<include content="LumenProgress">
+					<param name="width" value="352" />
+					<param name="info" value="ListItem.PercentPlayed" />
+				</include>
+			</control>
+			<control type="group">
+				<left>16</left>
+				<top>196</top>
+				<visible>String.IsEqual(ListItem.DBType,tvshow) + Integer.IsGreater(ListItem.Property(WatchedEpisodePercent),0)</visible>
+				<include content="LumenProgress">
+					<param name="width" value="352" />
+					<param name="info" value="ListItem.Property(WatchedEpisodePercent)" />
+				</include>
+			</control>
+			<control type="label">
+				<top>232</top>
+				<width>lm_land_w</width>
+				<height>32</height>
+				<font>lm_label_bold</font>
+				<textcolor>$PARAM[titlecolor]</textcolor>
+				<label>$PARAM[title]</label>
+			</control>
+			<control type="label">
+				<top>266</top>
+				<width>lm_land_w</width>
+				<height>28</height>
+				<font>lm_caption</font>
+				<textcolor>text_mute</textcolor>
+				<label>$PARAM[subtitle]</label>
+			</control>
+		</definition>
+	</include>
+
+	<!-- ============ Rows ============ -->
+	<include name="LumenRowHeader">
+		<control type="label">
+			<left>lm_margin</left>
+			<top>0</top>
+			<width>1200</width>
+			<height>44</height>
+			<aligny>center</aligny>
+			<font>lm_headline</font>
+			<textcolor>E6FFFFFF</textcolor>
+			<label>$PARAM[header]</label>
+		</control>
+	</include>
+	<include name="LumenRowCommon">
+		<orientation>horizontal</orientation>
+		<scrolltime tween="cubic" easing="out">360</scrolltime>
+		<preloaditems>0</preloaditems>
+		<onfocus>SetProperty(lumen.row,$PARAM[id],home)</onfocus>
+		<onup>$PARAM[onup]</onup>
+		<ondown>$PARAM[ondown]</ondown>
+	</include>
+	<include name="LumenPosterRow">
+		<param name="sortby">none</param>
+		<param name="sortorder">ascending</param>
+		<param name="limit">25</param>
+		<param name="onclick_condition">false</param>
+		<param name="onclick">noop</param>
+		<param name="fadeout">false</param>
+		<param name="onup">9000</param>
+		<param name="ondown">noop</param>
+		<definition>
+			<control type="group" id="$PARAM[group]">
+				<height>500</height>
+				<visible>Integer.IsGreater(Container($PARAM[id]).NumItems,0) | Container($PARAM[id]).IsUpdating</visible>
+				<animation effect="fade" start="100" end="0" time="300" tween="sine" easing="out" condition="$PARAM[fadeout]">Conditional</animation>
+				<include content="LumenRowHeader">
+					<param name="header" value="$PARAM[header]" />
+				</include>
+				<control type="list" id="$PARAM[id]">
+					<left>80</left>
+					<top>44</top>
+					<width>1840</width>
+					<height>420</height>
+					<include content="LumenRowCommon">
+						<param name="id" value="$PARAM[id]" />
+						<param name="onup" value="$PARAM[onup]" />
+						<param name="ondown" value="$PARAM[ondown]" />
+					</include>
+					<onclick condition="$PARAM[onclick_condition]">$PARAM[onclick]</onclick>
+					<itemlayout width="240" height="420">
+						<control type="group">
+							<left>30</left>
+							<top>14</top>
+							<include>LumenPosterCard</include>
+						</control>
+					</itemlayout>
+					<focusedlayout width="240" height="420">
+						<control type="group">
+							<left>30</left>
+							<top>14</top>
+							<include content="LumenCardFocus">
+								<param name="cx" value="105" />
+								<param name="cy" value="157" />
+							</include>
+							<include content="LumenPosterCard">
+								<param name="focused" value="Control.HasFocus($PARAM[id])" />
+							</include>
+						</control>
+						<control type="label">
+							<left>10</left>
+							<top>352</top>
+							<width>250</width>
+							<height>40</height>
+							<align>center</align>
+							<font>lm_label_bold</font>
+							<textcolor>text</textcolor>
+							<label>$INFO[ListItem.Label]</label>
+							<visible>Control.HasFocus($PARAM[id])</visible>
+							<animation effect="fade" start="0" end="100" time="220" delay="80">Visible</animation>
+						</control>
+					</focusedlayout>
+					<content target="videos" sortby="$PARAM[sortby]" sortorder="$PARAM[sortorder]" limit="$PARAM[limit]">$PARAM[path]</content>
+				</control>
+			</control>
+		</definition>
+	</include>
+	<include name="LumenLandscapeRow">
+		<param name="sortby">none</param>
+		<param name="sortorder">ascending</param>
+		<param name="limit">25</param>
+		<param name="onclick_condition">false</param>
+		<param name="onclick">noop</param>
+		<param name="fadeout">false</param>
+		<param name="onup">9000</param>
+		<param name="ondown">noop</param>
+		<definition>
+			<control type="group" id="$PARAM[group]">
+				<height>500</height>
+				<visible>Integer.IsGreater(Container($PARAM[id]).NumItems,0) | Container($PARAM[id]).IsUpdating</visible>
+				<animation effect="fade" start="100" end="0" time="300" tween="sine" easing="out" condition="$PARAM[fadeout]">Conditional</animation>
+				<include content="LumenRowHeader">
+					<param name="header" value="$PARAM[header]" />
+				</include>
+				<control type="list" id="$PARAM[id]">
+					<left>80</left>
+					<top>44</top>
+					<width>1840</width>
+					<height>330</height>
+					<include content="LumenRowCommon">
+						<param name="id" value="$PARAM[id]" />
+						<param name="onup" value="$PARAM[onup]" />
+						<param name="ondown" value="$PARAM[ondown]" />
+					</include>
+					<onclick condition="$PARAM[onclick_condition]">$PARAM[onclick]</onclick>
+					<itemlayout width="414" height="330">
+						<control type="group">
+							<left>30</left>
+							<top>14</top>
+							<include content="LumenLandscapeCard">
+								<param name="titlecolor" value="text_dim" />
+							</include>
+						</control>
+					</itemlayout>
+					<focusedlayout width="414" height="330">
+						<control type="group">
+							<left>30</left>
+							<top>14</top>
+							<include content="LumenCardFocus">
+								<param name="cx" value="192" />
+								<param name="cy" value="108" />
+							</include>
+							<include content="LumenLandscapeCard">
+								<param name="focused" value="Control.HasFocus($PARAM[id])" />
+								<param name="titlecolor" value="text" />
+							</include>
+						</control>
+					</focusedlayout>
+					<content target="videos" sortby="$PARAM[sortby]" sortorder="$PARAM[sortorder]" limit="$PARAM[limit]">$PARAM[path]</content>
+				</control>
+			</control>
+		</definition>
+	</include>
+
+	<!-- ============ Variables ============ -->
+	<variable name="LumenLandscapeArt">
+		<value condition="String.IsEqual(ListItem.DBType,episode) + !String.IsEmpty(ListItem.Art(thumb))">$INFO[ListItem.Art(thumb)]</value>
+		<value condition="!String.IsEmpty(ListItem.Art(landscape))">$INFO[ListItem.Art(landscape)]</value>
+		<value condition="!String.IsEmpty(ListItem.Art(fanart))">$INFO[ListItem.Art(fanart)]</value>
+		<value condition="!String.IsEmpty(ListItem.Art(tvshow.landscape))">$INFO[ListItem.Art(tvshow.landscape)]</value>
+		<value condition="!String.IsEmpty(ListItem.Art(tvshow.fanart))">$INFO[ListItem.Art(tvshow.fanart)]</value>
+		<value>$INFO[ListItem.Art(thumb)]</value>
+	</variable>
+	<variable name="LumenPosterArt">
+		<value condition="!String.IsEmpty(ListItem.Art(poster))">$INFO[ListItem.Art(poster)]</value>
+		<value condition="!String.IsEmpty(ListItem.Art(tvshow.poster))">$INFO[ListItem.Art(tvshow.poster)]</value>
+		<value>$INFO[ListItem.Art(thumb)]</value>
+	</variable>
+	<variable name="LumenCardTitle">
+		<value condition="String.IsEqual(ListItem.DBType,episode)">$INFO[ListItem.TVShowTitle]</value>
+		<value>$INFO[ListItem.Label]</value>
+	</variable>
+	<variable name="LumenCardSubtitle">
+		<value condition="String.IsEqual(ListItem.DBType,episode)">$INFO[ListItem.Season,S]$INFO[ListItem.Episode, E]$INFO[ListItem.Title,  ·  ]</value>
+		<value condition="String.IsEqual(ListItem.DBType,tvshow) + Integer.IsGreater(ListItem.Property(UnWatchedEpisodes),0)">$INFO[ListItem.Property(UnWatchedEpisodes),, $LOCALIZE[16101]]</value>
+		<value condition="String.IsEqual(ListItem.DBType,set)">$INFO[ListItem.Property(total),, $LOCALIZE[342]]</value>
+		<value>$INFO[ListItem.Year]$INFO[ListItem.Genre,  ·  ]</value>
+	</variable>
+
+	<!-- ============ Detail page ============ -->
+	<include name="LumenPillButton">
+		<param name="onclick">noop</param>
+		<param name="onclick2">noop</param>
+		<param name="visible">true</param>
+		<definition>
+			<control type="button" id="$PARAM[id]">
+				<width>auto</width>
+				<height>80</height>
+				<label>$PARAM[label]</label>
+				<font>lm_label_bold</font>
+				<textoffsetx>40</textoffsetx>
+				<align>center</align>
+				<aligny>center</aligny>
+				<textcolor>text</textcolor>
+				<focusedcolor>focus_text</focusedcolor>
+				<texturefocus border="32" colordiffuse="FFFFFFFF">lumen/pill.png</texturefocus>
+				<texturenofocus border="32" colordiffuse="2EFFFFFF">lumen/pill.png</texturenofocus>
+				<animation effect="zoom" start="100" end="106" center="auto" time="200" tween="cubic" easing="out" reversible="false">Focus</animation>
+				<animation effect="zoom" start="106" end="100" center="auto" time="200" tween="cubic" easing="out" reversible="false">UnFocus</animation>
+				<onclick>$PARAM[onclick]</onclick>
+				<onclick>$PARAM[onclick2]</onclick>
+				<onup>noop</onup>
+				<ondown>50</ondown>
+				<visible>$PARAM[visible]</visible>
+			</control>
+		</definition>
+	</include>
+	<include name="LumenPillButtonSmall">
+		<param name="visible">true</param>
+		<definition>
+			<control type="button" id="$PARAM[id]">
+				<width>auto</width>
+				<height>60</height>
+				<top>10</top>
+				<label>$PARAM[label]</label>
+				<font>lm_caption_bold</font>
+				<textoffsetx>28</textoffsetx>
+				<align>center</align>
+				<aligny>center</aligny>
+				<textcolor>text_mute</textcolor>
+				<focusedcolor>focus_text</focusedcolor>
+				<texturefocus border="30" colordiffuse="FFFFFFFF">lumen/pill.png</texturefocus>
+				<texturenofocus border="30" colordiffuse="14FFFFFF">lumen/pill.png</texturenofocus>
+				<onup>noop</onup>
+				<ondown>50</ondown>
+				<visible>$PARAM[visible]</visible>
+			</control>
+		</definition>
+	</include>
+	<include name="LumenPersonCard">
+		<param name="focused">false</param>
+		<definition>
+			<control type="group">
+				<left>18</left>
+				<top>14</top>
+				<control type="image">
+					<left>-30</left>
+					<top>-22</top>
+					<width>240</width>
+					<height>240</height>
+					<texture border="52">lumen/shadow_card.png</texture>
+					<visible>$PARAM[focused]</visible>
+				</control>
+				<control type="image">
+					<width>180</width>
+					<height>180</height>
+					<texture colordiffuse="card_bg">lumen/mask_circle.png</texture>
+				</control>
+				<control type="label">
+					<width>180</width>
+					<height>180</height>
+					<align>center</align>
+					<aligny>center</aligny>
+					<font>lm_title_s</font>
+					<textcolor>text_mute</textcolor>
+					<label>$INFO[ListItem.Label,,]</label>
+					<visible>String.IsEmpty(ListItem.Art(thumb))</visible>
+				</control>
+				<control type="image">
+					<top>-5</top>
+					<width>180</width>
+					<height>270</height>
+					<fadetime>200</fadetime>
+					<texture background="true" diffuse="lumen/mask_person.png">$INFO[ListItem.Art(thumb)]</texture>
+				</control>
+				<control type="image">
+					<width>180</width>
+					<height>180</height>
+					<texture colordiffuse="99FFFFFF">lumen/icons/ring.png</texture>
+					<visible>$PARAM[focused]</visible>
+				</control>
+			</control>
+			<control type="label">
+				<left>0</left>
+				<top>212</top>
+				<width>216</width>
+				<height>32</height>
+				<align>center</align>
+				<font>lm_label_bold</font>
+				<textcolor>text</textcolor>
+				<label>$INFO[ListItem.Label]</label>
+			</control>
+			<control type="label">
+				<left>0</left>
+				<top>244</top>
+				<width>216</width>
+				<height>28</height>
+				<align>center</align>
+				<font>lm_caption</font>
+				<textcolor>text_mute</textcolor>
+				<label>$INFO[ListItem.Label2]</label>
+			</control>
+		</definition>
+	</include>
+	<variable name="LumenInfoFanart">
+		<value condition="!String.IsEmpty(ListItem.Art(fanart))">$INFO[ListItem.Art(fanart)]</value>
+		<value>$INFO[ListItem.Art(tvshow.fanart)]</value>
+	</variable>
+	<variable name="LumenInfoLogo">
+		<value condition="!String.IsEmpty(ListItem.Art(clearlogo))">$INFO[ListItem.Art(clearlogo)]</value>
+		<value>$INFO[ListItem.Art(tvshow.clearlogo)]</value>
+	</variable>
+	<variable name="LumenInfoTitle">
+		<value condition="String.IsEqual(ListItem.DBType,episode) | String.IsEqual(ListItem.DBType,season)">$INFO[ListItem.TVShowTitle]</value>
+		<value>$INFO[ListItem.Title]</value>
+	</variable>
+	<variable name="LumenInfoSubtitle">
+		<value condition="String.IsEqual(ListItem.DBType,movie)">$INFO[ListItem.Tagline]</value>
+		<value condition="String.IsEqual(ListItem.DBType,season)">$INFO[ListItem.Label]</value>
+	</variable>
+	<variable name="LumenInfoPlayLabel">
+		<value condition="String.IsEqual(ListItem.DBType,tvshow) | String.IsEqual(ListItem.DBType,season) | String.IsEqual(ListItem.DBType,set)">$LOCALIZE[1024]</value>
+		<value condition="ListItem.IsResumable">Resume</value>
+		<value>$LOCALIZE[208]</value>
+	</variable>
+	<variable name="LumenInfoPlayIcon">
+		<value condition="String.IsEqual(ListItem.DBType,tvshow) | String.IsEqual(ListItem.DBType,season) | String.IsEqual(ListItem.DBType,set)">lumen/icons/chevron_right.png</value>
+		<value>lumen/icons/play.png</value>
+	</variable>
+	<variable name="LumenInfoRowHeader">
+		<value condition="String.IsEqual(ListItem.DBType,set)">$LOCALIZE[342]</value>
+		<value>Cast &amp; Crew</value>
+	</variable>
+	<variable name="LumenResolutionLabel">
+		<value condition="String.IsEqual(ListItem.VideoResolution,4K)">4K</value>
+		<value condition="String.IsEqual(ListItem.VideoResolution,8K)">8K</value>
+		<value condition="String.IsEqual(ListItem.VideoResolution,1080) | String.IsEqual(ListItem.VideoResolution,720) | String.IsEqual(ListItem.VideoResolution,576) | String.IsEqual(ListItem.VideoResolution,480)">$INFO[ListItem.VideoResolution]p</value>
+		<value>$INFO[ListItem.VideoResolution]</value>
+	</variable>
+	<variable name="LumenHdrLabel">
+		<value condition="String.IsEqual(ListItem.HdrType,dolbyvision)">  ·  Dolby Vision</value>
+		<value condition="String.IsEqual(ListItem.HdrType,hdr10)">  ·  HDR10</value>
+		<value condition="String.IsEqual(ListItem.HdrType,hlg)">  ·  HLG</value>
+	</variable>
+	<variable name="LumenAudioCodecLabel">
+		<value condition="String.IsEqual(ListItem.AudioCodec,dtshd_ma) | String.IsEqual(ListItem.AudioCodec,dtsma)">DTS-HD MA</value>
+		<value condition="String.IsEqual(ListItem.AudioCodec,dtshd_hra)">DTS-HD HRA</value>
+		<value condition="String.IsEqual(ListItem.AudioCodec,dca) | String.IsEqual(ListItem.AudioCodec,dts)">DTS</value>
+		<value condition="String.IsEqual(ListItem.AudioCodec,truehd)">Dolby TrueHD</value>
+		<value condition="String.IsEqual(ListItem.AudioCodec,eac3)">Dolby Digital+</value>
+		<value condition="String.IsEqual(ListItem.AudioCodec,ac3)">Dolby Digital</value>
+		<value>[UPPERCASE]$INFO[ListItem.AudioCodec][/UPPERCASE]</value>
+	</variable>
+	<variable name="LumenChannelsLabel">
+		<value condition="String.IsEqual(ListItem.AudioChannels,8)"> 7.1</value>
+		<value condition="String.IsEqual(ListItem.AudioChannels,6)"> 5.1</value>
+		<value condition="String.IsEqual(ListItem.AudioChannels,2)"> Stereo</value>
+		<value condition="String.IsEqual(ListItem.AudioChannels,1)"> Mono</value>
+	</variable>
+	<variable name="LumenInfoVideoLine">
+		<value condition="!String.IsEmpty(ListItem.VideoCodec)">Video   $VAR[LumenResolutionLabel]$INFO[ListItem.VideoCodec,  ·  [UPPERCASE],[/UPPERCASE]]$VAR[LumenHdrLabel]</value>
+	</variable>
+	<variable name="LumenInfoAudioLine">
+		<value condition="!String.IsEmpty(ListItem.AudioCodec)">Audio   $VAR[LumenAudioCodecLabel]$VAR[LumenChannelsLabel]$INFO[ListItem.AudioLanguage,  ·  [UPPERCASE],[/UPPERCASE]]</value>
+	</variable>
+
+	<!-- ============ Player ============ -->
+	<include name="LumenOSDButton">
+		<param name="icon_on">$PARAM[icon]</param>
+		<param name="selected">false</param>
+		<param name="onclick2">noop</param>
+		<param name="onclick3">noop</param>
+		<param name="visible">true</param>
+		<definition>
+			<control type="radiobutton" id="$PARAM[id]">
+				<top>10</top>
+				<width>84</width>
+				<height>84</height>
+				<label></label>
+				<font></font>
+				<radiowidth>36</radiowidth>
+				<radioheight>36</radioheight>
+				<radioposx>24</radioposx>
+				<radioposy>24</radioposy>
+				<texturefocus colordiffuse="FFFFFFFF">lumen/dot.png</texturefocus>
+				<texturenofocus colordiffuse="2EFFFFFF">lumen/dot.png</texturenofocus>
+				<textureradioonfocus colordiffuse="focus_text">$PARAM[icon_on]</textureradioonfocus>
+				<textureradioofffocus colordiffuse="focus_text">$PARAM[icon]</textureradioofffocus>
+				<textureradioonnofocus colordiffuse="text">$PARAM[icon_on]</textureradioonnofocus>
+				<textureradiooffnofocus colordiffuse="text">$PARAM[icon]</textureradiooffnofocus>
+				<textureradioondisabled colordiffuse="disabled">$PARAM[icon_on]</textureradioondisabled>
+				<textureradiooffdisabled colordiffuse="disabled">$PARAM[icon]</textureradiooffdisabled>
+				<animation effect="zoom" start="100" end="112" center="auto" time="200" tween="cubic" easing="out" reversible="false">Focus</animation>
+				<animation effect="zoom" start="112" end="100" center="auto" time="200" tween="cubic" easing="out" reversible="false">UnFocus</animation>
+				<selected>$PARAM[selected]</selected>
+				<onclick>$PARAM[onclick]</onclick>
+				<onclick>$PARAM[onclick2]</onclick>
+				<onclick>$PARAM[onclick3]</onclick>
+				<visible>$PARAM[visible]</visible>
+			</control>
+		</definition>
+	</include>
+	<variable name="LumenOSDPlayIcon">
+		<value condition="Player.Playing">osd/fullscreen/buttons/pause.png</value>
+		<value>osd/fullscreen/buttons/play.png</value>
+	</variable>
+	<variable name="LumenPlayerLogo">
+		<value condition="!String.IsEmpty(Player.Art(clearlogo))">$INFO[Player.Art(clearlogo)]</value>
+		<value>$INFO[Player.Art(tvshow.clearlogo)]</value>
+	</variable>
+	<variable name="LumenPlayerTitle">
+		<value condition="!String.IsEmpty(VideoPlayer.TVShowTitle)">$INFO[VideoPlayer.TVShowTitle]</value>
+		<value condition="!String.IsEmpty(VideoPlayer.Title)">$INFO[VideoPlayer.Title]</value>
+		<value>$INFO[Player.Title]</value>
+	</variable>
+	<variable name="LumenPlayerSubtitle">
+		<value condition="!String.IsEmpty(VideoPlayer.TVShowTitle)">$INFO[VideoPlayer.Season,S]$INFO[VideoPlayer.Episode, E]$INFO[VideoPlayer.Title,  ·  ]</value>
+		<value condition="!String.IsEmpty(Player.Art(clearlogo))">$INFO[VideoPlayer.Year]</value>
+		<value>$INFO[VideoPlayer.Year]$INFO[VideoPlayer.Genre,  ·  ]</value>
+	</variable>
+	<variable name="LumenPlayerResSuffix">
+		<value condition="String.IsEqual(VideoPlayer.VideoResolution,1080) | String.IsEqual(VideoPlayer.VideoResolution,720) | String.IsEqual(VideoPlayer.VideoResolution,576) | String.IsEqual(VideoPlayer.VideoResolution,480)">p</value>
+	</variable>
+	<variable name="LumenPlayerHdr">
+		<value condition="String.IsEqual(VideoPlayer.HdrType,dolbyvision)">DOLBY VISION</value>
+		<value condition="String.IsEqual(VideoPlayer.HdrType,hdr10)">HDR10</value>
+		<value condition="String.IsEqual(VideoPlayer.HdrType,hlg)">HLG</value>
+		<value>[UPPERCASE]$INFO[VideoPlayer.HdrType][/UPPERCASE]</value>
+	</variable>
+	<variable name="LumenPlayerChannels">
+		<value condition="String.IsEqual(VideoPlayer.AudioChannels,8)"> 7.1</value>
+		<value condition="String.IsEqual(VideoPlayer.AudioChannels,6)"> 5.1</value>
+		<value condition="String.IsEqual(VideoPlayer.AudioChannels,2)"> 2.0</value>
+	</variable>
+	<variable name="LumenPlayerStateIcon">
+		<value condition="Player.Paused">lumen/icons/pause.png</value>
+		<value condition="Player.Rewinding">osd/fullscreen/buttons/rewind.png</value>
+		<value condition="Player.Forwarding">osd/fullscreen/buttons/forward.png</value>
+		<value>lumen/icons/play.png</value>
+	</variable>
+	<variable name="LumenPlayerStateLabel">
+		<value condition="Player.Paused">Paused</value>
+		<value condition="Player.Forwarding | Player.Rewinding">$INFO[Player.PlaySpeed,,×]</value>
+	</variable>
+	<variable name="LumenPlayerElapsed">
+		<value condition="Player.Seeking | !String.IsEmpty(Player.SeekNumeric)">$INFO[Player.SeekTime]</value>
+		<value>$INFO[Player.Time]</value>
+	</variable>
+	<variable name="LumenSkinSettingHelp">
+		<value condition="Control.HasFocus(901)">Slowly zooms the backdrop on Home, library and detail pages.[CR][CR]Looks great, but the whole screen redraws every frame: on a Raspberry Pi menus drop to about half the frame rate. Off by default.</value>
+	</variable>
+</includes>

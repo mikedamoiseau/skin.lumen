@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Lumen Favourites: glass tiles (500) or the Lumen list (50). -->
+<window>
+	<defaultcontrol always="true">500</defaultcontrol>
+	<backgroundcolor>background</backgroundcolor>
+	<views>500,50</views>
+	<menucontrol>9000</menucontrol>
+	<controls>
+		<include>DefaultBackground</include>
+		<control type="group">
+			<animation effect="fade" start="100" end="0" time="200" tween="sine" condition="$EXP[infodialog_active]">Conditional</animation>
+			<control type="group">
+				<include>LumenFadeInWindow</include>
+				<control type="label">
+					<left>lm_margin</left>
+					<top>52</top>
+					<width>1100</width>
+					<height>66</height>
+					<font>lm_title</font>
+					<textcolor>text</textcolor>
+					<label>$LOCALIZE[1036]</label>
+				</control>
+				<control type="label">
+					<left>lm_margin</left>
+					<top>118</top>
+					<width>1100</width>
+					<height>36</height>
+					<font>lm_caption</font>
+					<textcolor>text_mute</textcolor>
+					<label>$INFO[Container.NumItems,, items]</label>
+				</control>
+			</control>
+			<include>LumenClock</include>
+			<control type="panel" id="500">
+				<left>84</left>
+				<top>180</top>
+				<width>1760</width>
+				<height>880</height>
+				<onleft>9000</onleft>
+				<onright>noop</onright>
+				<onup>noop</onup>
+				<ondown>noop</ondown>
+				<scrolltime tween="cubic" easing="out">320</scrolltime>
+				<viewtype label="Tiles">icon</viewtype>
+				<include>LumenRiseIn</include>
+				<itemlayout width="352" height="300">
+					<include content="LumenFavTile" />
+				</itemlayout>
+				<focusedlayout width="352" height="300">
+					<control type="group">
+						<include content="LumenCardFocus">
+							<param name="cx" value="176" />
+							<param name="cy" value="140" />
+						</include>
+						<include content="LumenFavTile">
+							<param name="focused" value="Control.HasFocus(500)" />
+						</include>
+					</control>
+				</focusedlayout>
+			</control>
+			<include>View_Lumen_List</include>
+			<include>MediaMenuMouseOverlay</include>
+			<control type="group">
+				<include>MediaMenuCommon</include>
+				<control type="grouplist" id="9000">
+					<top>50</top>
+					<include>MediaMenuListCommon</include>
+					<include>MediaMenuNowPlaying</include>
+				</control>
+			</control>
+		</control>
+	</controls>
+</window>
