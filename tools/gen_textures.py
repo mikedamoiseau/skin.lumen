@@ -208,6 +208,18 @@ def power_icon(size=64, stroke=6):
     return down(img, size, size)
 
 
+def moon_icon(size=64):
+    """Filled crescent (sleep timer): a disc with an offset disc cut out."""
+    big = size * S
+    img = Image.new("RGBA", (big, big), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    c, r = 0.5 * big, 0.36 * big
+    d.ellipse([c - r, c - r, c + r, c + r], fill=WHITE + (255,))
+    ox, oy, r2 = c + 0.2 * big, c - 0.16 * big, 0.3 * big
+    d.ellipse([ox - r2, oy - r2, ox + r2, oy + r2], fill=(0, 0, 0, 0))
+    return down(img, size, size)
+
+
 def toggle(on, w=120, h=76):
     """iOS-style switch, drawn inside Estuary's radio button box (120x76)."""
     tw, th = 84, 48
@@ -345,6 +357,7 @@ def main():
     out(f"{L}icons/ring.png", ring())
     out(f"{L}icons/search.png", search_icon())
     out(f"{L}icons/power.png", power_icon())
+    out(f"{L}icons/moon.png", moon_icon())
 
     # --- Estuary overrides: restyle every legacy window through shared textures ---
     out("buttons/button-fo.png", rr(80, 80, 16, fill=(255, 255, 255, 62), stroke=(255, 255, 255, 150), stroke_w=2, inset=2))

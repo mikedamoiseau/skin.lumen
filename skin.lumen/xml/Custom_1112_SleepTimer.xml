@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Lumen sleep timer (player OSD): stops playback after N minutes with its own alarm, not Kodi's shutdowntimer -->
+<window type="dialog" id="1112">
+	<defaultcontrol always="true">9000</defaultcontrol>
+	<include>Animation_DialogPopupOpenClose</include>
+	<depth>DepthOSD+</depth>
+	<controls>
+		<control type="group">
+			<centerleft>50%</centerleft>
+			<width>560</width>
+			<centertop>50%</centertop>
+			<height>580</height>
+			<include content="DialogBackgroundCommons">
+				<param name="width" value="560" />
+				<param name="height" value="580" />
+				<param name="header_label" value="Sleep timer" />
+				<param name="header_id" value="" />
+			</include>
+			<control type="label">
+				<left>40</left>
+				<top>66</top>
+				<width>480</width>
+				<height>34</height>
+				<font>lm_caption</font>
+				<textcolor>text_mute</textcolor>
+				<label>$VAR[LumenSleepStatus]</label>
+			</control>
+			<control type="grouplist" id="9000">
+				<left>40</left>
+				<top>120</top>
+				<width>480</width>
+				<height>420</height>
+				<orientation>vertical</orientation>
+				<itemgap>10</itemgap>
+				<onleft>noop</onleft>
+				<onright>noop</onright>
+				<include content="LumenSleepOption">
+					<param name="id" value="10" />
+					<param name="label" value="Off" />
+					<param name="selected" value="!System.HasAlarm(lumensleep)" />
+					<param name="onclick" value="CancelAlarm(lumensleep,silent)" />
+					<param name="onclick2" value="ClearProperty(lumen.sleep,home)" />
+				</include>
+				<include content="LumenSleepMinutes">
+					<param name="minutes" value="15" />
+				</include>
+				<include content="LumenSleepMinutes">
+					<param name="minutes" value="30" />
+				</include>
+				<include content="LumenSleepMinutes">
+					<param name="minutes" value="60" />
+				</include>
+				<include content="LumenSleepMinutes">
+					<param name="minutes" value="90" />
+				</include>
+			</control>
+		</control>
+	</controls>
+</window>

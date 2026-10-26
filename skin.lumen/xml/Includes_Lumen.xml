@@ -1120,6 +1120,80 @@
 		<value condition="Control.HasFocus(5203)">$INFO[Container(5203).ListItem.Art(fanart)]</value>
 	</variable>
 
+	<!-- ============ Sleep timer (Custom_1112_SleepTimer.xml) ============ -->
+	<include name="LumenSleepOption">
+		<param name="onclick2">noop</param>
+		<definition>
+			<control type="radiobutton" id="$PARAM[id]">
+				<width>480</width>
+				<height>72</height>
+				<label>$PARAM[label]</label>
+				<font>lm_label_bold</font>
+				<textoffsetx>32</textoffsetx>
+				<aligny>center</aligny>
+				<textcolor>text</textcolor>
+				<focusedcolor>focus_text</focusedcolor>
+				<texturefocus border="32" colordiffuse="FFFFFFFF">lumen/pill.png</texturefocus>
+				<texturenofocus border="32" colordiffuse="14FFFFFF">lumen/pill.png</texturenofocus>
+				<radioposx>420</radioposx>
+				<radioposy>22</radioposy>
+				<radiowidth>28</radiowidth>
+				<radioheight>28</radioheight>
+				<textureradioonfocus colordiffuse="focus_text">lumen/icons/check.png</textureradioonfocus>
+				<textureradioonnofocus colordiffuse="text">lumen/icons/check.png</textureradioonnofocus>
+				<textureradioofffocus />
+				<textureradiooffnofocus />
+				<selected>$PARAM[selected]</selected>
+				<onclick>$PARAM[onclick]</onclick>
+				<onclick>$PARAM[onclick2]</onclick>
+				<onclick>Dialog.Close(1112)</onclick>
+			</control>
+		</definition>
+	</include>
+	<include name="LumenSleepMinutes">
+		<definition>
+			<include content="LumenSleepOption">
+				<param name="id" value="$PARAM[minutes]" />
+				<param name="label" value="$PARAM[minutes] min" />
+				<param name="selected" value="System.HasAlarm(lumensleep) + String.IsEqual(Window(home).Property(lumen.sleep),$PARAM[minutes])" />
+				<param name="onclick" value="AlarmClock(lumensleep,PlayerControl(Stop),$PARAM[minutes],silent)" />
+				<param name="onclick2" value="SetProperty(lumen.sleep,$PARAM[minutes],home)" />
+			</include>
+		</definition>
+	</include>
+	<!-- Kodi only answers "<= n seconds" for a custom alarm, so round up to 5-minute steps -->
+	<variable name="LumenSleepLeft">
+		<value condition="System.AlarmLessOrEqual(lumensleep,60)">1 min</value>
+		<value condition="System.AlarmLessOrEqual(lumensleep,120)">2 min</value>
+		<value condition="System.AlarmLessOrEqual(lumensleep,180)">3 min</value>
+		<value condition="System.AlarmLessOrEqual(lumensleep,240)">4 min</value>
+		<value condition="System.AlarmLessOrEqual(lumensleep,300)">5 min</value>
+		<value condition="System.AlarmLessOrEqual(lumensleep,600)">10 min</value>
+		<value condition="System.AlarmLessOrEqual(lumensleep,900)">15 min</value>
+		<value condition="System.AlarmLessOrEqual(lumensleep,1200)">20 min</value>
+		<value condition="System.AlarmLessOrEqual(lumensleep,1500)">25 min</value>
+		<value condition="System.AlarmLessOrEqual(lumensleep,1800)">30 min</value>
+		<value condition="System.AlarmLessOrEqual(lumensleep,2100)">35 min</value>
+		<value condition="System.AlarmLessOrEqual(lumensleep,2400)">40 min</value>
+		<value condition="System.AlarmLessOrEqual(lumensleep,2700)">45 min</value>
+		<value condition="System.AlarmLessOrEqual(lumensleep,3000)">50 min</value>
+		<value condition="System.AlarmLessOrEqual(lumensleep,3300)">55 min</value>
+		<value condition="System.AlarmLessOrEqual(lumensleep,3600)">60 min</value>
+		<value condition="System.AlarmLessOrEqual(lumensleep,3900)">65 min</value>
+		<value condition="System.AlarmLessOrEqual(lumensleep,4200)">70 min</value>
+		<value condition="System.AlarmLessOrEqual(lumensleep,4500)">75 min</value>
+		<value condition="System.AlarmLessOrEqual(lumensleep,4800)">80 min</value>
+		<value condition="System.AlarmLessOrEqual(lumensleep,5100)">85 min</value>
+		<value>90 min</value>
+	</variable>
+	<variable name="LumenSleepStatus">
+		<value condition="System.HasAlarm(lumensleep)">Playback stops in $VAR[LumenSleepLeft]</value>
+		<value>Stop playback after a while</value>
+	</variable>
+	<variable name="LumenSleepSuffix">
+		<value condition="System.HasAlarm(lumensleep)">  ·  Sleep in $VAR[LumenSleepLeft]</value>
+	</variable>
+
 	<!-- ============ Player ============ -->
 	<include name="LumenOSDButton">
 		<param name="icon_on">$PARAM[icon]</param>

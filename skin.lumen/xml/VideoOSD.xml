@@ -16,7 +16,7 @@
 			<onclick>Action(close)</onclick>
 		</control>
 		<control type="group">
-			<visible>![Window.IsVisible(SliderDialog) | Window.IsVisible(1110) | Window.IsVisible(osdaudiosettings) | Window.IsVisible(osdvideosettings) | Window.IsVisible(osdsubtitlesettings) | Window.IsVisible(VideoBookmarks) | Window.IsVisible(playerprocessinfo) | Window.IsVisible(osdcmssettings) | Window.IsVisible(PVROSDChannels) | Window.IsVisible(pvrchannelguide) | Window.IsVisible(1101)]</visible>
+			<visible>![Window.IsVisible(SliderDialog) | Window.IsVisible(1110) | Window.IsVisible(osdaudiosettings) | Window.IsVisible(osdvideosettings) | Window.IsVisible(osdsubtitlesettings) | Window.IsVisible(VideoBookmarks) | Window.IsVisible(playerprocessinfo) | Window.IsVisible(osdcmssettings) | Window.IsVisible(PVROSDChannels) | Window.IsVisible(pvrchannelguide) | Window.IsVisible(1101) | Window.IsVisible(1112)]</visible>
 			<animation effect="fade" time="200">VisibleChange</animation>
 			<animation type="WindowOpen" reversible="false">
 				<effect type="fade" start="0" end="100" time="260" />
@@ -124,6 +124,11 @@
 					<param name="icon" value="osd/fullscreen/buttons/home.png" />
 					<param name="onclick" value="PlayerControl(ShowVideoMenu)" />
 					<param name="visible" value="VideoPlayer.HasMenu" />
+				</include>
+				<include content="LumenOSDButton">
+					<param name="id" value="70060" />
+					<param name="icon" value="lumen/icons/moon.png" />
+					<param name="onclick" value="ActivateWindow(1112)" />
 				</include>
 				<include content="LumenOSDButton">
 					<param name="id" value="70043" />

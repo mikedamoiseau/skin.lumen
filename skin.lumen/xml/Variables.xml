@@ -346,6 +346,7 @@
 		<value condition="Control.HasFocus(70047)">$LOCALIZE[36501]</value>
 		<value condition="Control.HasFocus(70048)">$LOCALIZE[5]</value>
 		<value condition="Control.HasFocus(70050)">$LOCALIZE[29900]</value>
+		<value condition="Control.HasFocus(70060)">Sleep timer</value>
 		<value condition="Control.HasFocus(70051)">$LOCALIZE[31066]</value>
 		<value condition="Control.HasFocus(70052)">$LOCALIZE[31033]$INFO[MusicPlayer.UserRating, : ]</value>
 		<value condition="Control.HasFocus(70053)">$LOCALIZE[486]$INFO[Playlist.Repeat, : ]</value>
