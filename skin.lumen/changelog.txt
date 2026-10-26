@@ -1,2 +1,5 @@
+[B]0.1.1[/B]
+• Power button at the end of the Home tab bar: opens Kodi's power menu (Exit, Power off, Reboot… depending on the device).
+
 [B]0.1.0[/B]
 • First release: Infuse-style Home with docking rows, poster/landscape library views, cinematic detail page, minimal player overlay and OSD, glass dialogs. Built on Estuary (Kodi 21 Omega).

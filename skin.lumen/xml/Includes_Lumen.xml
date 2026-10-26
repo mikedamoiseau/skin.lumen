@@ -156,6 +156,26 @@
 						<param name="onclick" value="ActivateWindow(settings)" />
 						<param name="visible" value="true" />
 					</include>
+					<!-- power: icon-only, opens Kodi's power menu (items depend on the platform) -->
+					<control type="radiobutton" id="18">
+						<width>60</width>
+						<height>60</height>
+						<label>$LOCALIZE[33060]</label>
+						<font></font>
+						<texturefocus border="30" colordiffuse="FFFFFFFF">lumen/pill.png</texturefocus>
+						<texturenofocus />
+						<radioposx>14</radioposx>
+						<radioposy>14</radioposy>
+						<radiowidth>32</radiowidth>
+						<radioheight>32</radioheight>
+						<textureradioonfocus colordiffuse="focus_text">lumen/icons/power.png</textureradioonfocus>
+						<textureradioofffocus colordiffuse="focus_text">lumen/icons/power.png</textureradioofffocus>
+						<textureradioonnofocus colordiffuse="text_dim">lumen/icons/power.png</textureradioonnofocus>
+						<textureradiooffnofocus colordiffuse="text_dim">lumen/icons/power.png</textureradiooffnofocus>
+						<animation effect="zoom" start="100" end="106" center="auto" time="200" tween="cubic" easing="out" reversible="false">Focus</animation>
+						<animation effect="zoom" start="106" end="100" center="auto" time="200" tween="cubic" easing="out" reversible="false">UnFocus</animation>
+						<onclick>ActivateWindow(shutdownmenu)</onclick>
+					</control>
 				</control>
 			</control>
 		</definition>

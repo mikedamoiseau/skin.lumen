@@ -189,6 +189,25 @@ def search_icon(size=64, stroke=6):
     return down(img, size, size)
 
 
+def power_icon(size=64, stroke=6):
+    big = size * S
+    img = Image.new("RGBA", (big, big), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    cx, cy, r = 0.5 * big, 0.54 * big, 0.3 * big
+    gap = 38  # degrees either side of 12 o'clock
+    d.arc([cx - r, cy - r, cx + r, cy + r], start=-90 + gap, end=270 - gap, fill=WHITE + (255,), width=stroke * S)
+    cap = stroke * S / 2
+    rm = r - cap  # arc centreline radius
+    for ang in (-90 + gap, 270 - gap):
+        x, y = cx + rm * math.cos(math.radians(ang)), cy + rm * math.sin(math.radians(ang))
+        d.ellipse([x - cap, y - cap, x + cap, y + cap], fill=WHITE + (255,))
+    top, bottom = 0.12 * big, 0.5 * big
+    d.line([(cx, top), (cx, bottom)], fill=WHITE + (255,), width=stroke * S)
+    for y in (top, bottom):
+        d.ellipse([cx - cap, y - cap, cx + cap, y + cap], fill=WHITE + (255,))
+    return down(img, size, size)
+
+
 def toggle(on, w=120, h=76):
     """iOS-style switch, drawn inside Estuary's radio button box (120x76)."""
     tw, th = 84, 48
@@ -325,6 +344,7 @@ def main():
     out(f"{L}icons/chevron_up.png", chevron(direction="up"))
     out(f"{L}icons/ring.png", ring())
     out(f"{L}icons/search.png", search_icon())
+    out(f"{L}icons/power.png", power_icon())
 
     # --- Estuary overrides: restyle every legacy window through shared textures ---
     out("buttons/button-fo.png", rr(80, 80, 16, fill=(255, 255, 255, 62), stroke=(255, 255, 255, 150), stroke_w=2, inset=2))
