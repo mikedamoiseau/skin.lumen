@@ -31,6 +31,41 @@
 		<value>$INFO[ListItem.Label2]</value>
 	</variable>
 
+	<!-- show page (seasons of a show, or a show's episodes) -->
+	<expression name="LumenShowPage">Container.Content(seasons) | [Container.Content(episodes) + [String.StartsWith(Container.FolderPath,videodb://tvshows/titles/) | String.StartsWith(Container.FolderPath,videodb://inprogresstvshows/)]]</expression>
+	<expression name="LumenNextLastPlayed">Integer.IsGreater(Container(5110).NumItems,0) + String.IsEqual(Container(5110).ListItem.TvShowDBID,ListItem.TvShowDBID) + [Container(5110).ListItem.IsResumable | !Integer.IsGreater(Container(5110).ListItem.PlayCount,0)]</expression>
+	<expression name="LumenNextAfterLast">Integer.IsGreater(Container(5110).NumItems,0) + String.IsEqual(Container(5110).ListItem.TvShowDBID,ListItem.TvShowDBID) + !$EXP[LumenNextLastPlayed] + Integer.IsGreater(Container(5111).NumItems,0) + String.IsEqual(Container(5111).ListItem.TvShowDBID,ListItem.TvShowDBID)</expression>
+	<expression name="LumenNextFirstUnwatched">![Integer.IsGreater(Container(5110).NumItems,0) + String.IsEqual(Container(5110).ListItem.TvShowDBID,ListItem.TvShowDBID)] + Integer.IsGreater(Container(5112).NumItems,0) + String.IsEqual(Container(5112).ListItem.TvShowDBID,ListItem.TvShowDBID)</expression>
+	<expression name="LumenNextWatchAgain">!$EXP[LumenNextLastPlayed] + !$EXP[LumenNextAfterLast] + !$EXP[LumenNextFirstUnwatched] + Integer.IsGreater(Container(5113).NumItems,0) + String.IsEqual(Container(5113).ListItem.TvShowDBID,ListItem.TvShowDBID)</expression>
+	<!-- no show id (an empty show, or not a show page) = no path; "titles//-1/" would list every episode -->
+	<variable name="LumenLastPlayedPath">
+		<value condition="!String.IsEmpty(ListItem.TvShowDBID)">videodb://tvshows/titles/$INFO[ListItem.TvShowDBID]/-1/?xsp=%7B%22type%22%3A%22episodes%22%2C%22rules%22%3A%7B%22and%22%3A%5B%7B%22field%22%3A%22season%22%2C%22operator%22%3A%22greaterthan%22%2C%22value%22%3A%5B%220%22%5D%7D%2C%7B%22field%22%3A%22lastplayed%22%2C%22operator%22%3A%22after%22%2C%22value%22%3A%5B%221900-01-01%22%5D%7D%5D%7D%2C%22order%22%3A%7B%22method%22%3A%22lastplayed%22%2C%22direction%22%3A%22descending%22%7D%2C%22limit%22%3A1%7D</value>
+	</variable>
+	<variable name="LumenAfterLastPath">
+		<value condition="!String.IsEmpty(ListItem.TvShowDBID)">videodb://tvshows/titles/$INFO[ListItem.TvShowDBID]/-1/?xsp=%7B%22type%22%3A%22episodes%22%2C%22rules%22%3A%7B%22and%22%3A%5B%7B%22field%22%3A%22season%22%2C%22operator%22%3A%22greaterthan%22%2C%22value%22%3A%5B%220%22%5D%7D%2C%7B%22field%22%3A%22playcount%22%2C%22operator%22%3A%22is%22%2C%22value%22%3A%5B%220%22%5D%7D%2C%7B%22or%22%3A%5B%7B%22field%22%3A%22season%22%2C%22operator%22%3A%22greaterthan%22%2C%22value%22%3A%5B%22$INFO[Container(5110).ListItem.Season]%22%5D%7D%2C%7B%22and%22%3A%5B%7B%22field%22%3A%22season%22%2C%22operator%22%3A%22is%22%2C%22value%22%3A%5B%22$INFO[Container(5110).ListItem.Season]%22%5D%7D%2C%7B%22field%22%3A%22episode%22%2C%22operator%22%3A%22greaterthan%22%2C%22value%22%3A%5B%22$INFO[Container(5110).ListItem.Episode]%22%5D%7D%5D%7D%5D%7D%5D%7D%2C%22order%22%3A%7B%22method%22%3A%22episode%22%2C%22direction%22%3A%22ascending%22%7D%2C%22limit%22%3A1%7D</value>
+	</variable>
+	<variable name="LumenFirstUnwatchedPath">
+		<value condition="!String.IsEmpty(ListItem.TvShowDBID)">videodb://tvshows/titles/$INFO[ListItem.TvShowDBID]/-1/?xsp=%7B%22type%22%3A%22episodes%22%2C%22rules%22%3A%7B%22and%22%3A%5B%7B%22field%22%3A%22season%22%2C%22operator%22%3A%22greaterthan%22%2C%22value%22%3A%5B%220%22%5D%7D%2C%7B%22field%22%3A%22playcount%22%2C%22operator%22%3A%22is%22%2C%22value%22%3A%5B%220%22%5D%7D%5D%7D%2C%22order%22%3A%7B%22method%22%3A%22episode%22%2C%22direction%22%3A%22ascending%22%7D%2C%22limit%22%3A1%7D</value>
+	</variable>
+	<variable name="LumenFirstEpisodePath">
+		<value condition="!String.IsEmpty(ListItem.TvShowDBID)">videodb://tvshows/titles/$INFO[ListItem.TvShowDBID]/-1/?xsp=%7B%22type%22%3A%22episodes%22%2C%22rules%22%3A%7B%22and%22%3A%5B%7B%22field%22%3A%22season%22%2C%22operator%22%3A%22greaterthan%22%2C%22value%22%3A%5B%220%22%5D%7D%5D%7D%2C%22order%22%3A%7B%22method%22%3A%22episode%22%2C%22direction%22%3A%22ascending%22%7D%2C%22limit%22%3A1%7D</value>
+	</variable>
+	<variable name="LumenNextLabel">
+		<value condition="$EXP[LumenNextLastPlayed] + Container(5110).ListItem.IsResumable">Resume S$INFO[Container(5110).ListItem.Season] E$INFO[Container(5110).ListItem.Episode]</value>
+		<value condition="$EXP[LumenNextLastPlayed]">Play S$INFO[Container(5110).ListItem.Season] E$INFO[Container(5110).ListItem.Episode]</value>
+		<value condition="$EXP[LumenNextAfterLast]">Play S$INFO[Container(5111).ListItem.Season] E$INFO[Container(5111).ListItem.Episode]</value>
+		<value condition="$EXP[LumenNextFirstUnwatched]">Play S$INFO[Container(5112).ListItem.Season] E$INFO[Container(5112).ListItem.Episode]</value>
+		<value condition="$EXP[LumenNextWatchAgain]">Watch again</value>
+		<value condition="!Container(5113).IsUpdating">No episodes</value>
+		<value>$LOCALIZE[208]</value>
+	</variable>
+	<variable name="LumenNextCaption">
+		<value condition="$EXP[LumenNextLastPlayed]">$INFO[Container(5110).ListItem.Title]</value>
+		<value condition="$EXP[LumenNextAfterLast]">$INFO[Container(5111).ListItem.Title]</value>
+		<value condition="$EXP[LumenNextFirstUnwatched]">$INFO[Container(5112).ListItem.Title]</value>
+		<value condition="$EXP[LumenNextWatchAgain]">You're all caught up · S$INFO[Container(5113).ListItem.Season] E$INFO[Container(5113).ListItem.Episode]  $INFO[Container(5113).ListItem.Title]</value>
+	</variable>
+
 	<!-- Header used by the grid / list views -->
 	<include name="LumenLibraryHeader">
 		<control type="group">
@@ -119,13 +154,35 @@
 		</control>
 	</include>
 
-	<!-- 501 / 502: showcase — hero for the focused item + one row -->
+	<!-- a hidden 1x1 list used as a lookup -->
+	<include name="LumenNextLookup">
+		<definition>
+			<control type="list" id="$PARAM[id]">
+				<left>-20</left>
+				<top>-20</top>
+				<width>1</width>
+				<height>1</height>
+				<itemlayout width="1" height="1" />
+				<focusedlayout width="1" height="1" />
+				<content target="videos">$PARAM[path]</content>
+			</control>
+		</definition>
+	</include>
+
+	<!-- 501 / 502: showcase — hero for the focused item + one row; a show page adds Play, season tabs, episodes -->
 	<include name="View_Lumen_Showcase">
 		<control type="group">
-			<visible>Control.IsVisible(501) | Control.IsVisible(502)</visible>
+			<visible>[Control.IsVisible(501) | Control.IsVisible(502)] + !$EXP[LumenShowPage]</visible>
 			<include content="LumenHero">
 				<param name="item" value="ListItem" />
 				<param name="top" value="150" />
+			</include>
+		</control>
+		<control type="group">
+			<visible>[Control.IsVisible(501) | Control.IsVisible(502)] + $EXP[LumenShowPage]</visible>
+			<include content="LumenHero">
+				<param name="item" value="ListItem" />
+				<param name="top" value="96" />
 			</include>
 		</control>
 		<control type="list" id="501">
@@ -135,13 +192,79 @@
 			<height>420</height>
 			<onleft>9000</onleft>
 			<onright>noop</onright>
-			<onup>noop</onup>
-			<ondown>noop</ondown>
+			<onup condition="Container.Content(seasons)">5101</onup>
+			<onup condition="!Container.Content(seasons)">noop</onup>
+			<ondown condition="Container.Content(seasons)">5102</ondown>
+			<ondown condition="!Container.Content(seasons)">noop</ondown>
+			<!-- entering a show lands on Play once; coming back from a season keeps the tabs focused -->
+			<onfocus condition="Container.Content(seasons) + Integer.IsGreater(Container.NumItems,0) + !String.IsEqual(Window.Property(lumen.showpage),Container.FolderPath)">SetFocus(5101)</onfocus>
+			<onfocus condition="Container.Content(seasons)">SetProperty(lumen.showpage,$INFO[Container.FolderPath])</onfocus>
 			<orientation>horizontal</orientation>
 			<scrolltime tween="cubic" easing="out">360</scrolltime>
 			<viewtype label="Showcase">wrap</viewtype>
 			<visible>Container.Content(seasons) | [Container.Content(movies) + String.StartsWith(Container.FolderPath,videodb://movies/sets/)]</visible>
 			<include>LumenRiseIn</include>
+			<!-- seasons: text tabs -->
+			<itemlayout width="230" height="64" condition="Container.Content(seasons)">
+				<control type="label">
+					<left>10</left>
+					<top>2</top>
+					<width>210</width>
+					<height>60</height>
+					<align>center</align>
+					<aligny>center</aligny>
+					<font>lm_tab</font>
+					<textcolor>text_dim</textcolor>
+					<label>$INFO[ListItem.Label]</label>
+				</control>
+			</itemlayout>
+			<focusedlayout width="230" height="64" condition="Container.Content(seasons)">
+				<control type="group">
+					<animation effect="zoom" start="100" end="106" center="115,32" time="200" tween="cubic" easing="out" reversible="false">Focus</animation>
+					<animation effect="zoom" start="106" end="100" center="115,32" time="200" tween="cubic" easing="out" reversible="false">UnFocus</animation>
+					<control type="image">
+						<left>10</left>
+						<top>2</top>
+						<width>210</width>
+						<height>60</height>
+						<texture border="30" colordiffuse="FFFFFFFF">lumen/pill.png</texture>
+						<visible>Control.HasFocus(501)</visible>
+					</control>
+					<control type="image">
+						<left>10</left>
+						<top>2</top>
+						<width>210</width>
+						<height>60</height>
+						<texture border="30" colordiffuse="24FFFFFF">lumen/pill.png</texture>
+						<visible>!Control.HasFocus(501)</visible>
+					</control>
+					<control type="label">
+						<left>10</left>
+						<top>2</top>
+						<width>210</width>
+						<height>60</height>
+						<align>center</align>
+						<aligny>center</aligny>
+						<font>lm_tab</font>
+						<textcolor>focus_text</textcolor>
+						<label>$INFO[ListItem.Label]</label>
+						<visible>Control.HasFocus(501)</visible>
+					</control>
+					<control type="label">
+						<left>10</left>
+						<top>2</top>
+						<width>210</width>
+						<height>60</height>
+						<align>center</align>
+						<aligny>center</aligny>
+						<font>lm_tab</font>
+						<textcolor>text</textcolor>
+						<label>$INFO[ListItem.Label]</label>
+						<visible>!Control.HasFocus(501)</visible>
+					</control>
+				</control>
+			</focusedlayout>
+			<!-- movies in a collection: posters -->
 			<itemlayout width="240" height="420">
 				<control type="group">
 					<left>30</left>
@@ -174,6 +297,50 @@
 				</control>
 			</focusedlayout>
 		</control>
+		<!-- episodes of the season under the tabs; selecting one plays it (resuming if started) -->
+		<control type="list" id="5102">
+			<left>80</left>
+			<top>730</top>
+			<width>1840</width>
+			<height>350</height>
+			<onleft>noop</onleft>
+			<onright>noop</onright>
+			<onup>501</onup>
+			<ondown>noop</ondown>
+			<orientation>horizontal</orientation>
+			<scrolltime tween="cubic" easing="out">360</scrolltime>
+			<preloaditems>0</preloaditems>
+			<visible>Control.IsVisible(501) + Container.Content(seasons)</visible>
+			<onclick>PlayMedia($ESCINFO[Container(5102).ListItem.FileNameAndPath],resume)</onclick>
+			<itemlayout width="414" height="350">
+				<control type="group">
+					<left>30</left>
+					<top>14</top>
+					<include content="LumenLandscapeCard">
+						<param name="titlecolor" value="text_dim" />
+						<param name="title" value="$VAR[LumenEpisodeTitle]" />
+						<param name="subtitle" value="$VAR[LumenEpisodeSub]" />
+					</include>
+				</control>
+			</itemlayout>
+			<focusedlayout width="414" height="350">
+				<control type="group">
+					<left>30</left>
+					<top>14</top>
+					<include content="LumenCardFocus">
+						<param name="cx" value="192" />
+						<param name="cy" value="108" />
+					</include>
+					<include content="LumenLandscapeCard">
+						<param name="focused" value="Control.HasFocus(5102)" />
+						<param name="titlecolor" value="text" />
+						<param name="title" value="$VAR[LumenEpisodeTitle]" />
+						<param name="subtitle" value="$VAR[LumenEpisodeSub]" />
+					</include>
+				</control>
+			</focusedlayout>
+			<content target="videos">$INFO[Container(501).ListItem.FolderPath]</content>
+		</control>
 		<control type="list" id="502">
 			<left>80</left>
 			<top>644</top>
@@ -181,7 +348,8 @@
 			<height>420</height>
 			<onleft>9000</onleft>
 			<onright>noop</onright>
-			<onup>noop</onup>
+			<onup condition="$EXP[LumenShowPage]">5101</onup>
+			<onup condition="!$EXP[LumenShowPage]">noop</onup>
 			<ondown>noop</ondown>
 			<orientation>horizontal</orientation>
 			<scrolltime tween="cubic" easing="out">360</scrolltime>
@@ -215,6 +383,82 @@
 					</include>
 				</control>
 			</focusedlayout>
+		</control>
+
+		<!-- next episode, the phone app's rule (season 0 ignored): the last played one if unfinished, else the
+		     next unwatched after it; nothing played: the first unwatched; all watched: the first episode -->
+		<control type="group">
+			<visible>[Control.IsVisible(501) | Control.IsVisible(502)] + $EXP[LumenShowPage]</visible>
+			<include content="LumenNextLookup">
+				<param name="id" value="5110" />
+				<param name="path" value="$VAR[LumenLastPlayedPath]" />
+			</include>
+			<include content="LumenNextLookup">
+				<param name="id" value="5111" />
+				<param name="path" value="$VAR[LumenAfterLastPath]" />
+			</include>
+			<include content="LumenNextLookup">
+				<param name="id" value="5112" />
+				<param name="path" value="$VAR[LumenFirstUnwatchedPath]" />
+			</include>
+			<include content="LumenNextLookup">
+				<param name="id" value="5113" />
+				<param name="path" value="$VAR[LumenFirstEpisodePath]" />
+			</include>
+		</control>
+		<!-- show page: "Play S2 E5" -->
+		<control type="group">
+			<left>lm_margin</left>
+			<top>516</top>
+			<visible>[Control.IsVisible(501) | Control.IsVisible(502)] + $EXP[LumenShowPage] + Integer.IsGreater(Container.NumItems,0)</visible>
+			<include>LumenRiseIn</include>
+			<!-- a button, not a radiobutton: only buttons size to their label (width auto) -->
+			<control type="button" id="5101">
+				<width>auto</width>
+				<height>80</height>
+				<label>$VAR[LumenNextLabel]</label>
+				<font>lm_label_bold</font>
+				<textoffsetx>70</textoffsetx>
+				<aligny>center</aligny>
+				<textcolor>text</textcolor>
+				<focusedcolor>focus_text</focusedcolor>
+				<texturefocus border="32" colordiffuse="FFFFFFFF">lumen/pill.png</texturefocus>
+				<texturenofocus border="32" colordiffuse="2EFFFFFF">lumen/pill.png</texturenofocus>
+				<onclick condition="$EXP[LumenNextLastPlayed]">PlayMedia($ESCINFO[Container(5110).ListItem.FileNameAndPath],resume)</onclick>
+				<onclick condition="$EXP[LumenNextAfterLast]">PlayMedia($ESCINFO[Container(5111).ListItem.FileNameAndPath],resume)</onclick>
+				<onclick condition="$EXP[LumenNextFirstUnwatched]">PlayMedia($ESCINFO[Container(5112).ListItem.FileNameAndPath],resume)</onclick>
+				<onclick condition="$EXP[LumenNextWatchAgain]">PlayMedia($ESCINFO[Container(5113).ListItem.FileNameAndPath],noresume)</onclick>
+				<onup>noop</onup>
+				<onleft>noop</onleft>
+				<onright>noop</onright>
+				<ondown condition="Container.Content(seasons)">501</ondown>
+				<ondown condition="!Container.Content(seasons)">502</ondown>
+			</control>
+			<control type="image">
+				<left>28</left>
+				<top>24</top>
+				<width>32</width>
+				<height>32</height>
+				<texture colordiffuse="focus_text">lumen/icons/play.png</texture>
+				<visible>Control.HasFocus(5101)</visible>
+			</control>
+			<control type="image">
+				<left>28</left>
+				<top>24</top>
+				<width>32</width>
+				<height>32</height>
+				<texture colordiffuse="text">lumen/icons/play.png</texture>
+				<visible>!Control.HasFocus(5101)</visible>
+			</control>
+			<control type="label">
+				<left>0</left>
+				<top>92</top>
+				<width>1300</width>
+				<height>34</height>
+				<font>lm_caption</font>
+				<textcolor>text_mute</textcolor>
+				<label>$VAR[LumenNextCaption]</label>
+			</control>
 		</control>
 	</include>
 
