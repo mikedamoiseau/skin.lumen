@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<addon id="skin.lumen" version="0.2.0" name="Lumen" provider-name="mike">
+<addon id="skin.lumen" version="0.2.1" name="Lumen" provider-name="mike">
 	<requires>
 		<import addon="xbmc.gui" version="5.17.0"/>
 	</requires>
