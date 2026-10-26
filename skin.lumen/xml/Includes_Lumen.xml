@@ -89,13 +89,14 @@
 				<top>40</top>
 				<height>64</height>
 				<include>LumenFadeInWindow</include>
+				<!-- left-aligned so the first label lines up with lm_margin; stops short of the clock (12h "10:58 PM" ~145px) -->
 				<control type="grouplist" id="9000">
-					<left>0</left>
-					<width>1920</width>
+					<left>80</left>
+					<width>1560</width>
 					<height>64</height>
 					<top>2</top>
 					<orientation>horizontal</orientation>
-					<align>center</align>
+					<align>left</align>
 					<itemgap>6</itemgap>
 					<usecontrolcoords>true</usecontrolcoords>
 					<ondown>$PARAM[ondown]</ondown>

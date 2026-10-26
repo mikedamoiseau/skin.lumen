@@ -31,7 +31,8 @@ hardware (see [Performance](#performance)).
   Continue Watching, Up Next, Recently Added Movies, New Episodes, Discover,
   Top Rated, TV Shows and Collections. The hero above the rows shows the focused
   item's logo, year, genre, runtime, rating, quality badges and plot. Empty rows
-  hide themselves.
+  hide themselves. The power icon at the end of the tab bar opens Kodi's power
+  menu (Exit, Power off, Reboot, depending on the device).
 - **Library views**: Posters (movies, shows, collections), Showcase (seasons,
   movies in a collection), Episodes (landscape thumbnails), Landscape grid and a
   List view with preview.

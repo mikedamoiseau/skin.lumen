@@ -1,3 +1,6 @@
+[B]0.1.2[/B]
+• Home tab bar now starts at the content margin, so it no longer runs into the clock when the time is shown as 12-hour (e.g. "10:58 PM").
+
 [B]0.1.1[/B]
 • Power button at the end of the Home tab bar: opens Kodi's power menu (Exit, Power off, Reboot… depending on the device).
 
