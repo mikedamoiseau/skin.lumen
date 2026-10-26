@@ -88,7 +88,8 @@
 					<param name="onclick" value="PlayerControl(Next)" />
 					<param name="visible" value="Player.HasSceneMarkers | Player.ChapterCount | Integer.IsGreater(Playlist.Length(video),1)" />
 				</include>
-				<control type="image">
+				<!-- gap before the settings buttons; it needs an id, or the grouplist's left/right chain stops here -->
+				<control type="image" id="70049">
 					<width>40</width>
 					<height>104</height>
 					<texture />
