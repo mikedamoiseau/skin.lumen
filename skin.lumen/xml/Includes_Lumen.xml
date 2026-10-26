@@ -54,6 +54,8 @@
 	<!-- ============ Top bar: tvOS-style tabs + clock ============ -->
 	<include name="LumenTabButton">
 		<param name="nofocustex"></param>
+		<param name="onclick2">noop</param>
+		<param name="onclick3">noop</param>
 		<definition>
 			<control type="button" id="$PARAM[id]">
 				<width>auto</width>
@@ -70,6 +72,8 @@
 				<animation effect="zoom" start="100" end="106" center="auto" time="200" tween="cubic" easing="out" reversible="false">Focus</animation>
 				<animation effect="zoom" start="106" end="100" center="auto" time="200" tween="cubic" easing="out" reversible="false">UnFocus</animation>
 				<onclick>$PARAM[onclick]</onclick>
+				<onclick>$PARAM[onclick2]</onclick>
+				<onclick>$PARAM[onclick3]</onclick>
 				<visible>$PARAM[visible]</visible>
 			</control>
 		</definition>
@@ -147,7 +151,10 @@
 						<param name="id" value="16" />
 						<param name="nofocustex" value="$PARAM[tex16]" />
 						<param name="label" value="$LOCALIZE[137]" />
-						<param name="onclick" value="ActivateWindow(1107)" />
+						<!-- fresh search: clear the last query, open the search page, then the keyboard over it -->
+						<param name="onclick" value="Skin.Reset(lumen.search)" />
+						<param name="onclick2" value="ActivateWindow(1111)" />
+						<param name="onclick3" value="Skin.SetString(lumen.search)" />
 						<param name="visible" value="true" />
 					</include>
 					<include content="LumenTabButton">
@@ -667,6 +674,65 @@
 		<onup>$PARAM[onup]</onup>
 		<ondown>$PARAM[ondown]</ondown>
 	</include>
+	<include name="LumenPosterList">
+		<param name="sortby">none</param>
+		<param name="sortorder">ascending</param>
+		<param name="limit">25</param>
+		<param name="onclick_condition">false</param>
+		<param name="onclick">noop</param>
+		<param name="onup">9000</param>
+		<param name="ondown">noop</param>
+		<param name="top">44</param>
+		<param name="visible">true</param>
+		<definition>
+			<control type="list" id="$PARAM[id]">
+				<left>80</left>
+				<top>$PARAM[top]</top>
+				<width>1840</width>
+				<height>420</height>
+				<visible allowhiddenfocus="true">$PARAM[visible]</visible>
+				<include content="LumenRowCommon">
+					<param name="id" value="$PARAM[id]" />
+					<param name="onup" value="$PARAM[onup]" />
+					<param name="ondown" value="$PARAM[ondown]" />
+				</include>
+				<onclick condition="$PARAM[onclick_condition]">$PARAM[onclick]</onclick>
+				<itemlayout width="240" height="420">
+					<control type="group">
+						<left>30</left>
+						<top>14</top>
+						<include>LumenPosterCard</include>
+					</control>
+				</itemlayout>
+				<focusedlayout width="240" height="420">
+					<control type="group">
+						<left>30</left>
+						<top>14</top>
+						<include content="LumenCardFocus">
+							<param name="cx" value="105" />
+							<param name="cy" value="157" />
+						</include>
+						<include content="LumenPosterCard">
+							<param name="focused" value="Control.HasFocus($PARAM[id])" />
+						</include>
+					</control>
+					<control type="label">
+						<left>10</left>
+						<top>352</top>
+						<width>250</width>
+						<height>40</height>
+						<align>center</align>
+						<font>lm_label_bold</font>
+						<textcolor>text</textcolor>
+						<label>$INFO[ListItem.Label]</label>
+						<visible>Control.HasFocus($PARAM[id])</visible>
+						<animation effect="fade" start="0" end="100" time="220" delay="80">Visible</animation>
+					</control>
+				</focusedlayout>
+				<content target="videos" sortby="$PARAM[sortby]" sortorder="$PARAM[sortorder]" limit="$PARAM[limit]">$PARAM[path]</content>
+			</control>
+		</definition>
+	</include>
 	<include name="LumenPosterRow">
 		<param name="sortby">none</param>
 		<param name="sortorder">ascending</param>
@@ -684,51 +750,67 @@
 				<include content="LumenRowHeader">
 					<param name="header" value="$PARAM[header]" />
 				</include>
-				<control type="list" id="$PARAM[id]">
-					<left>80</left>
-					<top>44</top>
-					<width>1840</width>
-					<height>420</height>
-					<include content="LumenRowCommon">
-						<param name="id" value="$PARAM[id]" />
-						<param name="onup" value="$PARAM[onup]" />
-						<param name="ondown" value="$PARAM[ondown]" />
-					</include>
-					<onclick condition="$PARAM[onclick_condition]">$PARAM[onclick]</onclick>
-					<itemlayout width="240" height="420">
-						<control type="group">
-							<left>30</left>
-							<top>14</top>
-							<include>LumenPosterCard</include>
-						</control>
-					</itemlayout>
-					<focusedlayout width="240" height="420">
-						<control type="group">
-							<left>30</left>
-							<top>14</top>
-							<include content="LumenCardFocus">
-								<param name="cx" value="105" />
-								<param name="cy" value="157" />
-							</include>
-							<include content="LumenPosterCard">
-								<param name="focused" value="Control.HasFocus($PARAM[id])" />
-							</include>
-						</control>
-						<control type="label">
-							<left>10</left>
-							<top>352</top>
-							<width>250</width>
-							<height>40</height>
-							<align>center</align>
-							<font>lm_label_bold</font>
-							<textcolor>text</textcolor>
-							<label>$INFO[ListItem.Label]</label>
-							<visible>Control.HasFocus($PARAM[id])</visible>
-							<animation effect="fade" start="0" end="100" time="220" delay="80">Visible</animation>
-						</control>
-					</focusedlayout>
-					<content target="videos" sortby="$PARAM[sortby]" sortorder="$PARAM[sortorder]" limit="$PARAM[limit]">$PARAM[path]</content>
-				</control>
+				<include content="LumenPosterList">
+					<param name="id" value="$PARAM[id]" />
+					<param name="path" value="$PARAM[path]" />
+					<param name="sortby" value="$PARAM[sortby]" />
+					<param name="sortorder" value="$PARAM[sortorder]" />
+					<param name="limit" value="$PARAM[limit]" />
+					<param name="onclick_condition" value="$PARAM[onclick_condition]" />
+					<param name="onclick" value="$PARAM[onclick]" />
+					<param name="onup" value="$PARAM[onup]" />
+					<param name="ondown" value="$PARAM[ondown]" />
+				</include>
+			</control>
+		</definition>
+	</include>
+	<include name="LumenLandscapeList">
+		<param name="sortby">none</param>
+		<param name="sortorder">ascending</param>
+		<param name="limit">25</param>
+		<param name="onclick_condition">false</param>
+		<param name="onclick">noop</param>
+		<param name="onup">9000</param>
+		<param name="ondown">noop</param>
+		<param name="top">44</param>
+		<param name="visible">true</param>
+		<definition>
+			<control type="list" id="$PARAM[id]">
+				<left>80</left>
+				<top>$PARAM[top]</top>
+				<width>1840</width>
+				<height>330</height>
+				<visible allowhiddenfocus="true">$PARAM[visible]</visible>
+				<include content="LumenRowCommon">
+					<param name="id" value="$PARAM[id]" />
+					<param name="onup" value="$PARAM[onup]" />
+					<param name="ondown" value="$PARAM[ondown]" />
+				</include>
+				<onclick condition="$PARAM[onclick_condition]">$PARAM[onclick]</onclick>
+				<itemlayout width="414" height="330">
+					<control type="group">
+						<left>30</left>
+						<top>14</top>
+						<include content="LumenLandscapeCard">
+							<param name="titlecolor" value="text_dim" />
+						</include>
+					</control>
+				</itemlayout>
+				<focusedlayout width="414" height="330">
+					<control type="group">
+						<left>30</left>
+						<top>14</top>
+						<include content="LumenCardFocus">
+							<param name="cx" value="192" />
+							<param name="cy" value="108" />
+						</include>
+						<include content="LumenLandscapeCard">
+							<param name="focused" value="Control.HasFocus($PARAM[id])" />
+							<param name="titlecolor" value="text" />
+						</include>
+					</control>
+				</focusedlayout>
+				<content target="videos" sortby="$PARAM[sortby]" sortorder="$PARAM[sortorder]" limit="$PARAM[limit]">$PARAM[path]</content>
 			</control>
 		</definition>
 	</include>
@@ -749,42 +831,17 @@
 				<include content="LumenRowHeader">
 					<param name="header" value="$PARAM[header]" />
 				</include>
-				<control type="list" id="$PARAM[id]">
-					<left>80</left>
-					<top>44</top>
-					<width>1840</width>
-					<height>330</height>
-					<include content="LumenRowCommon">
-						<param name="id" value="$PARAM[id]" />
-						<param name="onup" value="$PARAM[onup]" />
-						<param name="ondown" value="$PARAM[ondown]" />
-					</include>
-					<onclick condition="$PARAM[onclick_condition]">$PARAM[onclick]</onclick>
-					<itemlayout width="414" height="330">
-						<control type="group">
-							<left>30</left>
-							<top>14</top>
-							<include content="LumenLandscapeCard">
-								<param name="titlecolor" value="text_dim" />
-							</include>
-						</control>
-					</itemlayout>
-					<focusedlayout width="414" height="330">
-						<control type="group">
-							<left>30</left>
-							<top>14</top>
-							<include content="LumenCardFocus">
-								<param name="cx" value="192" />
-								<param name="cy" value="108" />
-							</include>
-							<include content="LumenLandscapeCard">
-								<param name="focused" value="Control.HasFocus($PARAM[id])" />
-								<param name="titlecolor" value="text" />
-							</include>
-						</control>
-					</focusedlayout>
-					<content target="videos" sortby="$PARAM[sortby]" sortorder="$PARAM[sortorder]" limit="$PARAM[limit]">$PARAM[path]</content>
-				</control>
+				<include content="LumenLandscapeList">
+					<param name="id" value="$PARAM[id]" />
+					<param name="path" value="$PARAM[path]" />
+					<param name="sortby" value="$PARAM[sortby]" />
+					<param name="sortorder" value="$PARAM[sortorder]" />
+					<param name="limit" value="$PARAM[limit]" />
+					<param name="onclick_condition" value="$PARAM[onclick_condition]" />
+					<param name="onclick" value="$PARAM[onclick]" />
+					<param name="onup" value="$PARAM[onup]" />
+					<param name="ondown" value="$PARAM[ondown]" />
+				</include>
 			</control>
 		</definition>
 	</include>
@@ -989,6 +1046,78 @@
 	</variable>
 	<variable name="LumenInfoAudioLine">
 		<value condition="!String.IsEmpty(ListItem.AudioCodec)">Audio   $VAR[LumenAudioCodecLabel]$VAR[LumenChannelsLabel]$INFO[ListItem.AudioLanguage,  ·  [UPPERCASE],[/UPPERCASE]]</value>
+	</variable>
+
+	<!-- ============ Search (Custom_1111_LumenSearch.xml, live preview in DialogKeyboard.xml) ============ -->
+	<!-- a word of the title starts with the text ("%20" decodes to the space before it); cast/director contain it.
+	     No path without text (it would load the whole library) or with "&" (it splits the URL options). -->
+	<variable name="LumenSearchMoviesPath">
+		<value condition="!String.IsEmpty(Skin.String(lumen.search)) + !String.Contains(Skin.String(lumen.search),&amp;)">videodb://movies/titles/?xsp=%7B%22type%22%3A%22movies%22%2C%22rules%22%3A%7B%22or%22%3A%5B%7B%22field%22%3A%22title%22%2C%22operator%22%3A%22startswith%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search)]%5D%7D%2C%7B%22field%22%3A%22title%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search),%20,]%5D%7D%2C%7B%22field%22%3A%22originaltitle%22%2C%22operator%22%3A%22startswith%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search)]%5D%7D%2C%7B%22field%22%3A%22originaltitle%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search),%20,]%5D%7D%5D%7D%2C%22order%22%3A%7B%22method%22%3A%22title%22%2C%22direction%22%3A%22ascending%22%7D%7D</value>
+	</variable>
+	<variable name="LumenSearchShowsPath">
+		<value condition="!String.IsEmpty(Skin.String(lumen.search)) + !String.Contains(Skin.String(lumen.search),&amp;)">videodb://tvshows/titles/?xsp=%7B%22type%22%3A%22tvshows%22%2C%22rules%22%3A%7B%22or%22%3A%5B%7B%22field%22%3A%22title%22%2C%22operator%22%3A%22startswith%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search)]%5D%7D%2C%7B%22field%22%3A%22title%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search),%20,]%5D%7D%2C%7B%22field%22%3A%22originaltitle%22%2C%22operator%22%3A%22startswith%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search)]%5D%7D%2C%7B%22field%22%3A%22originaltitle%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search),%20,]%5D%7D%2C%7B%22field%22%3A%22actor%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search)]%5D%7D%2C%7B%22field%22%3A%22director%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search)]%5D%7D%5D%7D%2C%22order%22%3A%7B%22method%22%3A%22title%22%2C%22direction%22%3A%22ascending%22%7D%7D</value>
+	</variable>
+	<variable name="LumenSearchPeoplePath">
+		<value condition="!String.IsEmpty(Skin.String(lumen.search)) + !String.Contains(Skin.String(lumen.search),&amp;)">videodb://movies/titles/?xsp=%7B%22type%22%3A%22movies%22%2C%22rules%22%3A%7B%22or%22%3A%5B%7B%22field%22%3A%22actor%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search)]%5D%7D%2C%7B%22field%22%3A%22director%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search)]%5D%7D%5D%7D%2C%22order%22%3A%7B%22method%22%3A%22title%22%2C%22direction%22%3A%22ascending%22%7D%7D</value>
+	</variable>
+	<variable name="LumenTypingMoviesPath">
+		<value condition="!String.IsEmpty(Control.GetLabel(312).index(1)) + !String.Contains(Control.GetLabel(312).index(1),&amp;)">videodb://movies/titles/?xsp=%7B%22type%22%3A%22movies%22%2C%22rules%22%3A%7B%22or%22%3A%5B%7B%22field%22%3A%22title%22%2C%22operator%22%3A%22startswith%22%2C%22value%22%3A%5B$ESCINFO[Control.GetLabel(312).index(1)]%5D%7D%2C%7B%22field%22%3A%22title%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Control.GetLabel(312).index(1),%20,]%5D%7D%2C%7B%22field%22%3A%22originaltitle%22%2C%22operator%22%3A%22startswith%22%2C%22value%22%3A%5B$ESCINFO[Control.GetLabel(312).index(1)]%5D%7D%2C%7B%22field%22%3A%22originaltitle%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Control.GetLabel(312).index(1),%20,]%5D%7D%5D%7D%2C%22order%22%3A%7B%22method%22%3A%22title%22%2C%22direction%22%3A%22ascending%22%7D%7D</value>
+	</variable>
+	<variable name="LumenTypingShowsPath">
+		<value condition="!String.IsEmpty(Control.GetLabel(312).index(1)) + !String.Contains(Control.GetLabel(312).index(1),&amp;)">videodb://tvshows/titles/?xsp=%7B%22type%22%3A%22tvshows%22%2C%22rules%22%3A%7B%22or%22%3A%5B%7B%22field%22%3A%22title%22%2C%22operator%22%3A%22startswith%22%2C%22value%22%3A%5B$ESCINFO[Control.GetLabel(312).index(1)]%5D%7D%2C%7B%22field%22%3A%22title%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Control.GetLabel(312).index(1),%20,]%5D%7D%2C%7B%22field%22%3A%22originaltitle%22%2C%22operator%22%3A%22startswith%22%2C%22value%22%3A%5B$ESCINFO[Control.GetLabel(312).index(1)]%5D%7D%2C%7B%22field%22%3A%22originaltitle%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Control.GetLabel(312).index(1),%20,]%5D%7D%5D%7D%2C%22order%22%3A%7B%22method%22%3A%22title%22%2C%22direction%22%3A%22ascending%22%7D%7D</value>
+	</variable>
+	<include name="LumenTypingResults">
+		<definition>
+			<control type="group">
+				<left>$PARAM[left]</left>
+				<control type="label">
+					<width>820</width>
+					<height>40</height>
+					<font>lm_label_bold</font>
+					<textcolor>text</textcolor>
+					<label>$PARAM[header]</label>
+					<visible>Integer.IsGreater(Container($PARAM[id]).NumItems,0)</visible>
+				</control>
+				<control type="list" id="$PARAM[id]">
+					<top>48</top>
+					<width>820</width>
+					<height>200</height>
+					<orientation>horizontal</orientation>
+					<itemlayout width="140" height="200">
+						<control type="image">
+							<width>126</width>
+							<height>189</height>
+							<texture border="12" colordiffuse="card_bg">lumen/rr14.png</texture>
+						</control>
+						<control type="image">
+							<width>126</width>
+							<height>189</height>
+							<aspectratio>scale</aspectratio>
+							<texture background="true" diffuse="lumen/mask_poster.png">$VAR[LumenPosterArt]</texture>
+						</control>
+					</itemlayout>
+					<focusedlayout width="140" height="200">
+						<control type="image">
+							<width>126</width>
+							<height>189</height>
+							<texture border="12" colordiffuse="card_bg">lumen/rr14.png</texture>
+						</control>
+						<control type="image">
+							<width>126</width>
+							<height>189</height>
+							<aspectratio>scale</aspectratio>
+							<texture background="true" diffuse="lumen/mask_poster.png">$VAR[LumenPosterArt]</texture>
+						</control>
+					</focusedlayout>
+					<content target="videos" sortby="title" sortorder="ascending" limit="12" browse="never">$PARAM[path]</content>
+				</control>
+			</control>
+		</definition>
+	</include>
+	<variable name="LumenSearchFanart">
+		<value condition="Control.HasFocus(5201)">$INFO[Container(5201).ListItem.Art(fanart)]</value>
+		<value condition="Control.HasFocus(5202)">$INFO[Container(5202).ListItem.Art(fanart)]</value>
+		<value condition="Control.HasFocus(5203)">$INFO[Container(5203).ListItem.Art(fanart)]</value>
 	</variable>
 
 	<!-- ============ Player ============ -->

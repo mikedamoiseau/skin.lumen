@@ -34,6 +34,7 @@
 				<align>center</align>
 				<aligny>center</aligny>
 				<shadowcolor>black</shadowcolor>
+				<visible>!Window.IsVisible(1111)</visible>
 			</control>
 			<control type="image">
 				<centerleft>50%</centerleft>
@@ -675,6 +676,45 @@
 					<font>font37</font>
 					<shadowcolor>text_shadow</shadowcolor>
 					<aligny>center</aligny>
+				</control>
+			</control>
+			<!-- Lumen: live results while typing over the search page (not focusable; the keys keep focus) -->
+			<control type="group">
+				<top>300</top>
+				<visible>Window.IsVisible(1111) + !String.IsEmpty(Control.GetLabel(312).index(1))</visible>
+				<control type="label">
+					<left>110</left>
+					<width>1700</width>
+					<height>40</height>
+					<font>lm_label_bold</font>
+					<textcolor>text_dim</textcolor>
+					<label>Search can't use “&amp;”: try the words around it.</label>
+					<visible>String.Contains(Control.GetLabel(312).index(1),&amp;)</visible>
+				</control>
+				<control type="group">
+					<visible>!String.Contains(Control.GetLabel(312).index(1),&amp;)</visible>
+					<include content="LumenTypingResults">
+						<param name="left" value="110" />
+						<param name="id" value="9511" />
+						<param name="header" value="$LOCALIZE[342]" />
+						<param name="path" value="$VAR[LumenTypingMoviesPath]" />
+					</include>
+					<include content="LumenTypingResults">
+						<param name="left" value="990" />
+						<param name="id" value="9512" />
+						<param name="header" value="$LOCALIZE[20343]" />
+						<param name="path" value="$VAR[LumenTypingShowsPath]" />
+					</include>
+				</control>
+				<control type="label">
+					<left>110</left>
+					<top>0</top>
+					<width>1700</width>
+					<height>40</height>
+					<font>lm_label_bold</font>
+					<textcolor>text_dim</textcolor>
+					<label>No matches yet</label>
+					<visible>!String.Contains(Control.GetLabel(312).index(1),&amp;) + !Container(9511).IsUpdating + !Container(9512).IsUpdating + !Integer.IsGreater(Container(9511).NumItems,0) + !Integer.IsGreater(Container(9512).NumItems,0)</visible>
 				</control>
 			</control>
 		</control>
