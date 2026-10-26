@@ -1,3 +1,9 @@
+[B]0.2.0[/B]
+• Search: the Search tab opens a Lumen search page and the keyboard right away. Movies and TV shows whose title matches appear while you type; confirming shows full rows that also match original titles, actors and directors.
+• Show page: opening a TV show shows a "Play S2 E5" button for the next episode to watch, season tabs and that season's episodes on one screen. Selecting an episode plays it, resuming if it was started.
+• Sleep timer: a moon button in the player stops playback after 15, 30, 60 or 90 minutes. The time left shows next to "Ends at".
+• Player: Right now moves from the playback buttons to the subtitle, settings and info buttons.
+
 [B]0.1.2[/B]
 • Home tab bar now starts at the content margin, so it no longer runs into the clock when the time is shown as 12-hour (e.g. "10:58 PM").
 

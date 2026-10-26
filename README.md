@@ -33,14 +33,20 @@ hardware (see [Performance](#performance)).
   item's logo, year, genre, runtime, rating, quality badges and plot. Empty rows
   hide themselves. The power icon at the end of the tab bar opens Kodi's power
   menu (Exit, Power off, Reboot, depending on the device).
+- **Search**: the Search tab opens the keyboard over a Lumen search page. Movies
+  and shows whose title matches appear while you type; confirming shows full
+  rows for movies, TV shows (also by cast) and a cast & crew row.
 - **Library views**: Posters (movies, shows, collections), Showcase (seasons,
   movies in a collection), Episodes (landscape thumbnails), Landscape grid and a
   List view with preview.
+- **Show page**: opening a TV show gives one screen with a "Play S2 E5" button
+  for the next episode to watch, season tabs and that season's episodes.
 - **Detail page**: clearlogo, tagline, plot, Play/Resume with progress, Trailer,
   Versions, Extras, Collection, video/audio/subtitle details and a cast row with
   round portraits. For collections the row lists the movies in the set.
 - **Player**: thin seek bar with elapsed/remaining time, "Ends at", resolution,
   HDR, audio codec and channel badges, plus round transport buttons in the OSD.
+  A sleep timer (moon button) stops playback after 15, 30, 60 or 90 minutes.
 - **Everything else**: settings, select/confirm/progress/keyboard dialogs,
   notifications, a background-task pill for library scans, Favourites and the
   skin settings page all share the same glass look.
@@ -153,6 +159,8 @@ path) and runs `ReloadSkin()`.
 - Kodi doesn't expose Dolby Atmos, so TrueHD and DD+ are shown instead.
 - Add-on folders show no backdrop on purpose, because add-on fanart is usually a promo screenshot.
 - Only 1080p/16:9 layouts. Kodi scales them for 4K output.
+- Search matches the start of a word ("man" finds "Iron Man", not "Spider-Man") and
+  can't use "&", because Kodi splits its search URL there.
 
 ## Credits & license
 
