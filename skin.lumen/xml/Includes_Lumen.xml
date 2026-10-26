@@ -429,11 +429,12 @@
 				<texture border="52">lumen/shadow_card.png</texture>
 				<visible>$PARAM[focused]</visible>
 			</control>
+			<!-- placeholder: shows until the art has loaded, and stays when there is none -->
 			<control type="image">
 				<width>lm_poster_w</width>
 				<height>lm_poster_h</height>
 				<texture border="12" colordiffuse="card_bg">lumen/rr14.png</texture>
-				<visible>String.IsEmpty(ListItem.Art(poster)) + String.IsEmpty(ListItem.Art(tvshow.poster)) + String.IsEmpty(ListItem.Art(thumb)) + !ListItem.IsParentFolder</visible>
+				<visible>!ListItem.IsParentFolder</visible>
 			</control>
 			<control type="group">
 				<visible>ListItem.IsParentFolder</visible>
@@ -565,11 +566,12 @@
 				<texture border="52">lumen/shadow_card.png</texture>
 				<visible>$PARAM[focused]</visible>
 			</control>
+			<!-- placeholder: shows until the art has loaded, and stays when there is none -->
 			<control type="image">
 				<width>lm_land_w</width>
 				<height>lm_land_h</height>
 				<texture border="12" colordiffuse="card_bg">lumen/rr14.png</texture>
-				<visible>String.IsEmpty(ListItem.Art(fanart)) + String.IsEmpty(ListItem.Art(thumb))</visible>
+				<visible>!ListItem.IsParentFolder</visible>
 			</control>
 			<control type="group">
 				<visible>ListItem.IsParentFolder</visible>
