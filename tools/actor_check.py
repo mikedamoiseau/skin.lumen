@@ -879,9 +879,8 @@ def c_back_search(r):
     time.sleep(1.5)
     if not r.ok("cast row", focus_id(CAST, ("Down",), 4)):
         return close_detail()
-    for _ in range(1):
-        rpc("Input.Right")
-        time.sleep(0.25)
+    rpc("Input.Right")
+    time.sleep(0.25)
     rpc("Input.Select")
     if not r.ok(f"{name}: actor page opens", wait_for(lambda: cond("Window.IsVisible(1115)"), 5)):
         return close_detail()
