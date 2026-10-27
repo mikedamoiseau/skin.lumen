@@ -43,7 +43,12 @@ hardware (see [Performance](#performance)).
   for the next episode to watch, season tabs and that season's episodes.
 - **Detail page**: clearlogo, tagline, plot, Play/Resume with progress, Trailer,
   Versions, Extras, Collection, video/audio/subtitle details and a cast row with
-  round portraits. For collections the row lists the movies in the set.
+  round portraits, led by the director on a film's page. For collections the row
+  lists the movies in the set.
+- **Actor page**: select someone in a cast row to see their photo and every film
+  and show of theirs in the library in one grid, newest first, with "Director"
+  on the films they directed. Back from a title opened there returns to the page,
+  and Back from the page to the film or show you started on.
 - **Player**: thin seek bar with elapsed/remaining time, "Ends at", resolution,
   HDR, audio codec and channel badges, plus round transport buttons in the OSD.
   A sleep timer (moon button) stops playback after 15, 30, 60 or 90 minutes.
@@ -199,6 +204,9 @@ kids mode. Other apps can tell whether a device is in kids mode by reading
   any number is accepted.
 - Search matches the start of a word ("man" finds "Iron Man", not "Spider-Man") and
   can't use "&", because Kodi splits its search URL there.
+- The actor page lists nothing for a name with "&" or "/" in it: Kodi splits its
+  library paths there. Search's cast & crew row lists films, not people: Kodi 21
+  can't look people up by name for a skin.
 
 ## Credits & license
 

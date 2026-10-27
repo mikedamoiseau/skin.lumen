@@ -15,4 +15,24 @@
         <reset>Player.Seeking | Player.Forwarding | Player.Rewinding | Player.HasPerformedSeek(1)</reset>
         <stop>Integer.IsGreaterOrEqual(Skin.TimerElapsedSecs(1109_topbaroverlay),5) | Player.Playing</stop>
     </timer>
+    <timer>
+        <name>lumenpersonplay</name>
+        <description>A video started from the actor page (a title opened on it, or a poster's Play or menu): Kodi won't go full screen while a modal dialog is open, so close the actor page and the detail page below it, then go. Not the video that was already playing when the page opened</description>
+        <start reset="true">Window.IsVisible(1115) + Player.HasVideo + !String.IsEqual(Player.FilenameAndPath,Window(home).Property(lumen.personbgvideo))</start>
+        <onstart>ClearProperty(lumen.personreopen,home)</onstart>
+        <onstart>Dialog.Close(1115,true)</onstart>
+        <onstart>Dialog.Close(movieinformation,true)</onstart>
+        <onstart>ActivateWindow(fullscreenvideo)</onstart>
+        <stop>!Window.IsVisible(1115)</stop>
+    </timer>
+    <timer>
+        <name>lumenkidsperson</name>
+        <description>No actor page in kids mode: one open when kids mode comes on (or opened in it) closes with the detail page below it, then Home (Kodi won't change window while a modal dialog is open)</description>
+        <start reset="true">Window.IsVisible(1115) + Skin.HasSetting(CinemathequeKids)</start>
+        <onstart>ClearProperty(lumen.personreopen,home)</onstart>
+        <onstart>Dialog.Close(1115,true)</onstart>
+        <onstart>Dialog.Close(movieinformation,true)</onstart>
+        <onstart>ReplaceWindow(home)</onstart>
+        <stop>!Window.IsVisible(1115)</stop>
+    </timer>
 </timers>

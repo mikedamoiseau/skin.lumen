@@ -264,6 +264,21 @@ def audio_icon(size=64, stroke=5):
     return down(img, size, size)
 
 
+
+def person_icon(size=256, stroke=11):
+    """Head and shoulders outline (actor page without a photo); drawn large, it shows at 200 px."""
+    big = size * S
+    img = Image.new("RGBA", (big, big), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    c, r = 0.354 * big, 0.167 * big
+    d.ellipse([0.5 * big - r, c - r, 0.5 * big + r, c + r], outline=WHITE + (255,), width=stroke * S)
+    d.arc([0.167 * big, 0.604 * big, 0.833 * big, 1.146 * big], start=180, end=360, fill=WHITE + (255,), width=stroke * S)
+    for x in (0.167, 0.833):  # round caps where the shoulders end
+        e = stroke * S / 2
+        d.ellipse([x * big - e, 0.875 * big - e, x * big + e, 0.875 * big + e], fill=WHITE + (255,))
+    return down(img, size, size)
+
+
 def toggle(on, w=120, h=76):
     """iOS-style switch, drawn inside Estuary's radio button box (120x76)."""
     tw, th = 84, 48
@@ -404,6 +419,7 @@ def main():
     out(f"{L}icons/moon.png", moon_icon())
     out(f"{L}icons/lock.png", lock_icon())
     out(f"{L}icons/kids.png", kids_icon())
+    out(f"{L}icons/person.png", person_icon())
     out(f"{L}icons/audio.png", audio_icon())
 
     # --- Estuary overrides: restyle every legacy window through shared textures ---

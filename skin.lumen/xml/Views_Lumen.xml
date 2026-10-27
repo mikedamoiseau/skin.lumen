@@ -157,6 +157,8 @@
 
 	<!-- a hidden 1x1 list used as a lookup -->
 	<include name="LumenNextLookup">
+		<!-- limit 0: everything; a limited lookup gets no "more" item (browse never) -->
+		<param name="limit">0</param>
 		<definition>
 			<control type="list" id="$PARAM[id]">
 				<left>-20</left>
@@ -165,7 +167,7 @@
 				<height>1</height>
 				<itemlayout width="1" height="1" />
 				<focusedlayout width="1" height="1" />
-				<content target="videos">$PARAM[path]</content>
+				<content target="videos" limit="$PARAM[limit]" browse="never">$PARAM[path]</content>
 			</control>
 		</definition>
 	</include>

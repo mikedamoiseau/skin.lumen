@@ -28,13 +28,13 @@
 			<control type="image">
 				<include>FullScreenDimensions</include>
 				<texture colordiffuse="99000000">lumen/white.png</texture>
-				<animation effect="fade" start="0" end="100" time="400" tween="sine" easing="out" condition="Control.HasFocus(50)">Conditional</animation>
+				<animation effect="fade" start="0" end="100" time="400" tween="sine" easing="out" condition="$EXP[LumenCastFocus]">Conditional</animation>
 			</control>
 		</control>
 
 		<!-- page content; slides up when the cast row takes focus -->
 		<control type="group">
-			<animation effect="slide" end="0,-340" time="460" tween="cubic" easing="out" condition="Control.HasFocus(50)">Conditional</animation>
+			<animation effect="slide" end="0,-340" time="460" tween="cubic" easing="out" condition="$EXP[LumenCastFocus]">Conditional</animation>
 			<control type="group">
 				<left>lm_margin</left>
 				<top>130</top>
@@ -43,7 +43,7 @@
 					<effect type="slide" start="0,40" end="0,0" time="620" delay="120" tween="cubic" easing="out" />
 				</animation>
 				<animation effect="fade" start="100" end="0" time="200">WindowClose</animation>
-				<animation effect="fade" start="100" end="20" time="400" condition="Control.HasFocus(50)">Conditional</animation>
+				<animation effect="fade" start="100" end="20" time="400" condition="$EXP[LumenCastFocus]">Conditional</animation>
 				<!-- logo / title -->
 				<control type="image">
 					<width>720</width>
@@ -92,7 +92,8 @@
 						<font>lm_body_l</font>
 						<textcolor>text_dim</textcolor>
 						<label>$INFO[ListItem.Plot]</label>
-						<autoscroll delay="8000" time="3000" repeat="8000">!Control.HasFocus(50)</autoscroll>
+						<!-- $EXP isn't expanded in autoscroll: LumenCastFocus written out -->
+						<autoscroll delay="8000" time="3000" repeat="8000">![Control.HasFocus(50) | Control.HasFocus(6051) | Control.HasFocus(5060)]</autoscroll>
 					</control>
 					<control type="label">
 						<width>960</width>
@@ -112,7 +113,10 @@
 					<orientation>horizontal</orientation>
 					<itemgap>18</itemgap>
 					<usecontrolcoords>true</usecontrolcoords>
-					<ondown>50</ondown>
+					<ondown condition="!String.IsEqual(ListItem.DBType,set) + Integer.IsGreater(Container(50).NumItems,0)">6051</ondown>
+					<ondown condition="String.IsEqual(ListItem.DBType,set)">50</ondown>
+					<!-- a film with directors and no cast (a documentary): its directors -->
+					<ondown condition="!String.IsEqual(ListItem.DBType,set) + !Integer.IsGreater(Container(50).NumItems,0)">5060</ondown>
 					<control type="group" id="9001">
 						<width>264</width>
 						<height>80</height>
@@ -138,8 +142,17 @@
 							<focusedcolor>focus_text</focusedcolor>
 							<texturefocus border="32" colordiffuse="FFFFFFFF">lumen/pill.png</texturefocus>
 							<texturenofocus border="32" colordiffuse="2EFFFFFF">lumen/pill.png</texturenofocus>
+							<!-- leaving for a player or a listing: an actor page below (this title was opened on it) closes
+							     first, without bringing back the page it came from, or Kodi refuses the window change -->
+							<onclick>ClearProperty(lumen.personreopen,home)</onclick>
+							<onclick>Dialog.Close(1115,true)</onclick>
+							<!-- Kodi handles the click first: its Browse to a show's seasons was refused while the actor page was
+							     open, so go there again (the same path as GUIDialogVideoInfo::Play) -->
+							<onclick condition="Window.IsVisible(1115) + String.IsEqual(ListItem.DBType,tvshow)">ActivateWindow(Videos,videodb://tvshows/titles/$INFO[ListItem.DBID]/)</onclick>
 							<onup>noop</onup>
-							<ondown>50</ondown>
+							<ondown condition="!String.IsEqual(ListItem.DBType,set) + Integer.IsGreater(Container(50).NumItems,0)">6051</ondown>
+							<ondown condition="String.IsEqual(ListItem.DBType,set)">50</ondown>
+							<ondown condition="!String.IsEqual(ListItem.DBType,set) + !Integer.IsGreater(Container(50).NumItems,0)">5060</ondown>
 						</control>
 						<control type="image">
 							<left>40</left>
@@ -171,6 +184,8 @@
 					<include content="LumenPillButton">
 						<param name="id" value="11" />
 						<param name="label" value="$LOCALIZE[20410]" />
+						<param name="onclick0" value="ClearProperty(lumen.personreopen,home)" />
+						<param name="onclick" value="Dialog.Close(1115,true)" />
 						<param name="visible" value="!String.IsEmpty(ListItem.Trailer) + !$EXP[LumenKids]" />
 					</include>
 					<include content="LumenPillButton">
@@ -186,6 +201,7 @@
 					<include content="LumenPillButton">
 						<param name="id" value="443" />
 						<param name="label" value="Collection" />
+						<param name="onclick0" value="ClearProperty(lumen.personreopen,home)" />
 						<param name="onclick" value="Dialog.Close(all,true)" />
 						<param name="onclick2" value="ActivateWindow(Videos,videodb://movies/sets/$INFO[ListItem.SetId]/?setid=$INFO[ListItem.SetId],return)" />
 						<param name="visible" value="!String.IsEmpty(ListItem.SetID) + !String.IsEqual(ListItem.SetID,0) + !$EXP[LumenKids]" />
@@ -211,7 +227,7 @@
 				<animation effect="fade" start="0" end="100" time="500" delay="300">WindowOpen</animation>
 				<animation effect="fade" start="100" end="0" time="200">WindowClose</animation>
 				<visible>!String.IsEmpty(ListItem.VideoCodec) | !String.IsEmpty(ListItem.AudioCodec)</visible>
-				<animation effect="fade" start="100" end="0" time="300" condition="Control.HasFocus(50)">Conditional</animation>
+				<animation effect="fade" start="100" end="0" time="300" condition="$EXP[LumenCastFocus]">Conditional</animation>
 				<control type="label">
 					<width>560</width>
 					<height>34</height>
@@ -243,7 +259,8 @@
 			<!-- cast & crew / movies in set; not in kids mode: people lead to searches of the whole library -->
 			<control type="group" id="6050">
 				<top>820</top>
-				<visible>!$EXP[LumenKids] + [Integer.IsGreater(Container(50).NumItems,0) | Container(50).IsUpdating]</visible>
+				<!-- on every film page: the directors (5060) only load while it shows, and a film may have no cast -->
+				<visible>!$EXP[LumenKids] + [Integer.IsGreater(Container(50).NumItems,0) | Container(50).IsUpdating | String.IsEqual(ListItem.DBType,movie)]</visible>
 				<animation effect="fade" start="0" end="100" time="500" delay="260">WindowOpen</animation>
 				<animation effect="fade" start="100" end="0" time="200">WindowClose</animation>
 				<control type="label">
@@ -253,6 +270,74 @@
 					<font>lm_headline</font>
 					<textcolor>E6FFFFFF</textcolor>
 					<label>$VAR[LumenInfoRowHeader]</label>
+					<visible>Integer.IsGreater(Container(50).NumItems,0) | Container(50).IsUpdating | Integer.IsGreater(Container(5060).NumItems,0)</visible>
+				</control>
+				<!-- a film's directors, in front of the cast: they slide away as the row moves on, like one row -->
+				<control type="list" id="5060">
+					<left>80</left>
+					<top>52</top>
+					<width>648</width>
+					<height>420</height>
+					<orientation>horizontal</orientation>
+					<!-- always visible (an empty list draws nothing): a hidden list isn't processed and keeps its old items -->
+					<animation effect="slide" end="-216,0" time="320" tween="cubic" easing="out" condition="Integer.IsEqual(Container(5060).NumItems,1) + !$EXP[LumenDirFront1]">Conditional</animation>
+					<animation effect="slide" end="-432,0" time="320" tween="cubic" easing="out" condition="Integer.IsEqual(Container(5060).NumItems,2) + !$EXP[LumenDirFront2]">Conditional</animation>
+					<animation effect="slide" end="-648,0" time="320" tween="cubic" easing="out" condition="Integer.IsGreater(Container(5060).NumItems,2) + !$EXP[LumenDirFront3]">Conditional</animation>
+					<animation effect="fade" start="100" end="0" time="200" condition="!$EXP[LumenDirFront1] + !$EXP[LumenDirFront2] + !$EXP[LumenDirFront3]">Conditional</animation>
+					<onleft>noop</onleft>
+					<onright condition="Integer.IsGreater(Container(50).NumItems,0)">6051</onright>
+					<onright condition="!Integer.IsGreater(Container(50).NumItems,0)">noop</onright>
+					<onup>9000</onup>
+					<ondown>noop</ondown>
+					<onback>8</onback>
+					<onclick>SetProperty(lumen.person,$ESCINFO[Container(5060).ListItem.Label],home)</onclick>
+					<onclick>SetProperty(lumen.personthumb,$ESCINFO[Container(5060).ListItem.Art(thumb)],home)</onclick>
+					<onclick>SetProperty(lumen.personfrom,detail,home)</onclick>
+					<!-- this page was opened from an actor page (still open below): close it, that page now shows this person -->
+					<onclick condition="Window.IsVisible(1115)">Dialog.Close(movieinformation,true)</onclick>
+					<onclick condition="!Window.IsVisible(1115)">ActivateWindow(1115)</onclick>
+					<itemlayout width="216" height="320">
+						<include content="LumenPersonCard">
+							<param name="role" value="Director" />
+						</include>
+					</itemlayout>
+					<focusedlayout width="216" height="320">
+						<control type="group">
+							<include content="LumenCardFocus">
+								<param name="cx" value="108" />
+								<param name="cy" value="110" />
+							</include>
+							<include content="LumenPersonCard">
+								<param name="focused" value="Control.HasFocus(5060)" />
+								<param name="role" value="Director" />
+							</include>
+						</control>
+					</focusedlayout>
+					<content limit="3">$VAR[LumenInfoDirectorsPath]</content>
+				</control>
+				<!-- OK on Kodi's cast list runs Kodi's search (a Searching… box, then a list of results), and a skin
+				     onclick never runs on a list Kodi fills itself. This stands in for the list on people pages: it moves
+				     the list and opens the actor page (Custom_1115_LumenPerson.xml). Collection pages keep Kodi's list. -->
+				<control type="button" id="6051">
+					<left>80</left>
+					<top>52</top>
+					<width>1</width>
+					<height>1</height>
+					<texturefocus />
+					<texturenofocus />
+					<visible>!String.IsEqual(ListItem.DBType,set) + Integer.IsGreater(Container(50).NumItems,0)</visible>
+					<onleft condition="Integer.IsEqual(Container(50).CurrentItem,1) + Integer.IsGreater(Container(5060).NumItems,0) + String.IsEqual(ListItem.DBType,movie)">SetFocus(5060)</onleft>
+					<onleft condition="!Integer.IsEqual(Container(50).CurrentItem,1) | !Integer.IsGreater(Container(5060).NumItems,0) | !String.IsEqual(ListItem.DBType,movie)">Control.Move(50,-1)</onleft>
+					<onright>Control.Move(50,1)</onright>
+					<onup>9000</onup>
+					<ondown>noop</ondown>
+					<onback>8</onback>
+					<onclick>SetProperty(lumen.person,$ESCINFO[Container(50).ListItem.Label],home)</onclick>
+					<onclick>SetProperty(lumen.personthumb,$ESCINFO[Container(50).ListItem.Art(thumb)],home)</onclick>
+					<onclick>SetProperty(lumen.personfrom,detail,home)</onclick>
+					<!-- this page was opened from an actor page (still open below): close it, that page now shows this person -->
+					<onclick condition="Window.IsVisible(1115)">Dialog.Close(movieinformation,true)</onclick>
+					<onclick condition="!Window.IsVisible(1115)">ActivateWindow(1115)</onclick>
 				</control>
 				<control type="list" id="50">
 					<left>80</left>
@@ -264,18 +349,20 @@
 					<onup>9000</onup>
 					<ondown>noop</ondown>
 					<onback>8</onback>
+					<onfocus condition="!String.IsEqual(ListItem.DBType,set)">SetFocus(6051)</onfocus>
+					<animation effect="slide" end="216,0" time="320" tween="cubic" easing="out" condition="$EXP[LumenDirFront1]">Conditional</animation>
+					<animation effect="slide" end="432,0" time="320" tween="cubic" easing="out" condition="$EXP[LumenDirFront2]">Conditional</animation>
+					<animation effect="slide" end="648,0" time="320" tween="cubic" easing="out" condition="$EXP[LumenDirFront3]">Conditional</animation>
 					<!-- people -->
 					<itemlayout width="216" height="320" condition="!String.IsEqual(ListItem.DBType,set)">
 						<include content="LumenPersonCard" />
 					</itemlayout>
 					<focusedlayout width="216" height="320" condition="!String.IsEqual(ListItem.DBType,set)">
 						<control type="group">
-							<include content="LumenCardFocus">
-								<param name="cx" value="108" />
-								<param name="cy" value="110" />
-							</include>
+							<!-- the list itself never has focus here, so its Focus animation can't run -->
+							<animation effect="zoom" start="100" end="110" center="108,110" time="260" tween="cubic" easing="out" condition="Control.HasFocus(6051)">Conditional</animation>
 							<include content="LumenPersonCard">
-								<param name="focused" value="Control.HasFocus(50)" />
+								<param name="focused" value="$EXP[LumenCastFocus]" />
 							</include>
 						</control>
 					</focusedlayout>
@@ -296,7 +383,7 @@
 								<param name="cy" value="157" />
 							</include>
 							<include content="LumenPosterCard">
-								<param name="focused" value="Control.HasFocus(50)" />
+								<param name="focused" value="$EXP[LumenCastFocus]" />
 							</include>
 						</control>
 					</focusedlayout>

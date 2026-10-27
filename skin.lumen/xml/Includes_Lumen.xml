@@ -9,6 +9,14 @@
 
 	<!-- ============ Kids mode: the skin bool the Cinémathèque app also reads; never rename it ============ -->
 	<expression name="LumenKids">Skin.HasSetting(CinemathequeKids)</expression>
+	<!-- detail page: the cast row has focus, through Kodi's list 50 (collections), its stand-in 6051 (people)
+	     or the directors at its front (5060) -->
+	<expression name="LumenCastFocus">Control.HasFocus(50) | Control.HasFocus(6051) | Control.HasFocus(5060)</expression>
+	<!-- the directors (5060) and the cast (50) act as one row: the directors show while the row is at its start and
+	     the cursor can still move right without leaving the screen (list 50 pages 8 cards, Position is its slot) -->
+	<expression name="LumenDirFront1">String.IsEqual(ListItem.DBType,movie) + Integer.IsEqual(Container(5060).NumItems,1) + !Container(50).HasPrevious + Integer.IsLess(Container(50).Position,7)</expression>
+	<expression name="LumenDirFront2">String.IsEqual(ListItem.DBType,movie) + Integer.IsEqual(Container(5060).NumItems,2) + !Container(50).HasPrevious + Integer.IsLess(Container(50).Position,6)</expression>
+	<expression name="LumenDirFront3">String.IsEqual(ListItem.DBType,movie) + Integer.IsGreater(Container(5060).NumItems,2) + !Container(50).HasPrevious + Integer.IsLess(Container(50).Position,5)</expression>
 	<!-- PIN prompts (Custom_1113_LumenPin.xml): what is being asked, and the numeric dialog hides the digits meanwhile -->
 	<expression name="LumenPinUnlock">String.IsEqual(Window(home).Property(lumen.pinflow),unlock)</expression>
 	<expression name="LumenPinSet">String.IsEqual(Window(home).Property(lumen.pinflow),set)</expression>
@@ -951,6 +959,7 @@
 
 	<!-- ============ Detail page ============ -->
 	<include name="LumenPillButton">
+		<param name="onclick0">noop</param>
 		<param name="onclick">noop</param>
 		<param name="onclick2">noop</param>
 		<param name="visible">true</param>
@@ -969,10 +978,13 @@
 				<texturenofocus border="32" colordiffuse="2EFFFFFF">lumen/pill.png</texturenofocus>
 				<animation effect="zoom" start="100" end="106" center="auto" time="200" tween="cubic" easing="out" reversible="false">Focus</animation>
 				<animation effect="zoom" start="106" end="100" center="auto" time="200" tween="cubic" easing="out" reversible="false">UnFocus</animation>
+				<onclick>$PARAM[onclick0]</onclick>
 				<onclick>$PARAM[onclick]</onclick>
 				<onclick>$PARAM[onclick2]</onclick>
 				<onup>noop</onup>
-				<ondown>50</ondown>
+				<ondown condition="Integer.IsGreater(Container(50).NumItems,0) | String.IsEqual(ListItem.DBType,set)">50</ondown>
+				<!-- a film with directors and no cast: its directors -->
+				<ondown condition="!Integer.IsGreater(Container(50).NumItems,0) + !String.IsEqual(ListItem.DBType,set)">5060</ondown>
 				<visible>$PARAM[visible]</visible>
 			</control>
 		</definition>
@@ -994,13 +1006,16 @@
 				<texturefocus border="30" colordiffuse="FFFFFFFF">lumen/pill.png</texturefocus>
 				<texturenofocus border="30" colordiffuse="14FFFFFF">lumen/pill.png</texturenofocus>
 				<onup>noop</onup>
-				<ondown>50</ondown>
+				<ondown condition="Integer.IsGreater(Container(50).NumItems,0) | String.IsEqual(ListItem.DBType,set)">50</ondown>
+				<!-- a film with directors and no cast: its directors -->
+				<ondown condition="!Integer.IsGreater(Container(50).NumItems,0) + !String.IsEqual(ListItem.DBType,set)">5060</ondown>
 				<visible>$PARAM[visible]</visible>
 			</control>
 		</definition>
 	</include>
 	<include name="LumenPersonCard">
 		<param name="focused">false</param>
+		<param name="role">$INFO[ListItem.Label2]</param>
 		<definition>
 			<control type="group">
 				<left>18</left>
@@ -1060,10 +1075,17 @@
 				<align>center</align>
 				<font>lm_caption</font>
 				<textcolor>text_mute</textcolor>
-				<label>$INFO[ListItem.Label2]</label>
+				<label>$PARAM[role]</label>
 			</control>
 		</definition>
 	</include>
+	<!-- a film's directors, filtered to it by id (VideoDatabase::GetFilter: videoversionid=-1 + mediaid → idMovie).
+	     Never empty: a list keeps its old items when its path goes empty, so other pages get a path that finds
+	     nobody (setid=-1; mediaid=0 would drop the filter and list every director). -->
+	<variable name="LumenInfoDirectorsPath">
+		<value condition="String.IsEqual(ListItem.DBType,movie) + !$EXP[LumenKids]">videodb://movies/directors/?videoversionid=-1&amp;mediaid=$INFO[ListItem.DBID]</value>
+		<value>videodb://movies/directors/?setid=-1</value>
+	</variable>
 	<variable name="LumenInfoFanart">
 		<value condition="!String.IsEmpty(ListItem.Art(fanart))">$INFO[ListItem.Art(fanart)]</value>
 		<value>$INFO[ListItem.Art(tvshow.fanart)]</value>
@@ -1124,6 +1146,80 @@
 	</variable>
 	<variable name="LumenInfoAudioLine">
 		<value condition="!String.IsEmpty(ListItem.AudioCodec)">Audio   $VAR[LumenAudioCodecLabel]$VAR[LumenChannelsLabel]$INFO[ListItem.AudioLanguage,  ·  [UPPERCASE],[/UPPERCASE]]</value>
+	</variable>
+
+	<!-- ============ Actor page (Custom_1115_LumenPerson.xml) ============ -->
+	<!-- the name goes into the paths as is: Kodi decodes each multipath part, then its xsp option, and a raw name
+	     survives both unless it has "&" (splits the options) or "/" (splits the multipath): an empty listing for those
+	     and in kids mode, never an empty path (Kodi skips an empty path and keeps the previous person's titles).
+	     Films they acted in or directed, and shows they're in the main cast of. -->
+	<variable name="LumenPersonPath">
+		<value condition="!$EXP[LumenKids] + !String.IsEmpty(Window(home).Property(lumen.person)) + !String.Contains(Window(home).Property(lumen.person),&amp;) + !String.Contains(Window(home).Property(lumen.person),/)">multipath://videodb%3A%2F%2Fmovies%2Ftitles%2F%3Fxsp%3D%257B%2522type%2522%253A%2522movies%2522%252C%2522rules%2522%253A%257B%2522or%2522%253A%255B%257B%2522field%2522%253A%2522actor%2522%252C%2522operator%2522%253A%2522is%2522%252C%2522value%2522%253A%255B$ESCINFO[Window(home).Property(lumen.person)]%255D%257D%252C%257B%2522field%2522%253A%2522director%2522%252C%2522operator%2522%253A%2522is%2522%252C%2522value%2522%253A%255B$ESCINFO[Window(home).Property(lumen.person)]%255D%257D%255D%257D%257D/videodb%3A%2F%2Ftvshows%2Ftitles%2F%3Fxsp%3D%257B%2522type%2522%253A%2522tvshows%2522%252C%2522rules%2522%253A%257B%2522and%2522%253A%255B%257B%2522field%2522%253A%2522actor%2522%252C%2522operator%2522%253A%2522is%2522%252C%2522value%2522%253A%255B$ESCINFO[Window(home).Property(lumen.person)]%255D%257D%255D%257D%257D/</value>
+		<value>videodb://movies/titles/?setid=-1</value>
+	</variable>
+	<variable name="LumenPersonDirectedPath">
+		<value condition="!$EXP[LumenKids] + !String.IsEmpty(Window(home).Property(lumen.person)) + !String.Contains(Window(home).Property(lumen.person),&amp;) + !String.Contains(Window(home).Property(lumen.person),/)">videodb://movies/titles/?xsp=%7B%22type%22%3A%22movies%22%2C%22rules%22%3A%7B%22and%22%3A%5B%7B%22field%22%3A%22director%22%2C%22operator%22%3A%22is%22%2C%22value%22%3A%5B$ESCINFO[Window(home).Property(lumen.person)]%5D%7D%5D%7D%7D</value>
+		<value>videodb://movies/titles/?setid=-1</value>
+	</variable>
+	<variable name="LumenPersonActedPath">
+		<value condition="!$EXP[LumenKids] + !String.IsEmpty(Window(home).Property(lumen.person)) + !String.Contains(Window(home).Property(lumen.person),&amp;) + !String.Contains(Window(home).Property(lumen.person),/)">multipath://videodb%3A%2F%2Fmovies%2Ftitles%2F%3Fxsp%3D%257B%2522type%2522%253A%2522movies%2522%252C%2522rules%2522%253A%257B%2522and%2522%253A%255B%257B%2522field%2522%253A%2522actor%2522%252C%2522operator%2522%253A%2522is%2522%252C%2522value%2522%253A%255B$ESCINFO[Window(home).Property(lumen.person)]%255D%257D%255D%257D%257D/videodb%3A%2F%2Ftvshows%2Ftitles%2F%3Fxsp%3D%257B%2522type%2522%253A%2522tvshows%2522%252C%2522rules%2522%253A%257B%2522and%2522%253A%255B%257B%2522field%2522%253A%2522actor%2522%252C%2522operator%2522%253A%2522is%2522%252C%2522value%2522%253A%255B$ESCINFO[Window(home).Property(lumen.person)]%255D%257D%255D%257D%257D/</value>
+		<value>videodb://movies/titles/?setid=-1</value>
+	</variable>
+	<variable name="LumenPersonKind">
+		<value condition="Integer.IsGreater(Container(5151).NumItems,0) + Integer.IsGreater(Container(5152).NumItems,0)">Actor and director</value>
+		<value condition="Integer.IsGreater(Container(5151).NumItems,0)">Director</value>
+		<value>Actor</value>
+	</variable>
+	<variable name="LumenPersonCount">
+		<value condition="Integer.IsEqual(Container(5150).NumItems,0)">No titles of theirs in your library</value>
+		<value condition="Integer.IsEqual(Container(5150).NumItems,1)">1 title in your library</value>
+		<value>$INFO[Container(5150).NumItems] titles in your library</value>
+	</variable>
+	<!-- under each poster: the year, or "Director · year" for titles they directed (co-directors are " / "-joined) -->
+	<include name="LumenPersonTvBadge">
+		<control type="group">
+			<left>12</left>
+			<top>12</top>
+			<visible>String.IsEqual(ListItem.DBType,tvshow)</visible>
+			<control type="image">
+				<width>46</width>
+				<height>30</height>
+				<texture border="6" colordiffuse="B306070A">lumen/rr6.png</texture>
+			</control>
+			<control type="label">
+				<width>46</width>
+				<height>30</height>
+				<align>center</align>
+				<aligny>center</aligny>
+				<font>lm_micro</font>
+				<textcolor>text</textcolor>
+				<label>TV</label>
+			</control>
+		</control>
+	</include>
+	<include name="LumenPersonCaptions">
+		<control type="label">
+			<left>30</left>
+			<top>366</top>
+			<width>210</width>
+			<height>30</height>
+			<font>lm_caption_bold</font>
+			<textcolor>text</textcolor>
+			<label>$INFO[ListItem.Label]</label>
+		</control>
+		<control type="label">
+			<left>30</left>
+			<top>396</top>
+			<width>210</width>
+			<height>30</height>
+			<font>lm_caption</font>
+			<textcolor>text_dim</textcolor>
+			<label>$VAR[LumenPersonCaption]</label>
+		</control>
+	</include>
+	<variable name="LumenPersonCaption">
+		<value condition="String.Contains(ListItem.Director,Window(home).Property(lumen.person))">Director · $INFO[ListItem.Year]</value>
+		<value>$INFO[ListItem.Year]</value>
 	</variable>
 
 	<!-- ============ Search (Custom_1111_LumenSearch.xml, live preview in DialogKeyboard.xml) ============ -->

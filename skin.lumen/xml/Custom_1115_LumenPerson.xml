@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Actor page: everything of one person's in the library. Whoever opens it first sets
+     Window(home).Property(lumen.person), the name as Kodi spells it, and lumen.personthumb, their photo (may be empty).
+     Photo on the left with the name, what they do and how many titles; their films and shows in one grid, newest first. -->
+<window type="dialog" id="1115">
+	<defaultcontrol always="true">5150</defaultcontrol>
+	<depth>DepthDialog+</depth>
+	<!-- a person's page starts at their newest title (the grid keeps its place when it shows the same person again) -->
+	<onload>SetFocus(5150,0,absolute)</onload>
+	<!-- the video already playing when the page opened (browsing during playback), if any: Timers.xml leaves that
+	     one alone, and takes any other video started while the page is open to full screen -->
+	<onload>SetProperty(lumen.personbgvideo,$ESCINFO[Player.FilenameAndPath],home)</onload>
+	<!-- Kodi has one detail page: opening a title from here closed the one this page came from, so Back reopens
+	     it, once this page has gone (Info on the window below, which still has that title selected) -->
+	<onunload condition="String.IsEqual(Window(home).Property(lumen.personreopen),1)">AlarmClock(lumenpersonreopen,Action(Info),00:00,silent)</onunload>
+	<onunload>ClearProperty(lumen.personreopen,home)</onunload>
+	<controls>
+		<control type="image">
+			<include>FullScreenDimensions</include>
+			<texture colordiffuse="background">lumen/white.png</texture>
+		</control>
+		<!-- photo, or a silhouette when Kodi has none -->
+		<control type="group">
+			<left>lm_margin</left>
+			<top>130</top>
+			<animation effect="fade" start="0" end="100" time="360" tween="sine" easing="out">WindowOpen</animation>
+			<animation effect="fade" start="100" end="0" time="200">WindowClose</animation>
+			<control type="image">
+				<width>360</width>
+				<height>540</height>
+				<texture colordiffuse="card_bg" diffuse="lumen/mask_poster.png">lumen/white.png</texture>
+			</control>
+			<control type="image" id="6153">
+				<width>360</width>
+				<height>540</height>
+				<aspectratio>scale</aspectratio>
+				<fadetime>200</fadetime>
+				<texture background="true" diffuse="lumen/mask_poster.png">$INFO[Window(home).Property(lumen.personthumb)]</texture>
+				<visible>!String.IsEmpty(Window(home).Property(lumen.personthumb))</visible>
+			</control>
+			<control type="image" id="6154">
+				<left>80</left>
+				<top>170</top>
+				<width>200</width>
+				<height>200</height>
+				<texture colordiffuse="text_mute">lumen/icons/person.png</texture>
+				<visible>String.IsEmpty(Window(home).Property(lumen.personthumb))</visible>
+			</control>
+			<control type="grouplist">
+				<top>570</top>
+				<width>420</width>
+				<height>300</height>
+				<orientation>vertical</orientation>
+				<itemgap>10</itemgap>
+				<usecontrolcoords>true</usecontrolcoords>
+				<!-- a textbox: its height follows the text, so a long name wraps onto a second line -->
+				<control type="textbox" id="6150">
+					<width>420</width>
+					<height min="64" max="128">auto</height>
+					<font>lm_title</font>
+					<textcolor>text</textcolor>
+					<label>$INFO[Window(home).Property(lumen.person)]</label>
+				</control>
+				<control type="label" id="6151">
+					<top>6</top>
+					<width>420</width>
+					<height>38</height>
+					<font>lm_body</font>
+					<textcolor>text_dim</textcolor>
+					<label>$VAR[LumenPersonKind]</label>
+					<visible>!Container(5151).IsUpdating + !Container(5152).IsUpdating</visible>
+				</control>
+				<control type="label" id="6152">
+					<width>420</width>
+					<height>38</height>
+					<font>lm_body</font>
+					<textcolor>text_dim</textcolor>
+					<label>$VAR[LumenPersonCount]</label>
+					<visible>!Container(5150).IsUpdating</visible>
+				</control>
+			</control>
+		</control>
+		<!-- their films and shows, newest first -->
+		<control type="label">
+			<left>560</left>
+			<top>130</top>
+			<width>1200</width>
+			<height>38</height>
+			<font>lm_body</font>
+			<textcolor>text_dim</textcolor>
+			<label>Newest first</label>
+			<visible>Integer.IsGreater(Container(5150).NumItems,1)</visible>
+		</control>
+		<control type="panel" id="5150">
+			<left>530</left>
+			<top>164</top>
+			<width>1260</width>
+			<height>916</height>
+			<onleft>noop</onleft>
+			<onright>noop</onright>
+			<onup>noop</onup>
+			<ondown>noop</ondown>
+			<orientation>vertical</orientation>
+			<scrolltime tween="cubic" easing="out">380</scrolltime>
+			<preloaditems>0</preloaditems>
+			<include>LumenRiseIn</include>
+			<itemlayout width="246" height="460">
+				<control type="group">
+					<left>30</left>
+					<top>26</top>
+					<include>LumenPosterCard</include>
+					<include>LumenPersonTvBadge</include>
+				</control>
+				<include>LumenPersonCaptions</include>
+			</itemlayout>
+			<focusedlayout width="246" height="460">
+				<control type="group">
+					<left>30</left>
+					<top>26</top>
+					<include content="LumenCardFocus">
+						<param name="cx" value="105" />
+						<param name="cy" value="157" />
+					</include>
+					<include content="LumenPosterCard">
+						<param name="focused" value="Control.HasFocus(5150)" />
+					</include>
+					<include>LumenPersonTvBadge</include>
+				</control>
+				<include>LumenPersonCaptions</include>
+			</focusedlayout>
+			<!-- OK: that title's detail page, over this one. Kodi has a single detail page, so the one this page came
+			     from closes first (and comes back when this page closes) -->
+			<onclick condition="String.IsEqual(Window(home).Property(lumen.personfrom),detail) + Window.IsVisible(movieinformation)">SetProperty(lumen.personreopen,1,home)</onclick>
+			<onclick>Dialog.Close(movieinformation,true)</onclick>
+			<onclick>Action(Info)</onclick>
+			<content target="videos" sortby="year" sortorder="descending">$VAR[LumenPersonPath]</content>
+		</control>
+		<!-- what they do: directed any film here (5151), acted in any film or show (5152) -->
+		<include content="LumenNextLookup">
+			<param name="id" value="5151" />
+			<param name="path" value="$VAR[LumenPersonDirectedPath]" />
+			<param name="limit" value="1" />
+		</include>
+		<include content="LumenNextLookup">
+			<param name="id" value="5152" />
+			<param name="path" value="$VAR[LumenPersonActedPath]" />
+			<param name="limit" value="1" />
+		</include>
+		<include>LumenClock</include>
+	</controls>
+</window>

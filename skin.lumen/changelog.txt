@@ -1,4 +1,5 @@
 [B]0.3.0[/B]
+• Actor page: select someone in a film's or show's cast to see their photo and every film and show of theirs in the library, newest first, with "Director" under the films they directed. A film's cast row now starts with its director. Back from a title opened there returns to the page, and Back from the page to the film or show you started on. Not available in kids mode.
 • Kids mode: a Home, Movies and TV Shows grids and search that show only titles tagged "Cinematheque Kids" (the Cinémathèque app's kids list). A smiling-face button next to power switches it on once a parent has set a PIN in Configure skin; the lock button leaves it with that PIN. Switching to kids mode stops a playing video and clears the play queue. Settings, add-ons, the long-press menu, cast, trailers and player settings are out of reach, and kids mode survives a restart.
 
 [B]0.2.1[/B]
