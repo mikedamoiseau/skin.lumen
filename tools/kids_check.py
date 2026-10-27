@@ -975,19 +975,19 @@ def c_cleanup(r):
     r.ok("no PIN", lab("Skin.String(lumen.pin)") == "")
 
 
-def main(names):
+def main(names, checks=CHECKS):
     if names == ["all"]:
-        names = [n for n in CHECKS if n not in ("baseline", "cleanup")] + ["cleanup"]
+        names = [n for n in checks if n not in ("baseline", "cleanup")] + ["cleanup"]
     failed = False
     for name in names:
-        if name not in CHECKS:
-            print(f"FAIL {name}: no such check (have: {', '.join(CHECKS)})")
+        if name not in checks:
+            print(f"FAIL {name}: no such check (have: {', '.join(checks)})")
             failed = True
             continue
         keepalive()
         r = Report(name)
         try:
-            CHECKS[name](r)
+            checks[name](r)
         except Exception as e:  # a crashed check is a failed check
             r.ok("ran without error", False, f"{type(e).__name__}: {e}")
             traceback.print_exc(limit=2)

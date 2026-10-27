@@ -43,8 +43,15 @@ def cond(c):
 
 def keepalive():
     """Reset Android's screensaver timer (KEYCODE_WAKEUP is not delivered to Kodi)."""
-    if SSH:
-        return  # no Android underneath: JSON-RPC input already wakes Kodi's screensaver
+    if SSH:  # no Android underneath, but Kodi's screensaver swallows the JSON-RPC input that wakes it,
+        # and an add-on screensaver (the Pi's Bing) keeps its own window on top until Back
+        if cond("System.ScreenSaverActive"):
+            rpc("Input.ExecuteAction", {"action": "noop"})
+            wait_for(lambda: not cond("System.ScreenSaverActive"), 5)
+        if "/addons/screensaver." in lab("Window.Property(xmlfile)"):
+            rpc("Input.Back")
+            wait_for(lambda: "/addons/screensaver." not in lab("Window.Property(xmlfile)"), 5)
+        return
     subprocess.run(["adb", "-s", ADB_SERIAL, "shell", "input", "keyevent", "KEYCODE_WAKEUP"], capture_output=True, timeout=15)
 
 

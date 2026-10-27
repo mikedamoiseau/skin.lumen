@@ -39,9 +39,13 @@ for i, q in enumerate(sys.argv[1:]):
     t0 = time.time(); wait_kbd(False)
     L = ["Container(5201).NumItems", "Container(5202).NumItems", "Container(5203).NumItems"]
     time.sleep(0.5)
+    last, since = None, time.time()
     while time.time() - t0 < 25:
         r = rpc("XBMC.GetInfoLabels", {"labels": L + ["System.CurrentWindow", "System.CurrentControlId", "Skin.String(lumen.search)"]})["result"]
         u = B("Container(5201).IsUpdating", "Container(5202).IsUpdating", "Container(5203).IsUpdating")
-        if not any(u.values()) and time.time() - t0 > 1.5: break
-        time.sleep(0.3)
+        # a row can report "not updating" for a frame or two before its new items land: wait for counts that hold
+        if any(u.values()) or r != last:
+            last, since = r, time.time()
+        elif time.time() - since > 0.6 and time.time() - t0 > 1.5: break
+        time.sleep(0.2)
     print(f"[{q}] {time.time()-t0:.1f}s", {k.split('(')[1].split(')')[0] if 'Container' in k else k: v for k, v in r.items()})
