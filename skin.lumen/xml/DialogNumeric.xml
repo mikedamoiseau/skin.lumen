@@ -31,6 +31,7 @@
 				<font>font37</font>
 				<align>center</align>
 				<aligny>center</aligny>
+				<visible>!$EXP[LumenPinPrompt]</visible>
 			</control>
 			<control type="textbox" id="1">
 				<left>20</left>
@@ -40,6 +41,30 @@
 				<textcolor>button_focus</textcolor>
 				<align>center</align>
 				<aligny>center</aligny>
+				<visible>!$EXP[LumenPinPrompt]</visible>
+			</control>
+			<!-- kids PIN prompts: our heading, and dots instead of the typed digits -->
+			<control type="label">
+				<left>20</left>
+				<top>80</top>
+				<width>505</width>
+				<height>90</height>
+				<textcolor>button_focus</textcolor>
+				<align>center</align>
+				<aligny>center</aligny>
+				<label>$VAR[LumenPinHeading]</label>
+				<visible>$EXP[LumenPinPrompt]</visible>
+			</control>
+			<control type="label">
+				<left>34</left>
+				<top>170</top>
+				<width>477</width>
+				<height>80</height>
+				<font>font37</font>
+				<align>center</align>
+				<aligny>center</aligny>
+				<label>•  •  •  •</label>
+				<visible>$EXP[LumenPinPrompt] + !String.IsEmpty(Control.GetLabel(4))</visible>
 			</control>
 			<control type="grouplist">
 				<left>350</left>

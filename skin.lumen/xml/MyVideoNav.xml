@@ -31,10 +31,33 @@
 		<control type="group">
 			<visible>!$EXP[infodialog_active]</visible>
 			<animation effect="fade" time="250">VisibleChange</animation>
-			<include>View_Lumen_Posters</include>
-			<include>View_Lumen_Showcase</include>
-			<include>View_Lumen_LandscapeGrid</include>
-			<include>View_Lumen_List</include>
+			<!-- kids mode: Kodi gives an empty list a ".." item even with parent folder items off, and from a kids
+			     grid it leads up into the whole library, so an empty kids grid shows a message and nothing to select -->
+			<control type="group">
+				<visible>!$EXP[LumenKids] | Integer.IsGreater(Container.NumItems,0)</visible>
+				<include>View_Lumen_Posters</include>
+				<include>View_Lumen_Showcase</include>
+				<include>View_Lumen_LandscapeGrid</include>
+				<include>View_Lumen_List</include>
+			</control>
+			<control type="label" id="6060">
+				<left>lm_margin</left>
+				<top>300</top>
+				<width>1500</width>
+				<height>60</height>
+				<font>lm_body</font>
+				<textcolor>text_dim</textcolor>
+				<label>Nothing here yet. A parent can choose titles in the Cinémathèque app.</label>
+				<visible>$EXP[LumenKids] + !Integer.IsGreater(Container.NumItems,0) + !Container.IsUpdating</visible>
+			</control>
+			<!-- holds focus in an empty kids grid so OK can't reach ".." (LumenKidsEmptyFocus) -->
+			<control type="button" id="6061">
+				<width>1</width>
+				<height>1</height>
+				<texturefocus />
+				<texturenofocus />
+				<visible>$EXP[LumenKids] + !Integer.IsGreater(Container.NumItems,0)</visible>
+			</control>
 			<control type="group">
 				<visible>!Control.IsVisible(501) + !Control.IsVisible(502)</visible>
 				<include>LumenLibraryHeader</include>
@@ -43,10 +66,17 @@
 				<visible>Control.IsVisible(501) | Control.IsVisible(502)</visible>
 				<include>LumenClock</include>
 			</control>
-			<include>MediaMenuMouseOverlay</include>
+			<!-- kids mode: no side menu (Update library, library search, add-ons, "mark all as watched") -->
 			<control type="group">
+				<visible>!$EXP[LumenKids]</visible>
+				<include>MediaMenuMouseOverlay</include>
+			</control>
+			<control type="group">
+				<visible>!$EXP[LumenKids]</visible>
 				<include>MediaMenuCommon</include>
 				<control type="grouplist" id="9000">
+					<!-- the Menu action focuses 9000 by id even inside a hidden group -->
+					<visible>!$EXP[LumenKids]</visible>
 					<top>50</top>
 					<include>MediaMenuListCommon</include>
 					<control type="button" id="10">

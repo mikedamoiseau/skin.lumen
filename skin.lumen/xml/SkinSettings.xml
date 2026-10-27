@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Lumen skin settings (Settings > Interface > Skin > Configure skin). -->
 <window>
+	<onload condition="$EXP[LumenKids]">ReplaceWindow(home)</onload>
 	<defaultcontrol always="true">9000</defaultcontrol>
 	<backgroundcolor>background</backgroundcolor>
 	<controls>
@@ -40,6 +41,32 @@
 				<include>DefaultSettingButton</include>
 				<selected>Skin.HasSetting(lumen_kenburns)</selected>
 				<onclick>Skin.ToggleSetting(lumen_kenburns)</onclick>
+			</control>
+			<!-- kids mode PIN: asked twice when set; Custom_1113_LumenPin.xml compares and stores it -->
+			<control type="button" id="902">
+				<label>Set kids PIN</label>
+				<include>DefaultSettingButton</include>
+				<onclick>SetProperty(lumen.pinflow,set,home)</onclick>
+				<onclick>SetProperty(lumen.pinprompt,new,home)</onclick>
+				<onclick>Skin.Reset(lumen.pinnew)</onclick>
+				<onclick>Skin.SetNumeric(lumen.pinnew)</onclick>
+				<onclick>SetProperty(lumen.pinprompt,again,home)</onclick>
+				<onclick>Skin.Reset(lumen.pinentry)</onclick>
+				<onclick>Skin.SetNumeric(lumen.pinentry)</onclick>
+				<onclick>ClearProperty(lumen.pinprompt,home)</onclick>
+				<onclick>ActivateWindow(1113)</onclick>
+				<visible>String.IsEmpty(Skin.String(lumen.pin))</visible>
+			</control>
+			<control type="button" id="903">
+				<label>Remove kids PIN</label>
+				<include>DefaultSettingButton</include>
+				<onclick>SetProperty(lumen.pinflow,remove,home)</onclick>
+				<onclick>SetProperty(lumen.pinprompt,current,home)</onclick>
+				<onclick>Skin.Reset(lumen.pinentry)</onclick>
+				<onclick>Skin.SetNumeric(lumen.pinentry)</onclick>
+				<onclick>ClearProperty(lumen.pinprompt,home)</onclick>
+				<onclick>ActivateWindow(1113)</onclick>
+				<visible>!String.IsEmpty(Skin.String(lumen.pin))</visible>
 			</control>
 		</control>
 		<!-- help card for the focused setting -->

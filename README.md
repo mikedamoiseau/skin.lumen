@@ -47,6 +47,14 @@ hardware (see [Performance](#performance)).
 - **Player**: thin seek bar with elapsed/remaining time, "Ends at", resolution,
   HDR, audio codec and channel badges, plus round transport buttons in the OSD.
   A sleep timer (moon button) stops playback after 15, 30, 60 or 90 minutes.
+- **Kids mode**: a Home that shows only the films and shows tagged
+  `Cinematheque Kids` in the library (the tag the Cinémathèque app writes), with
+  Continue Watching, New Episodes, Recently Added, TV Shows and Discover rows,
+  Movies and TV Shows grids and a search limited to those titles. Anyone can
+  switch it on with the smiling-face button next to power; leaving it with the
+  lock button asks for a parent's PIN. Settings, add-ons, the long-press menu,
+  the cast row, trailers and the player's settings are out of reach, and kids
+  mode stays on after a restart. See [Kids mode](#kids-mode).
 - **Everything else**: settings, select/confirm/progress/keyboard dialogs,
   notifications, a background-task pill for library scans, Favourites and the
   skin settings page all share the same glass look.
@@ -152,6 +160,31 @@ tools/deploy.sh                       # refuses while something is playing; --fo
 `deploy.sh` replaces `/storage/.kodi/addons/skin.lumen` on the box (the LibreELEC
 path) and runs `ReloadSkin()`.
 
+### Kids mode
+
+1. In *Configure skin*, choose **Set kids PIN** and type a PIN twice. The kids
+   button (a smiling face) then appears at the end of the Home tab bar.
+2. Press it to switch the TV to kids mode. A video that is playing stops and
+   the play queue is cleared. The lock button in the same place leaves kids
+   mode after asking for the PIN.
+3. To change the PIN, choose **Remove kids PIN** (it asks for the current one),
+   then set a new one. Each device keeps its own PIN.
+
+Kids mode needs Kodi's "Show parent folder items" off (the default in the table
+above): a ".." item would lead from the kids lists into the whole library, so
+the kids button refuses with a message while it's on.
+
+Forgot the PIN? Read it from a computer on the same network over JSON-RPC:
+
+```sh
+curl -s -H 'Content-Type: application/json' http://<device>:8080/jsonrpc \
+  -d '{"jsonrpc":"2.0","id":1,"method":"XBMC.GetInfoLabels","params":{"labels":["Skin.String(lumen.pin)"]}}'
+```
+
+On LibreELEC, `kodi-send --action="Skin.Reset(CinemathequeKids)"` also leaves
+kids mode. Other apps can tell whether a device is in kids mode by reading
+`Skin.HasSetting(CinemathequeKids)` with `XBMC.GetInfoBooleans`.
+
 ## Known limitations
 
 - Music, Pictures, Live TV/PVR and Games keep Estuary's layouts with Lumen's styling.
@@ -159,6 +192,11 @@ path) and runs `ReloadSkin()`.
 - Kodi doesn't expose Dolby Atmos, so TrueHD and DD+ are shown instead.
 - Add-on folders show no backdrop on purpose, because add-on fanart is usually a promo screenshot.
 - Only 1080p/16:9 layouts. Kodi scales them for 4K output.
+- Kids mode is a simple lock for remote-control users, not a hard lockdown: a
+  keyboard, a custom keymap or leaving Kodi from the Android TV home screen gets
+  out. Anyone on the home network can read the PIN.
+- The kids PIN screen asks for 4 digits, but Kodi can't check a PIN's length, so
+  any number is accepted.
 - Search matches the start of a word ("man" finds "Iron Man", not "Spider-Man") and
   can't use "&", because Kodi splits its search URL there.
 

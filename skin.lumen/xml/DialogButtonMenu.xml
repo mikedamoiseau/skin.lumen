@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <window>
+	<onload condition="$EXP[LumenKids]">Dialog.Close(shutdownmenu,true)</onload>
 	<defaultcontrol>9000</defaultcontrol>
 	<include>Animation_DialogPopupOpenClose</include>
 	<controls>

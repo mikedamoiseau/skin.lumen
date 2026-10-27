@@ -220,6 +220,50 @@ def moon_icon(size=64):
     return down(img, size, size)
 
 
+def lock_icon(size=64, stroke=6):
+    """Padlock (leave kids mode): shackle arc over a filled body with a keyhole cut out."""
+    big = size * S
+    img = Image.new("RGBA", (big, big), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    cx, r = 0.5 * big, 0.19 * big
+    d.arc([cx - r, 0.12 * big, cx + r, 0.12 * big + 2 * r], start=180, end=360, fill=WHITE + (255,), width=stroke * S)
+    for x in (cx - r + stroke * S / 2, cx + r - stroke * S / 2):
+        d.line([(x, 0.12 * big + r), (x, 0.5 * big)], fill=WHITE + (255,), width=stroke * S)
+    d.rounded_rectangle([0.2 * big, 0.44 * big, 0.8 * big, 0.88 * big], radius=0.08 * big, fill=WHITE + (255,))
+    k = 0.055 * big
+    d.ellipse([cx - k, 0.6 * big - k, cx + k, 0.6 * big + k], fill=(0, 0, 0, 0))
+    d.rectangle([cx - k / 2.4, 0.6 * big, cx + k / 2.4, 0.74 * big], fill=(0, 0, 0, 0))
+    return down(img, size, size)
+
+
+def kids_icon(size=64, stroke=5):
+    """Smiling face (enter kids mode)."""
+    big = size * S
+    img = Image.new("RGBA", (big, big), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    c, r = 0.5 * big, 0.38 * big
+    d.ellipse([c - r, c - r, c + r, c + r], outline=WHITE + (255,), width=stroke * S)
+    e = 0.05 * big
+    for x in (0.37 * big, 0.63 * big):
+        d.ellipse([x - e, 0.4 * big - e, x + e, 0.4 * big + e], fill=WHITE + (255,))
+    m = 0.2 * big
+    d.arc([c - m, 0.42 * big - m, c + m, 0.42 * big + m], start=25, end=155, fill=WHITE + (255,), width=stroke * S)
+    return down(img, size, size)
+
+
+def audio_icon(size=64, stroke=5):
+    """Speaker with two sound waves (next audio language)."""
+    big = size * S
+    img = Image.new("RGBA", (big, big), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    pts = [(0.12, 0.38), (0.28, 0.38), (0.5, 0.2), (0.5, 0.8), (0.28, 0.62), (0.12, 0.62)]
+    d.polygon([(x * big, y * big) for x, y in pts], fill=WHITE + (255,))
+    for r in (0.16, 0.3):
+        d.arc([0.5 * big - r * big, 0.5 * big - r * big, 0.5 * big + r * big, 0.5 * big + r * big],
+              start=-45, end=45, fill=WHITE + (255,), width=stroke * S)
+    return down(img, size, size)
+
+
 def toggle(on, w=120, h=76):
     """iOS-style switch, drawn inside Estuary's radio button box (120x76)."""
     tw, th = 84, 48
@@ -358,6 +402,9 @@ def main():
     out(f"{L}icons/search.png", search_icon())
     out(f"{L}icons/power.png", power_icon())
     out(f"{L}icons/moon.png", moon_icon())
+    out(f"{L}icons/lock.png", lock_icon())
+    out(f"{L}icons/kids.png", kids_icon())
+    out(f"{L}icons/audio.png", audio_icon())
 
     # --- Estuary overrides: restyle every legacy window through shared textures ---
     out("buttons/button-fo.png", rr(80, 80, 16, fill=(255, 255, 255, 62), stroke=(255, 255, 255, 150), stroke_w=2, inset=2))

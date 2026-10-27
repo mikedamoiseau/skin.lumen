@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<smartplaylist type="movies">
+    <name>Kids recently added</name>
+    <match>all</match>
+    <rule field="tag" operator="is">
+        <value>Cinematheque Kids</value>
+    </rule>
+    <group>none</group>
+    <limit>25</limit>
+    <order direction="descending">dateadded</order>
+</smartplaylist>

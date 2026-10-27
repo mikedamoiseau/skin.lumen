@@ -7,6 +7,24 @@
 	<constant name="lm_land_w">384</constant>
 	<constant name="lm_land_h">216</constant>
 
+	<!-- ============ Kids mode: the skin bool the Cinémathèque app also reads; never rename it ============ -->
+	<expression name="LumenKids">Skin.HasSetting(CinemathequeKids)</expression>
+	<!-- PIN prompts (Custom_1113_LumenPin.xml): what is being asked, and the numeric dialog hides the digits meanwhile -->
+	<expression name="LumenPinUnlock">String.IsEqual(Window(home).Property(lumen.pinflow),unlock)</expression>
+	<expression name="LumenPinSet">String.IsEqual(Window(home).Property(lumen.pinflow),set)</expression>
+	<expression name="LumenPinRemove">String.IsEqual(Window(home).Property(lumen.pinflow),remove)</expression>
+	<expression name="LumenPinPrompt">!String.IsEmpty(Window(home).Property(lumen.pinprompt))</expression>
+	<variable name="LumenPinHeading">
+		<value condition="String.IsEqual(Window(home).Property(lumen.pinprompt),new)">Choose a 4-digit PIN</value>
+		<value condition="String.IsEqual(Window(home).Property(lumen.pinprompt),again)">Type the PIN again</value>
+		<value>Enter the kids PIN</value>
+	</variable>
+	<variable name="LumenPinResult">
+		<value condition="String.IsEqual(Window.Property(result),wrong)">Wrong PIN</value>
+		<value condition="String.IsEqual(Window.Property(result),mismatch)">The two PINs didn't match. Nothing was saved.</value>
+		<value condition="String.IsEqual(Window.Property(result),saved)">Kids PIN saved</value>
+		<value condition="String.IsEqual(Window.Property(result),removed)">Kids PIN removed</value>
+	</variable>
 	<!-- ============ Animations ============ -->
 	<include name="LumenFadeInWindow">
 		<animation effect="fade" start="0" end="100" time="320" tween="sine" easing="out">WindowOpen</animation>
@@ -116,14 +134,14 @@
 						<param name="id" value="11" />
 						<param name="nofocustex" value="$PARAM[tex11]" />
 						<param name="label" value="$LOCALIZE[342]" />
-						<param name="onclick" value="ActivateWindow(Videos,videodb://movies/titles/,return)" />
+						<param name="onclick" value="ActivateWindow(Videos,$VAR[LumenMoviesTabPath],return)" />
 						<param name="visible" value="Library.HasContent(movies)" />
 					</include>
 					<include content="LumenTabButton">
 						<param name="id" value="12" />
 						<param name="nofocustex" value="$PARAM[tex12]" />
 						<param name="label" value="$LOCALIZE[20343]" />
-						<param name="onclick" value="ActivateWindow(Videos,videodb://tvshows/titles/,return)" />
+						<param name="onclick" value="ActivateWindow(Videos,$VAR[LumenShowsTabPath],return)" />
 						<param name="visible" value="Library.HasContent(tvshows)" />
 					</include>
 					<include content="LumenTabButton">
@@ -131,21 +149,21 @@
 						<param name="nofocustex" value="$PARAM[tex13]" />
 						<param name="label" value="Collections" />
 						<param name="onclick" value="ActivateWindow(Videos,videodb://movies/sets/,return)" />
-						<param name="visible" value="Library.HasContent(moviesets)" />
+						<param name="visible" value="Library.HasContent(moviesets) + !$EXP[LumenKids]" />
 					</include>
 					<include content="LumenTabButton">
 						<param name="id" value="14" />
 						<param name="nofocustex" value="$PARAM[tex14]" />
 						<param name="label" value="$LOCALIZE[1036]" />
 						<param name="onclick" value="ActivateWindow(favouritesbrowser)" />
-						<param name="visible" value="true" />
+						<param name="visible" value="!$EXP[LumenKids]" />
 					</include>
 					<include content="LumenTabButton">
 						<param name="id" value="15" />
 						<param name="nofocustex" value="$PARAM[tex15]" />
 						<param name="label" value="$LOCALIZE[24001]" />
 						<param name="onclick" value="ActivateWindow(Videos,addons://sources/video/,return)" />
-						<param name="visible" value="true" />
+						<param name="visible" value="!$EXP[LumenKids]" />
 					</include>
 					<include content="LumenTabButton">
 						<param name="id" value="16" />
@@ -162,7 +180,7 @@
 						<param name="nofocustex" value="$PARAM[tex17]" />
 						<param name="label" value="$LOCALIZE[5]" />
 						<param name="onclick" value="ActivateWindow(settings)" />
-						<param name="visible" value="true" />
+						<param name="visible" value="!$EXP[LumenKids]" />
 					</include>
 					<!-- power: icon-only, opens Kodi's power menu (items depend on the platform) -->
 					<control type="radiobutton" id="18">
@@ -183,10 +201,65 @@
 						<animation effect="zoom" start="100" end="106" center="auto" time="200" tween="cubic" easing="out" reversible="false">Focus</animation>
 						<animation effect="zoom" start="106" end="100" center="auto" time="200" tween="cubic" easing="out" reversible="false">UnFocus</animation>
 						<onclick>ActivateWindow(shutdownmenu)</onclick>
+						<visible>!$EXP[LumenKids]</visible>
+					</control>
+					<!-- kids mode: smiling face enters it (once a parent has set a PIN), the lock leaves it -->
+					<control type="radiobutton" id="20">
+						<width>60</width>
+						<height>60</height>
+						<label>$VAR[LumenKidsButtonLabel]</label>
+						<font></font>
+						<texturefocus border="30" colordiffuse="FFFFFFFF">lumen/pill.png</texturefocus>
+						<texturenofocus />
+						<radioposx>14</radioposx>
+						<radioposy>14</radioposy>
+						<radiowidth>32</radiowidth>
+						<radioheight>32</radioheight>
+						<selected>$EXP[LumenKids]</selected>
+						<textureradioonfocus colordiffuse="focus_text">lumen/icons/lock.png</textureradioonfocus>
+						<textureradioonnofocus colordiffuse="text_dim">lumen/icons/lock.png</textureradioonnofocus>
+						<textureradioofffocus colordiffuse="focus_text">lumen/icons/kids.png</textureradioofffocus>
+						<textureradiooffnofocus colordiffuse="text_dim">lumen/icons/kids.png</textureradiooffnofocus>
+						<animation effect="zoom" start="100" end="106" center="auto" time="200" tween="cubic" easing="out" reversible="false">Focus</animation>
+						<animation effect="zoom" start="106" end="100" center="auto" time="200" tween="cubic" easing="out" reversible="false">UnFocus</animation>
+						<!-- with ".." items on, a kids list would lead back into the whole library -->
+						<onclick condition="!$EXP[LumenKids] + System.GetBool(filelists.showparentdiritems)">Notification(Kids mode,Turn off Show parent folder items (Settings › Media) first,6000)</onclick>
+						<onclick condition="!$EXP[LumenKids] + !System.GetBool(filelists.showparentdiritems)">Skin.SetBool(CinemathequeKids)</onclick>
+						<onclick condition="!$EXP[LumenKids] + !System.GetBool(filelists.showparentdiritems)">ClearProperty(lumen.row,home)</onclick>
+						<!-- a parent's film, or the queue after it, must not carry on into kids mode (music playing is left alone) -->
+						<onclick condition="!$EXP[LumenKids] + !System.GetBool(filelists.showparentdiritems) + Player.HasVideo">PlayerControl(Stop)</onclick>
+						<onclick condition="!$EXP[LumenKids] + !System.GetBool(filelists.showparentdiritems) + !Player.HasAudio">Playlist.Clear</onclick>
+						<onclick condition="!$EXP[LumenKids] + !System.GetBool(filelists.showparentdiritems)">ActivateWindow(1114)</onclick>
+						<!-- leaving asks for the PIN; Custom_1113_LumenPin.xml checks it. No PIN at all (set from a computer): just leave -->
+						<onclick condition="$EXP[LumenKids] + String.IsEmpty(Skin.String(lumen.pin))">Skin.Reset(CinemathequeKids)</onclick>
+						<onclick condition="$EXP[LumenKids] + !String.IsEmpty(Skin.String(lumen.pin))">SetProperty(lumen.pinflow,unlock,home)</onclick>
+						<onclick condition="$EXP[LumenKids] + !String.IsEmpty(Skin.String(lumen.pin))">SetProperty(lumen.pinprompt,current,home)</onclick>
+						<onclick condition="$EXP[LumenKids] + !String.IsEmpty(Skin.String(lumen.pin))">Skin.Reset(lumen.pinentry)</onclick>
+						<onclick condition="$EXP[LumenKids] + !String.IsEmpty(Skin.String(lumen.pin))">Skin.SetNumeric(lumen.pinentry)</onclick>
+						<onclick condition="$EXP[LumenKids] + !String.IsEmpty(Skin.String(lumen.pin))">ClearProperty(lumen.pinprompt,home)</onclick>
+						<onclick condition="$EXP[LumenKids] + !String.IsEmpty(Skin.String(lumen.pin))">ActivateWindow(1113)</onclick>
+						<visible>$EXP[LumenKids] | !String.IsEmpty(Skin.String(lumen.pin))</visible>
 					</control>
 				</control>
 			</control>
 		</definition>
+	</include>
+	<variable name="LumenMoviesTabPath">
+		<value condition="$EXP[LumenKids]">special://skin/playlists/kids/movies.xsp</value>
+		<value>videodb://movies/titles/</value>
+	</variable>
+	<variable name="LumenShowsTabPath">
+		<value condition="$EXP[LumenKids]">special://skin/playlists/kids/tvshows.xsp</value>
+		<value>videodb://tvshows/titles/</value>
+	</variable>
+	<variable name="LumenKidsButtonLabel">
+		<value condition="$EXP[LumenKids]">Leave kids mode</value>
+		<value>Kids mode</value>
+	</variable>
+	<!-- kids mode: an empty grid still holds Kodi's ".." item, and a hidden list keeps focus and acts on OK,
+	     so the view hands focus to MyVideoNav's empty-grid button (6061), which does nothing -->
+	<include name="LumenKidsEmptyFocus">
+		<onfocus condition="$EXP[LumenKids] + !Integer.IsGreater(Container.NumItems,0)">SetFocus(6061)</onfocus>
 	</include>
 	<include name="LumenClock">
 		<control type="group">
@@ -341,11 +414,12 @@
 
 	<!-- ============ Hero (logo / title, metadata, plot) ============ -->
 	<include name="LumenHero">
+		<param name="id"></param>
 		<param name="item">ListItem</param>
 		<param name="visible">true</param>
 		<param name="top">150</param>
 		<definition>
-			<control type="group">
+			<control type="group" id="$PARAM[id]">
 				<left>lm_margin</left>
 				<top>$PARAM[top]</top>
 				<width>900</width>
@@ -744,10 +818,11 @@
 		<param name="fadeout">false</param>
 		<param name="onup">9000</param>
 		<param name="ondown">noop</param>
+		<param name="visible">true</param>
 		<definition>
 			<control type="group" id="$PARAM[group]">
 				<height>500</height>
-				<visible>Integer.IsGreater(Container($PARAM[id]).NumItems,0) | Container($PARAM[id]).IsUpdating</visible>
+				<visible>$PARAM[visible] + [Integer.IsGreater(Container($PARAM[id]).NumItems,0) | Container($PARAM[id]).IsUpdating]</visible>
 				<animation effect="fade" start="100" end="0" time="300" tween="sine" easing="out" condition="$PARAM[fadeout]">Conditional</animation>
 				<include content="LumenRowHeader">
 					<param name="header" value="$PARAM[header]" />
@@ -825,10 +900,11 @@
 		<param name="fadeout">false</param>
 		<param name="onup">9000</param>
 		<param name="ondown">noop</param>
+		<param name="visible">true</param>
 		<definition>
 			<control type="group" id="$PARAM[group]">
 				<height>500</height>
-				<visible>Integer.IsGreater(Container($PARAM[id]).NumItems,0) | Container($PARAM[id]).IsUpdating</visible>
+				<visible>$PARAM[visible] + [Integer.IsGreater(Container($PARAM[id]).NumItems,0) | Container($PARAM[id]).IsUpdating]</visible>
 				<animation effect="fade" start="100" end="0" time="300" tween="sine" easing="out" condition="$PARAM[fadeout]">Conditional</animation>
 				<include content="LumenRowHeader">
 					<param name="header" value="$PARAM[header]" />
@@ -1051,21 +1127,27 @@
 	</variable>
 
 	<!-- ============ Search (Custom_1111_LumenSearch.xml, live preview in DialogKeyboard.xml) ============ -->
+	<!-- kids mode: the same rules inside an "and" with the Cinematheque Kids tag; no cast & crew row (a person's films aren't all tagged) -->
 	<!-- a word of the title starts with the text ("%20" decodes to the space before it); cast/director contain it.
 	     No path without text (it would load the whole library) or with "&" (it splits the URL options). -->
 	<variable name="LumenSearchMoviesPath">
+		<value condition="$EXP[LumenKids] + !String.IsEmpty(Skin.String(lumen.search)) + !String.Contains(Skin.String(lumen.search),&amp;)">videodb://movies/titles/?xsp=%7B%22type%22%3A%22movies%22%2C%22rules%22%3A%7B%22and%22%3A%5B%7B%22field%22%3A%22tag%22%2C%22operator%22%3A%22is%22%2C%22value%22%3A%5B%22Cinematheque%20Kids%22%5D%7D%2C%7B%22or%22%3A%5B%7B%22field%22%3A%22title%22%2C%22operator%22%3A%22startswith%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search)]%5D%7D%2C%7B%22field%22%3A%22title%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search),%20,]%5D%7D%2C%7B%22field%22%3A%22originaltitle%22%2C%22operator%22%3A%22startswith%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search)]%5D%7D%2C%7B%22field%22%3A%22originaltitle%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search),%20,]%5D%7D%5D%7D%5D%7D%2C%22order%22%3A%7B%22method%22%3A%22title%22%2C%22direction%22%3A%22ascending%22%7D%7D</value>
 		<value condition="!String.IsEmpty(Skin.String(lumen.search)) + !String.Contains(Skin.String(lumen.search),&amp;)">videodb://movies/titles/?xsp=%7B%22type%22%3A%22movies%22%2C%22rules%22%3A%7B%22or%22%3A%5B%7B%22field%22%3A%22title%22%2C%22operator%22%3A%22startswith%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search)]%5D%7D%2C%7B%22field%22%3A%22title%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search),%20,]%5D%7D%2C%7B%22field%22%3A%22originaltitle%22%2C%22operator%22%3A%22startswith%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search)]%5D%7D%2C%7B%22field%22%3A%22originaltitle%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search),%20,]%5D%7D%5D%7D%2C%22order%22%3A%7B%22method%22%3A%22title%22%2C%22direction%22%3A%22ascending%22%7D%7D</value>
 	</variable>
 	<variable name="LumenSearchShowsPath">
+		<value condition="$EXP[LumenKids] + !String.IsEmpty(Skin.String(lumen.search)) + !String.Contains(Skin.String(lumen.search),&amp;)">videodb://tvshows/titles/?xsp=%7B%22type%22%3A%22tvshows%22%2C%22rules%22%3A%7B%22and%22%3A%5B%7B%22field%22%3A%22tag%22%2C%22operator%22%3A%22is%22%2C%22value%22%3A%5B%22Cinematheque%20Kids%22%5D%7D%2C%7B%22or%22%3A%5B%7B%22field%22%3A%22title%22%2C%22operator%22%3A%22startswith%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search)]%5D%7D%2C%7B%22field%22%3A%22title%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search),%20,]%5D%7D%2C%7B%22field%22%3A%22originaltitle%22%2C%22operator%22%3A%22startswith%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search)]%5D%7D%2C%7B%22field%22%3A%22originaltitle%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search),%20,]%5D%7D%2C%7B%22field%22%3A%22actor%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search)]%5D%7D%2C%7B%22field%22%3A%22director%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search)]%5D%7D%5D%7D%5D%7D%2C%22order%22%3A%7B%22method%22%3A%22title%22%2C%22direction%22%3A%22ascending%22%7D%7D</value>
 		<value condition="!String.IsEmpty(Skin.String(lumen.search)) + !String.Contains(Skin.String(lumen.search),&amp;)">videodb://tvshows/titles/?xsp=%7B%22type%22%3A%22tvshows%22%2C%22rules%22%3A%7B%22or%22%3A%5B%7B%22field%22%3A%22title%22%2C%22operator%22%3A%22startswith%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search)]%5D%7D%2C%7B%22field%22%3A%22title%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search),%20,]%5D%7D%2C%7B%22field%22%3A%22originaltitle%22%2C%22operator%22%3A%22startswith%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search)]%5D%7D%2C%7B%22field%22%3A%22originaltitle%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search),%20,]%5D%7D%2C%7B%22field%22%3A%22actor%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search)]%5D%7D%2C%7B%22field%22%3A%22director%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search)]%5D%7D%5D%7D%2C%22order%22%3A%7B%22method%22%3A%22title%22%2C%22direction%22%3A%22ascending%22%7D%7D</value>
 	</variable>
 	<variable name="LumenSearchPeoplePath">
+		<value condition="$EXP[LumenKids]"></value>
 		<value condition="!String.IsEmpty(Skin.String(lumen.search)) + !String.Contains(Skin.String(lumen.search),&amp;)">videodb://movies/titles/?xsp=%7B%22type%22%3A%22movies%22%2C%22rules%22%3A%7B%22or%22%3A%5B%7B%22field%22%3A%22actor%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search)]%5D%7D%2C%7B%22field%22%3A%22director%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Skin.String(lumen.search)]%5D%7D%5D%7D%2C%22order%22%3A%7B%22method%22%3A%22title%22%2C%22direction%22%3A%22ascending%22%7D%7D</value>
 	</variable>
 	<variable name="LumenTypingMoviesPath">
+		<value condition="$EXP[LumenKids] + !String.IsEmpty(Control.GetLabel(312).index(1)) + !String.Contains(Control.GetLabel(312).index(1),&amp;)">videodb://movies/titles/?xsp=%7B%22type%22%3A%22movies%22%2C%22rules%22%3A%7B%22and%22%3A%5B%7B%22field%22%3A%22tag%22%2C%22operator%22%3A%22is%22%2C%22value%22%3A%5B%22Cinematheque%20Kids%22%5D%7D%2C%7B%22or%22%3A%5B%7B%22field%22%3A%22title%22%2C%22operator%22%3A%22startswith%22%2C%22value%22%3A%5B$ESCINFO[Control.GetLabel(312).index(1)]%5D%7D%2C%7B%22field%22%3A%22title%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Control.GetLabel(312).index(1),%20,]%5D%7D%2C%7B%22field%22%3A%22originaltitle%22%2C%22operator%22%3A%22startswith%22%2C%22value%22%3A%5B$ESCINFO[Control.GetLabel(312).index(1)]%5D%7D%2C%7B%22field%22%3A%22originaltitle%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Control.GetLabel(312).index(1),%20,]%5D%7D%5D%7D%5D%7D%2C%22order%22%3A%7B%22method%22%3A%22title%22%2C%22direction%22%3A%22ascending%22%7D%7D</value>
 		<value condition="!String.IsEmpty(Control.GetLabel(312).index(1)) + !String.Contains(Control.GetLabel(312).index(1),&amp;)">videodb://movies/titles/?xsp=%7B%22type%22%3A%22movies%22%2C%22rules%22%3A%7B%22or%22%3A%5B%7B%22field%22%3A%22title%22%2C%22operator%22%3A%22startswith%22%2C%22value%22%3A%5B$ESCINFO[Control.GetLabel(312).index(1)]%5D%7D%2C%7B%22field%22%3A%22title%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Control.GetLabel(312).index(1),%20,]%5D%7D%2C%7B%22field%22%3A%22originaltitle%22%2C%22operator%22%3A%22startswith%22%2C%22value%22%3A%5B$ESCINFO[Control.GetLabel(312).index(1)]%5D%7D%2C%7B%22field%22%3A%22originaltitle%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Control.GetLabel(312).index(1),%20,]%5D%7D%5D%7D%2C%22order%22%3A%7B%22method%22%3A%22title%22%2C%22direction%22%3A%22ascending%22%7D%7D</value>
 	</variable>
 	<variable name="LumenTypingShowsPath">
+		<value condition="$EXP[LumenKids] + !String.IsEmpty(Control.GetLabel(312).index(1)) + !String.Contains(Control.GetLabel(312).index(1),&amp;)">videodb://tvshows/titles/?xsp=%7B%22type%22%3A%22tvshows%22%2C%22rules%22%3A%7B%22and%22%3A%5B%7B%22field%22%3A%22tag%22%2C%22operator%22%3A%22is%22%2C%22value%22%3A%5B%22Cinematheque%20Kids%22%5D%7D%2C%7B%22or%22%3A%5B%7B%22field%22%3A%22title%22%2C%22operator%22%3A%22startswith%22%2C%22value%22%3A%5B$ESCINFO[Control.GetLabel(312).index(1)]%5D%7D%2C%7B%22field%22%3A%22title%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Control.GetLabel(312).index(1),%20,]%5D%7D%2C%7B%22field%22%3A%22originaltitle%22%2C%22operator%22%3A%22startswith%22%2C%22value%22%3A%5B$ESCINFO[Control.GetLabel(312).index(1)]%5D%7D%2C%7B%22field%22%3A%22originaltitle%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Control.GetLabel(312).index(1),%20,]%5D%7D%5D%7D%5D%7D%2C%22order%22%3A%7B%22method%22%3A%22title%22%2C%22direction%22%3A%22ascending%22%7D%7D</value>
 		<value condition="!String.IsEmpty(Control.GetLabel(312).index(1)) + !String.Contains(Control.GetLabel(312).index(1),&amp;)">videodb://tvshows/titles/?xsp=%7B%22type%22%3A%22tvshows%22%2C%22rules%22%3A%7B%22or%22%3A%5B%7B%22field%22%3A%22title%22%2C%22operator%22%3A%22startswith%22%2C%22value%22%3A%5B$ESCINFO[Control.GetLabel(312).index(1)]%5D%7D%2C%7B%22field%22%3A%22title%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Control.GetLabel(312).index(1),%20,]%5D%7D%2C%7B%22field%22%3A%22originaltitle%22%2C%22operator%22%3A%22startswith%22%2C%22value%22%3A%5B$ESCINFO[Control.GetLabel(312).index(1)]%5D%7D%2C%7B%22field%22%3A%22originaltitle%22%2C%22operator%22%3A%22contains%22%2C%22value%22%3A%5B$ESCINFO[Control.GetLabel(312).index(1),%20,]%5D%7D%5D%7D%2C%22order%22%3A%7B%22method%22%3A%22title%22%2C%22direction%22%3A%22ascending%22%7D%7D</value>
 	</variable>
 	<include name="LumenTypingResults">
@@ -1279,6 +1361,8 @@
 		<value>$INFO[Player.Time]</value>
 	</variable>
 	<variable name="LumenSkinSettingHelp">
+		<value condition="Control.HasFocus(902)">Kids mode shows only the titles chosen in the Cinémathèque app. Set a PIN to show the Kids button on Home; leaving kids mode asks for it.</value>
+		<value condition="Control.HasFocus(903)">Asks for the current PIN, then removes it and hides the Kids button.[CR][CR]To change the PIN, remove it and set a new one.</value>
 		<value condition="Control.HasFocus(901)">Slowly zooms the backdrop on Home, library and detail pages.[CR][CR]Looks great, but the whole screen redraws every frame: on a Raspberry Pi menus drop to about half the frame rate. Off by default.</value>
 	</variable>
 </includes>

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Lumen Favourites: glass tiles (500) or the Lumen list (50). -->
 <window>
+	<onload condition="$EXP[LumenKids]">ReplaceWindow(home)</onload>
 	<defaultcontrol always="true">500</defaultcontrol>
 	<backgroundcolor>background</backgroundcolor>
 	<views>500,50</views>

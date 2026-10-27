@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Kids PIN check. Opened right after Kodi's numeric dialog has stored what was typed: every condition in an
+     action list is evaluated before any of its actions run, so the comparison can't live in the list that asks.
+     Window(home).Property(lumen.pinflow) says what was asked: unlock (leave kids mode), set or remove the PIN.
+     An empty entry means the prompt was cancelled: close without a word. -->
+<window type="dialog" id="1113">
+	<depth>DepthDialog+</depth>
+	<onload>ClearProperty(result,1113)</onload>
+	<!-- unlock -->
+	<onload condition="$EXP[LumenPinUnlock] + String.IsEmpty(Skin.String(lumen.pinentry))">Dialog.Close(1113,true)</onload>
+	<onload condition="$EXP[LumenPinUnlock] + !String.IsEmpty(Skin.String(lumen.pinentry)) + String.IsEqual(Skin.String(lumen.pinentry),Skin.String(lumen.pin))">Skin.Reset(CinemathequeKids)</onload>
+	<onload condition="$EXP[LumenPinUnlock] + !String.IsEmpty(Skin.String(lumen.pinentry)) + String.IsEqual(Skin.String(lumen.pinentry),Skin.String(lumen.pin))">ClearProperty(lumen.row,home)</onload>
+	<onload condition="$EXP[LumenPinUnlock] + !String.IsEmpty(Skin.String(lumen.pinentry)) + String.IsEqual(Skin.String(lumen.pinentry),Skin.String(lumen.pin))">Dialog.Close(1113,true)</onload>
+	<onload condition="$EXP[LumenPinUnlock] + !String.IsEmpty(Skin.String(lumen.pinentry)) + !String.IsEqual(Skin.String(lumen.pinentry),Skin.String(lumen.pin))">SetProperty(result,wrong,1113)</onload>
+	<!-- set: lumen.pinnew is the first entry, lumen.pinentry the second -->
+	<onload condition="$EXP[LumenPinSet] + [String.IsEmpty(Skin.String(lumen.pinnew)) | String.IsEmpty(Skin.String(lumen.pinentry))]">Dialog.Close(1113,true)</onload>
+	<onload condition="$EXP[LumenPinSet] + !String.IsEmpty(Skin.String(lumen.pinnew)) + String.IsEqual(Skin.String(lumen.pinnew),Skin.String(lumen.pinentry))">Skin.SetString(lumen.pin,$INFO[Skin.String(lumen.pinnew)])</onload>
+	<onload condition="$EXP[LumenPinSet] + !String.IsEmpty(Skin.String(lumen.pinnew)) + String.IsEqual(Skin.String(lumen.pinnew),Skin.String(lumen.pinentry))">SetProperty(result,saved,1113)</onload>
+	<onload condition="$EXP[LumenPinSet] + !String.IsEmpty(Skin.String(lumen.pinnew)) + !String.IsEmpty(Skin.String(lumen.pinentry)) + !String.IsEqual(Skin.String(lumen.pinnew),Skin.String(lumen.pinentry))">SetProperty(result,mismatch,1113)</onload>
+	<!-- remove -->
+	<onload condition="$EXP[LumenPinRemove] + String.IsEmpty(Skin.String(lumen.pinentry))">Dialog.Close(1113,true)</onload>
+	<onload condition="$EXP[LumenPinRemove] + !String.IsEmpty(Skin.String(lumen.pinentry)) + String.IsEqual(Skin.String(lumen.pinentry),Skin.String(lumen.pin))">Skin.Reset(lumen.pin)</onload>
+	<onload condition="$EXP[LumenPinRemove] + !String.IsEmpty(Skin.String(lumen.pinentry)) + String.IsEqual(Skin.String(lumen.pinentry),Skin.String(lumen.pin))">SetProperty(result,removed,1113)</onload>
+	<onload condition="$EXP[LumenPinRemove] + !String.IsEmpty(Skin.String(lumen.pinentry)) + !String.IsEqual(Skin.String(lumen.pinentry),Skin.String(lumen.pin))">SetProperty(result,wrong,1113)</onload>
+	<!-- a message shows for 2 s (<autoclose> is code-only for dialogs, so an alarm closes it) -->
+	<onload condition="[$EXP[LumenPinUnlock] + !String.IsEmpty(Skin.String(lumen.pinentry)) + !String.IsEqual(Skin.String(lumen.pinentry),Skin.String(lumen.pin))] | [$EXP[LumenPinSet] + !String.IsEmpty(Skin.String(lumen.pinnew)) + !String.IsEmpty(Skin.String(lumen.pinentry))] | [$EXP[LumenPinRemove] + !String.IsEmpty(Skin.String(lumen.pinentry))]">AlarmClock(lumenpinmsg,Dialog.Close(1113),00:02,silent)</onload>
+	<!-- never leave what was typed lying around -->
+	<onload>Skin.Reset(lumen.pinentry)</onload>
+	<onload>Skin.Reset(lumen.pinnew)</onload>
+	<onload>ClearProperty(lumen.pinflow,home)</onload>
+	<controls>
+		<control type="group">
+			<centerleft>50%</centerleft>
+			<width>720</width>
+			<centertop>50%</centertop>
+			<height>200</height>
+			<visible>!String.IsEmpty(Window.Property(result))</visible>
+			<include>Animation_DialogPopupOpenClose</include>
+			<include content="DialogBackgroundCommons">
+				<param name="width" value="720" />
+				<param name="height" value="200" />
+				<param name="header_label" value="Kids mode" />
+				<param name="header_id" value="" />
+			</include>
+			<control type="label" id="10">
+				<left>40</left>
+				<top>90</top>
+				<width>640</width>
+				<height>80</height>
+				<align>center</align>
+				<aligny>center</aligny>
+				<font>lm_body</font>
+				<textcolor>text</textcolor>
+				<label>$VAR[LumenPinResult]</label>
+			</control>
+		</control>
+	</controls>
+</window>

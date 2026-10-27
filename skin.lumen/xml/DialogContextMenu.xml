@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <window>
 	<defaultcontrol>996</defaultcontrol>
+	<!-- kids mode: no long-press menu. Kodi's "Resume / Play from beginning" question uses this dialog too
+	     (two buttons, ids 1001-1002, already built when onload runs), so it stays. -->
+	<onload condition="$EXP[LumenKids] + ![String.IsEqual(Control.GetLabel(1002),$LOCALIZE[12021]) + !Control.IsVisible(1003)]">Dialog.Close(contextmenu,true)</onload>
 	<include>Animation_DialogPopupOpenClose</include>
 	<coordinates>
 		<left>0</left>

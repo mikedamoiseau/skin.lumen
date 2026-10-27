@@ -106,6 +106,7 @@
 	<!-- 500: poster grid -->
 	<include name="View_Lumen_Posters">
 		<control type="panel" id="500">
+			<include>LumenKidsEmptyFocus</include>
 			<left>80</left>
 			<top>170</top>
 			<width>1760</width>
@@ -186,6 +187,7 @@
 			</include>
 		</control>
 		<control type="list" id="501">
+			<include>LumenKidsEmptyFocus</include>
 			<left>80</left>
 			<top>644</top>
 			<width>1840</width>
@@ -342,6 +344,7 @@
 			<content target="videos">$INFO[Container(501).ListItem.FolderPath]</content>
 		</control>
 		<control type="list" id="502">
+			<include>LumenKidsEmptyFocus</include>
 			<left>80</left>
 			<top>644</top>
 			<width>1840</width>
@@ -465,6 +468,7 @@
 	<!-- 503: landscape grid (videos, add-ons, music videos) -->
 	<include name="View_Lumen_LandscapeGrid">
 		<control type="panel" id="503">
+			<include>LumenKidsEmptyFocus</include>
 			<left>80</left>
 			<top>170</top>
 			<width>1760</width>
@@ -631,6 +635,7 @@
 	</include>
 	<include name="View_Lumen_List">
 		<control type="list" id="50">
+			<include>LumenKidsEmptyFocus</include>
 			<left>lm_margin</left>
 			<top>190</top>
 			<width>960</width>

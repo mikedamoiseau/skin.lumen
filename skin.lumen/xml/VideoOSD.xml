@@ -98,6 +98,20 @@
 					<param name="id" value="70046" />
 					<param name="icon" value="osd/fullscreen/buttons/settings-subtitle.png" />
 					<param name="onclick" value="ActivateWindow(osdsubtitlesettings)" />
+					<param name="visible" value="!$EXP[LumenKids]" />
+				</include>
+				<!-- kids mode: no settings dialogs (subtitle "browse" lists every file on the server); one press picks the next track -->
+				<include content="LumenOSDButton">
+					<param name="id" value="70061" />
+					<param name="icon" value="osd/fullscreen/buttons/settings-subtitle.png" />
+					<param name="onclick" value="Action(NextSubtitle)" />
+					<param name="visible" value="$EXP[LumenKids] + VideoPlayer.HasSubtitles" />
+				</include>
+				<include content="LumenOSDButton">
+					<param name="id" value="70062" />
+					<param name="icon" value="lumen/icons/audio.png" />
+					<param name="onclick" value="Action(AudioNextLanguage)" />
+					<param name="visible" value="$EXP[LumenKids]" />
 				</include>
 				<include content="LumenOSDButton">
 					<param name="id" value="70048" />
@@ -105,6 +119,7 @@
 					<param name="onclick" value="SetProperty(settingslist_content,osd,home)" />
 					<param name="onclick2" value="SetProperty(settingslist_header,$LOCALIZE[5],home)" />
 					<param name="onclick3" value="ActivateWindow(1101)" />
+					<param name="visible" value="!$EXP[LumenKids]" />
 				</include>
 				<include content="LumenOSDButton">
 					<param name="id" value="70044" />
@@ -117,7 +132,7 @@
 					<param name="icon" value="osd/fullscreen/buttons/playlist.png" />
 					<param name="onclick" value="Dialog.Close(all, true)" />
 					<param name="onclick2" value="ActivateWindow(videoplaylist)" />
-					<param name="visible" value="Integer.IsGreater(Playlist.Length(video),1)" />
+					<param name="visible" value="Integer.IsGreater(Playlist.Length(video),1) + !$EXP[LumenKids]" />
 				</include>
 				<include content="LumenOSDButton">
 					<param name="id" value="804" />

@@ -126,6 +126,8 @@
 							<visible>Control.HasFocus(8)</visible>
 						</control>
 						<control type="button" id="8">
+							<!-- kids mode: Kodi's Browse opens a show, season or set without "return", so Back would climb into every TV show -->
+							<visible>!$EXP[LumenKids] | ![String.IsEqual(ListItem.DBType,tvshow) | String.IsEqual(ListItem.DBType,season) | String.IsEqual(ListItem.DBType,set)]</visible>
 							<width>264</width>
 							<height>80</height>
 							<label>$VAR[LumenInfoPlayLabel]</label>
@@ -169,34 +171,34 @@
 					<include content="LumenPillButton">
 						<param name="id" value="11" />
 						<param name="label" value="$LOCALIZE[20410]" />
-						<param name="visible" value="!String.IsEmpty(ListItem.Trailer)" />
+						<param name="visible" value="!String.IsEmpty(ListItem.Trailer) + !$EXP[LumenKids]" />
 					</include>
 					<include content="LumenPillButton">
 						<param name="id" value="14" />
 						<param name="label" value="$LOCALIZE[40000]" />
-						<param name="visible" value="String.IsEqual(ListItem.DBType,movie) + ListItem.HasVideoVersions" />
+						<param name="visible" value="String.IsEqual(ListItem.DBType,movie) + ListItem.HasVideoVersions + !$EXP[LumenKids]" />
 					</include>
 					<include content="LumenPillButton">
 						<param name="id" value="15" />
 						<param name="label" value="$LOCALIZE[40211]" />
-						<param name="visible" value="String.IsEqual(ListItem.DBType,movie) + ListItem.HasVideoExtras" />
+						<param name="visible" value="String.IsEqual(ListItem.DBType,movie) + ListItem.HasVideoExtras + !$EXP[LumenKids]" />
 					</include>
 					<include content="LumenPillButton">
 						<param name="id" value="443" />
 						<param name="label" value="Collection" />
 						<param name="onclick" value="Dialog.Close(all,true)" />
 						<param name="onclick2" value="ActivateWindow(Videos,videodb://movies/sets/$INFO[ListItem.SetId]/?setid=$INFO[ListItem.SetId],return)" />
-						<param name="visible" value="!String.IsEmpty(ListItem.SetID) + !String.IsEqual(ListItem.SetID,0)" />
+						<param name="visible" value="!String.IsEmpty(ListItem.SetID) + !String.IsEqual(ListItem.SetID,0) + !$EXP[LumenKids]" />
 					</include>
 					<include content="LumenPillButtonSmall">
 						<param name="id" value="10" />
 						<param name="label" value="$LOCALIZE[13511]" />
-						<param name="visible" value="Control.IsEnabled(10)" />
+						<param name="visible" value="Control.IsEnabled(10) + !$EXP[LumenKids]" />
 					</include>
 					<include content="LumenPillButtonSmall">
 						<param name="id" value="6" />
 						<param name="label" value="$LOCALIZE[184]" />
-						<param name="visible" value="Control.IsEnabled(6)" />
+						<param name="visible" value="Control.IsEnabled(6) + !$EXP[LumenKids]" />
 					</include>
 				</control>
 			</control>
@@ -238,10 +240,10 @@
 				</control>
 			</control>
 
-			<!-- cast & crew / movies in set -->
-			<control type="group">
+			<!-- cast & crew / movies in set; not in kids mode: people lead to searches of the whole library -->
+			<control type="group" id="6050">
 				<top>820</top>
-				<visible>Integer.IsGreater(Container(50).NumItems,0) | Container(50).IsUpdating</visible>
+				<visible>!$EXP[LumenKids] + [Integer.IsGreater(Container(50).NumItems,0) | Container(50).IsUpdating]</visible>
 				<animation effect="fade" start="0" end="100" time="500" delay="260">WindowOpen</animation>
 				<animation effect="fade" start="100" end="0" time="200">WindowClose</animation>
 				<control type="label">

@@ -18,9 +18,28 @@ ROWS = [
     (5007, "poster", "TV Shows", "videodb://tvshows/titles/", "dateadded", "descending", None),
     (5008, "landscape", "Collections", "videodb://movies/sets/", "random", "ascending", None),
 ]
+# Kids mode (skin bool CinemathequeKids): its own rows, shown instead of the ones above.
+# Only titles the Cinémathèque app tagged "Cinematheque Kids" (skin.lumen/playlists/kids/).
+KIDS_CONTINUE = ("multipath://special%3a%2f%2fskin%2fplaylists%2fkids%2finprogress_movies.xsp/"
+                 "special%3a%2f%2fskin%2fplaylists%2fkids%2finprogress_tvshows.xsp/")
+KIDS_ROWS = [
+    (5011, "landscape", "Continue Watching", KIDS_CONTINUE, "lastplayed", "descending", None),
+    (5012, "landscape", "New Episodes", "special://skin/playlists/kids/new_episodes.xsp", "dateadded", "descending", "Action(Info)"),
+    (5013, "poster", "Recently Added", "special://skin/playlists/kids/recent_movies.xsp", "dateadded", "descending", "Action(Info)"),
+    (5014, "poster", "TV Shows", "special://skin/playlists/kids/tvshows.xsp", "dateadded", "descending", None),
+    (5015, "poster", "Discover", "special://skin/playlists/kids/discover.xsp", "none", "ascending", "Action(Info)"),
+]
+# smart playlists come back sorted by label, so rows that need an order say so in sortby
+# each mode's rows are visible only in that mode. A hidden list still loads its path whenever Home opens
+# (GUIBaseContainer::AllocResources), so kids rows read their path from a variable that is empty outside
+# kids mode; the kids button re-opens Home (window 1114) so they load right away.
+MODES = [("!$EXP[LumenKids]", ROWS), ("$EXP[LumenKids]", KIDS_ROWS)]
+KIDS_PATH = lambda rid: f"LumenKidsPath{rid}"
+row_path = lambda rows, rid, path: f"$VAR[{KIDS_PATH(rid)}]" if rows is KIDS_ROWS else path
 DOCK_Y = 600
 ROW_H = 500  # must match the row group height in Includes_Lumen.xml
 GROUP = lambda rid: rid + 1000  # 5001 -> 6001
+HERO = lambda rid: rid + 2000  # 5001 -> 7001
 SLIDE = 'time="420" tween="cubic" easing="out"'
 
 out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "skin.lumen", "xml", "Home.xml")
@@ -31,7 +50,6 @@ def focus_any(ids):
 
 
 def build():
-    ids = [r[0] for r in ROWS]
     L = []
     w = L.append
     w('<?xml version="1.0" encoding="UTF-8"?>')
@@ -46,12 +64,14 @@ def build():
     w('\t\t<animation effect="fade" time="300">VisibleChange</animation>')
     w('\t\t<include content="LumenBackdrop"><param name="image" value="$VAR[LumenHomeFanart]" /></include>')
 
-    # heroes — one per row, only the one for the last focused row is visible
-    for rid, *_ in ROWS:
-        w('\t\t<include content="LumenHero">')
-        w(f'\t\t\t<param name="item" value="Container({rid}).ListItem" />')
-        w(f'\t\t\t<param name="visible" value="String.IsEqual(Window(home).Property(lumen.row),{rid})" />')
-        w("\t\t</include>")
+    # heroes — one per row, only the one for the last focused row of the current mode is visible
+    for mode, rows in MODES:
+        for rid, *_ in rows:
+            w('\t\t<include content="LumenHero">')
+            w(f'\t\t\t<param name="id" value="{HERO(rid)}" />')
+            w(f'\t\t\t<param name="item" value="Container({rid}).ListItem" />')
+            w(f'\t\t\t<param name="visible" value="String.IsEqual(Window(home).Property(lumen.row),{rid}) + {mode}" />')
+            w("\t\t</include>")
 
     # rows
     w('\t\t<control type="group" id="9101">')
@@ -68,33 +88,50 @@ def build():
     w("\t\t\t\t<itemgap>0</itemgap>")
     w('\t\t\t\t<scrolltime tween="cubic" easing="out">420</scrolltime>')
     w("\t\t\t\t<onup>9000</onup>")
-    for i, (rid, kind, header, path, sortby, sortorder, onclick) in enumerate(ROWS):
-        later = ids[i + 1:]
-        inc = "LumenPosterRow" if kind == "poster" else "LumenLandscapeRow"
-        w(f'\t\t\t\t<include content="{inc}">')
-        w(f'\t\t\t\t\t<param name="id" value="{rid}" />')
-        w(f'\t\t\t\t\t<param name="group" value="{GROUP(rid)}" />')
-        w(f'\t\t\t\t\t<param name="header" value="{header}" />')
-        w(f'\t\t\t\t\t<param name="path" value="{path}" />')
-        w(f'\t\t\t\t\t<param name="sortby" value="{sortby}" />')
-        w(f'\t\t\t\t\t<param name="sortorder" value="{sortorder}" />')
-        w(f'\t\t\t\t\t<param name="fadeout" value="{focus_any(later) if later else "false"}" />')
-        # explicit chain: Kodi follows it through hidden (empty) rows
-        w(f'\t\t\t\t\t<param name="onup" value="{ids[i - 1] if i else 9000}" />')
-        w(f'\t\t\t\t\t<param name="ondown" value="{ids[i + 1] if later else "noop"}" />')
-        if onclick:
-            w('\t\t\t\t\t<param name="onclick_condition" value="true" />')
-            w(f'\t\t\t\t\t<param name="onclick" value="{onclick}" />')
-        w("\t\t\t\t</include>")
+    for mode, rows in MODES:
+        ids = [r[0] for r in rows]
+        for i, (rid, kind, header, path, sortby, sortorder, onclick) in enumerate(rows):
+            later = ids[i + 1:]
+            inc = "LumenPosterRow" if kind == "poster" else "LumenLandscapeRow"
+            w(f'\t\t\t\t<include content="{inc}">')
+            w(f'\t\t\t\t\t<param name="id" value="{rid}" />')
+            w(f'\t\t\t\t\t<param name="visible" value="{mode}" />')
+            w(f'\t\t\t\t\t<param name="group" value="{GROUP(rid)}" />')
+            w(f'\t\t\t\t\t<param name="header" value="{header}" />')
+            w(f'\t\t\t\t\t<param name="path" value="{row_path(rows, rid, path)}" />')
+            w(f'\t\t\t\t\t<param name="sortby" value="{sortby}" />')
+            w(f'\t\t\t\t\t<param name="sortorder" value="{sortorder}" />')
+            w(f'\t\t\t\t\t<param name="fadeout" value="{focus_any(later) if later else "false"}" />')
+            # explicit chain: Kodi follows it through hidden (empty) rows
+            w(f'\t\t\t\t\t<param name="onup" value="{ids[i - 1] if i else 9000}" />')
+            w(f'\t\t\t\t\t<param name="ondown" value="{ids[i + 1] if later else "noop"}" />')
+            if onclick:
+                w('\t\t\t\t\t<param name="onclick_condition" value="true" />')
+                w(f'\t\t\t\t\t<param name="onclick" value="{onclick}" />')
+            w("\t\t\t\t</include>")
+    w("\t\t\t</control>")
+    # kids mode with nothing tagged yet: say where the list comes from
+    w('\t\t\t<control type="label" id="6019">')
+    w("\t\t\t\t<left>lm_margin</left>")
+    w("\t\t\t\t<top>44</top>")
+    w("\t\t\t\t<width>1500</width>")
+    w("\t\t\t\t<height>60</height>")
+    w("\t\t\t\t<font>lm_body</font>")
+    w("\t\t\t\t<textcolor>text_dim</textcolor>")
+    w("\t\t\t\t<label>No titles for kids yet. A parent can choose them in the Cinémathèque app.</label>")
+    w("\t\t\t\t<visible>$EXP[LumenKids] + !Integer.IsGreater(Container(5013).NumItems,0) + !Integer.IsGreater(Container(5014).NumItems,0)"
+      " + !Container(5013).IsUpdating + !Container(5014).IsUpdating</visible>")
     w("\t\t\t</control>")
     w("\t\t</control>")
 
     # tab bar hides once the user scrolls past the first visible row
     scrolled = []
-    for i, rid in enumerate(ids):
-        before = [GROUP(j) for j in ids[:i]]
-        if before:
-            scrolled.append(f"[Control.HasFocus({rid}) + [{' | '.join(f'Control.IsVisible({g})' for g in before)}]]")
+    for _, rows in MODES:
+        ids = [r[0] for r in rows]
+        for i, rid in enumerate(ids):
+            before = [GROUP(j) for j in ids[:i]]
+            if before:
+                scrolled.append(f"[Control.HasFocus({rid}) + [{' | '.join(f'Control.IsVisible({g})' for g in before)}]]")
     w('\t\t<control type="group">')
     w(f'\t\t\t<animation effect="slide" end="0,-150" {SLIDE} condition="{" | ".join(scrolled)}">Conditional</animation>')
     w(f'\t\t\t<animation effect="fade" start="100" end="0" time="300" condition="{" | ".join(scrolled)}">Conditional</animation>')
@@ -108,11 +145,17 @@ def build():
     # backdrop variable lives in its own include file so the generator owns it too
     V = ['<?xml version="1.0" encoding="UTF-8"?>', "<!-- GENERATED by tools/build_home.py -->", "<includes>"]
     V.append('\t<variable name="LumenHomeFanart">')
-    for rid, *_ in ROWS:
-        c = f"Container({rid}).ListItem"
-        V.append(f'\t\t<value condition="String.IsEqual(Window(home).Property(lumen.row),{rid}) + !String.IsEmpty({c}.Art(fanart))">$INFO[{c}.Art(fanart)]</value>')
-        V.append(f'\t\t<value condition="String.IsEqual(Window(home).Property(lumen.row),{rid})">$INFO[{c}.Art(tvshow.fanart)]</value>')
+    for mode, rows in MODES:
+        for rid, *_ in rows:
+            c = f"Container({rid}).ListItem"
+            on = f"String.IsEqual(Window(home).Property(lumen.row),{rid}) + {mode}"
+            V.append(f'\t\t<value condition="{on} + !String.IsEmpty({c}.Art(fanart))">$INFO[{c}.Art(fanart)]</value>')
+            V.append(f'\t\t<value condition="{on}">$INFO[{c}.Art(tvshow.fanart)]</value>')
     V.append("\t</variable>")
+    for rid, kind, header, path, *_ in KIDS_ROWS:
+        V.append(f'\t<variable name="{KIDS_PATH(rid)}">')
+        V.append(f'\t\t<value condition="$EXP[LumenKids]">{path}</value>')
+        V.append("\t</variable>")
     V.append("</includes>")
 
     with open(out, "w") as f:

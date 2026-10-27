@@ -10,36 +10,69 @@
 		<animation effect="fade" time="300">VisibleChange</animation>
 		<include content="LumenBackdrop"><param name="image" value="$VAR[LumenHomeFanart]" /></include>
 		<include content="LumenHero">
+			<param name="id" value="7001" />
 			<param name="item" value="Container(5001).ListItem" />
-			<param name="visible" value="String.IsEqual(Window(home).Property(lumen.row),5001)" />
+			<param name="visible" value="String.IsEqual(Window(home).Property(lumen.row),5001) + !$EXP[LumenKids]" />
 		</include>
 		<include content="LumenHero">
+			<param name="id" value="7002" />
 			<param name="item" value="Container(5002).ListItem" />
-			<param name="visible" value="String.IsEqual(Window(home).Property(lumen.row),5002)" />
+			<param name="visible" value="String.IsEqual(Window(home).Property(lumen.row),5002) + !$EXP[LumenKids]" />
 		</include>
 		<include content="LumenHero">
+			<param name="id" value="7003" />
 			<param name="item" value="Container(5003).ListItem" />
-			<param name="visible" value="String.IsEqual(Window(home).Property(lumen.row),5003)" />
+			<param name="visible" value="String.IsEqual(Window(home).Property(lumen.row),5003) + !$EXP[LumenKids]" />
 		</include>
 		<include content="LumenHero">
+			<param name="id" value="7004" />
 			<param name="item" value="Container(5004).ListItem" />
-			<param name="visible" value="String.IsEqual(Window(home).Property(lumen.row),5004)" />
+			<param name="visible" value="String.IsEqual(Window(home).Property(lumen.row),5004) + !$EXP[LumenKids]" />
 		</include>
 		<include content="LumenHero">
+			<param name="id" value="7005" />
 			<param name="item" value="Container(5005).ListItem" />
-			<param name="visible" value="String.IsEqual(Window(home).Property(lumen.row),5005)" />
+			<param name="visible" value="String.IsEqual(Window(home).Property(lumen.row),5005) + !$EXP[LumenKids]" />
 		</include>
 		<include content="LumenHero">
+			<param name="id" value="7006" />
 			<param name="item" value="Container(5006).ListItem" />
-			<param name="visible" value="String.IsEqual(Window(home).Property(lumen.row),5006)" />
+			<param name="visible" value="String.IsEqual(Window(home).Property(lumen.row),5006) + !$EXP[LumenKids]" />
 		</include>
 		<include content="LumenHero">
+			<param name="id" value="7007" />
 			<param name="item" value="Container(5007).ListItem" />
-			<param name="visible" value="String.IsEqual(Window(home).Property(lumen.row),5007)" />
+			<param name="visible" value="String.IsEqual(Window(home).Property(lumen.row),5007) + !$EXP[LumenKids]" />
 		</include>
 		<include content="LumenHero">
+			<param name="id" value="7008" />
 			<param name="item" value="Container(5008).ListItem" />
-			<param name="visible" value="String.IsEqual(Window(home).Property(lumen.row),5008)" />
+			<param name="visible" value="String.IsEqual(Window(home).Property(lumen.row),5008) + !$EXP[LumenKids]" />
+		</include>
+		<include content="LumenHero">
+			<param name="id" value="7011" />
+			<param name="item" value="Container(5011).ListItem" />
+			<param name="visible" value="String.IsEqual(Window(home).Property(lumen.row),5011) + $EXP[LumenKids]" />
+		</include>
+		<include content="LumenHero">
+			<param name="id" value="7012" />
+			<param name="item" value="Container(5012).ListItem" />
+			<param name="visible" value="String.IsEqual(Window(home).Property(lumen.row),5012) + $EXP[LumenKids]" />
+		</include>
+		<include content="LumenHero">
+			<param name="id" value="7013" />
+			<param name="item" value="Container(5013).ListItem" />
+			<param name="visible" value="String.IsEqual(Window(home).Property(lumen.row),5013) + $EXP[LumenKids]" />
+		</include>
+		<include content="LumenHero">
+			<param name="id" value="7014" />
+			<param name="item" value="Container(5014).ListItem" />
+			<param name="visible" value="String.IsEqual(Window(home).Property(lumen.row),5014) + $EXP[LumenKids]" />
+		</include>
+		<include content="LumenHero">
+			<param name="id" value="7015" />
+			<param name="item" value="Container(5015).ListItem" />
+			<param name="visible" value="String.IsEqual(Window(home).Property(lumen.row),5015) + $EXP[LumenKids]" />
 		</include>
 		<control type="group" id="9101">
 			<top>600</top>
@@ -55,6 +88,7 @@
 				<onup>9000</onup>
 				<include content="LumenLandscapeRow">
 					<param name="id" value="5001" />
+					<param name="visible" value="!$EXP[LumenKids]" />
 					<param name="group" value="6001" />
 					<param name="header" value="Continue Watching" />
 					<param name="path" value="special://skin/playlists/inprogress_movies.xsp" />
@@ -66,6 +100,7 @@
 				</include>
 				<include content="LumenLandscapeRow">
 					<param name="id" value="5002" />
+					<param name="visible" value="!$EXP[LumenKids]" />
 					<param name="group" value="6002" />
 					<param name="header" value="Up Next" />
 					<param name="path" value="videodb://inprogresstvshows/" />
@@ -77,6 +112,7 @@
 				</include>
 				<include content="LumenPosterRow">
 					<param name="id" value="5003" />
+					<param name="visible" value="!$EXP[LumenKids]" />
 					<param name="group" value="6003" />
 					<param name="header" value="Recently Added Movies" />
 					<param name="path" value="videodb://recentlyaddedmovies/" />
@@ -90,6 +126,7 @@
 				</include>
 				<include content="LumenLandscapeRow">
 					<param name="id" value="5004" />
+					<param name="visible" value="!$EXP[LumenKids]" />
 					<param name="group" value="6004" />
 					<param name="header" value="New Episodes" />
 					<param name="path" value="special://skin/playlists/recent_unwatched_episodes.xsp" />
@@ -103,6 +140,7 @@
 				</include>
 				<include content="LumenPosterRow">
 					<param name="id" value="5005" />
+					<param name="visible" value="!$EXP[LumenKids]" />
 					<param name="group" value="6005" />
 					<param name="header" value="Discover" />
 					<param name="path" value="special://skin/playlists/lumen_discover_movies.xsp" />
@@ -116,6 +154,7 @@
 				</include>
 				<include content="LumenPosterRow">
 					<param name="id" value="5006" />
+					<param name="visible" value="!$EXP[LumenKids]" />
 					<param name="group" value="6006" />
 					<param name="header" value="Top Rated" />
 					<param name="path" value="special://skin/playlists/lumen_toprated_movies.xsp" />
@@ -129,6 +168,7 @@
 				</include>
 				<include content="LumenPosterRow">
 					<param name="id" value="5007" />
+					<param name="visible" value="!$EXP[LumenKids]" />
 					<param name="group" value="6007" />
 					<param name="header" value="TV Shows" />
 					<param name="path" value="videodb://tvshows/titles/" />
@@ -140,6 +180,7 @@
 				</include>
 				<include content="LumenLandscapeRow">
 					<param name="id" value="5008" />
+					<param name="visible" value="!$EXP[LumenKids]" />
 					<param name="group" value="6008" />
 					<param name="header" value="Collections" />
 					<param name="path" value="videodb://movies/sets/" />
@@ -149,11 +190,87 @@
 					<param name="onup" value="5007" />
 					<param name="ondown" value="noop" />
 				</include>
+				<include content="LumenLandscapeRow">
+					<param name="id" value="5011" />
+					<param name="visible" value="$EXP[LumenKids]" />
+					<param name="group" value="6011" />
+					<param name="header" value="Continue Watching" />
+					<param name="path" value="$VAR[LumenKidsPath5011]" />
+					<param name="sortby" value="lastplayed" />
+					<param name="sortorder" value="descending" />
+					<param name="fadeout" value="Control.HasFocus(5012) | Control.HasFocus(5013) | Control.HasFocus(5014) | Control.HasFocus(5015)" />
+					<param name="onup" value="9000" />
+					<param name="ondown" value="5012" />
+				</include>
+				<include content="LumenLandscapeRow">
+					<param name="id" value="5012" />
+					<param name="visible" value="$EXP[LumenKids]" />
+					<param name="group" value="6012" />
+					<param name="header" value="New Episodes" />
+					<param name="path" value="$VAR[LumenKidsPath5012]" />
+					<param name="sortby" value="dateadded" />
+					<param name="sortorder" value="descending" />
+					<param name="fadeout" value="Control.HasFocus(5013) | Control.HasFocus(5014) | Control.HasFocus(5015)" />
+					<param name="onup" value="5011" />
+					<param name="ondown" value="5013" />
+					<param name="onclick_condition" value="true" />
+					<param name="onclick" value="Action(Info)" />
+				</include>
+				<include content="LumenPosterRow">
+					<param name="id" value="5013" />
+					<param name="visible" value="$EXP[LumenKids]" />
+					<param name="group" value="6013" />
+					<param name="header" value="Recently Added" />
+					<param name="path" value="$VAR[LumenKidsPath5013]" />
+					<param name="sortby" value="dateadded" />
+					<param name="sortorder" value="descending" />
+					<param name="fadeout" value="Control.HasFocus(5014) | Control.HasFocus(5015)" />
+					<param name="onup" value="5012" />
+					<param name="ondown" value="5014" />
+					<param name="onclick_condition" value="true" />
+					<param name="onclick" value="Action(Info)" />
+				</include>
+				<include content="LumenPosterRow">
+					<param name="id" value="5014" />
+					<param name="visible" value="$EXP[LumenKids]" />
+					<param name="group" value="6014" />
+					<param name="header" value="TV Shows" />
+					<param name="path" value="$VAR[LumenKidsPath5014]" />
+					<param name="sortby" value="dateadded" />
+					<param name="sortorder" value="descending" />
+					<param name="fadeout" value="Control.HasFocus(5015)" />
+					<param name="onup" value="5013" />
+					<param name="ondown" value="5015" />
+				</include>
+				<include content="LumenPosterRow">
+					<param name="id" value="5015" />
+					<param name="visible" value="$EXP[LumenKids]" />
+					<param name="group" value="6015" />
+					<param name="header" value="Discover" />
+					<param name="path" value="$VAR[LumenKidsPath5015]" />
+					<param name="sortby" value="none" />
+					<param name="sortorder" value="ascending" />
+					<param name="fadeout" value="false" />
+					<param name="onup" value="5014" />
+					<param name="ondown" value="noop" />
+					<param name="onclick_condition" value="true" />
+					<param name="onclick" value="Action(Info)" />
+				</include>
+			</control>
+			<control type="label" id="6019">
+				<left>lm_margin</left>
+				<top>44</top>
+				<width>1500</width>
+				<height>60</height>
+				<font>lm_body</font>
+				<textcolor>text_dim</textcolor>
+				<label>No titles for kids yet. A parent can choose them in the Cinémathèque app.</label>
+				<visible>$EXP[LumenKids] + !Integer.IsGreater(Container(5013).NumItems,0) + !Integer.IsGreater(Container(5014).NumItems,0) + !Container(5013).IsUpdating + !Container(5014).IsUpdating</visible>
 			</control>
 		</control>
 		<control type="group">
-			<animation effect="slide" end="0,-150" time="420" tween="cubic" easing="out" condition="[Control.HasFocus(5002) + [Control.IsVisible(6001)]] | [Control.HasFocus(5003) + [Control.IsVisible(6001) | Control.IsVisible(6002)]] | [Control.HasFocus(5004) + [Control.IsVisible(6001) | Control.IsVisible(6002) | Control.IsVisible(6003)]] | [Control.HasFocus(5005) + [Control.IsVisible(6001) | Control.IsVisible(6002) | Control.IsVisible(6003) | Control.IsVisible(6004)]] | [Control.HasFocus(5006) + [Control.IsVisible(6001) | Control.IsVisible(6002) | Control.IsVisible(6003) | Control.IsVisible(6004) | Control.IsVisible(6005)]] | [Control.HasFocus(5007) + [Control.IsVisible(6001) | Control.IsVisible(6002) | Control.IsVisible(6003) | Control.IsVisible(6004) | Control.IsVisible(6005) | Control.IsVisible(6006)]] | [Control.HasFocus(5008) + [Control.IsVisible(6001) | Control.IsVisible(6002) | Control.IsVisible(6003) | Control.IsVisible(6004) | Control.IsVisible(6005) | Control.IsVisible(6006) | Control.IsVisible(6007)]]">Conditional</animation>
-			<animation effect="fade" start="100" end="0" time="300" condition="[Control.HasFocus(5002) + [Control.IsVisible(6001)]] | [Control.HasFocus(5003) + [Control.IsVisible(6001) | Control.IsVisible(6002)]] | [Control.HasFocus(5004) + [Control.IsVisible(6001) | Control.IsVisible(6002) | Control.IsVisible(6003)]] | [Control.HasFocus(5005) + [Control.IsVisible(6001) | Control.IsVisible(6002) | Control.IsVisible(6003) | Control.IsVisible(6004)]] | [Control.HasFocus(5006) + [Control.IsVisible(6001) | Control.IsVisible(6002) | Control.IsVisible(6003) | Control.IsVisible(6004) | Control.IsVisible(6005)]] | [Control.HasFocus(5007) + [Control.IsVisible(6001) | Control.IsVisible(6002) | Control.IsVisible(6003) | Control.IsVisible(6004) | Control.IsVisible(6005) | Control.IsVisible(6006)]] | [Control.HasFocus(5008) + [Control.IsVisible(6001) | Control.IsVisible(6002) | Control.IsVisible(6003) | Control.IsVisible(6004) | Control.IsVisible(6005) | Control.IsVisible(6006) | Control.IsVisible(6007)]]">Conditional</animation>
+			<animation effect="slide" end="0,-150" time="420" tween="cubic" easing="out" condition="[Control.HasFocus(5002) + [Control.IsVisible(6001)]] | [Control.HasFocus(5003) + [Control.IsVisible(6001) | Control.IsVisible(6002)]] | [Control.HasFocus(5004) + [Control.IsVisible(6001) | Control.IsVisible(6002) | Control.IsVisible(6003)]] | [Control.HasFocus(5005) + [Control.IsVisible(6001) | Control.IsVisible(6002) | Control.IsVisible(6003) | Control.IsVisible(6004)]] | [Control.HasFocus(5006) + [Control.IsVisible(6001) | Control.IsVisible(6002) | Control.IsVisible(6003) | Control.IsVisible(6004) | Control.IsVisible(6005)]] | [Control.HasFocus(5007) + [Control.IsVisible(6001) | Control.IsVisible(6002) | Control.IsVisible(6003) | Control.IsVisible(6004) | Control.IsVisible(6005) | Control.IsVisible(6006)]] | [Control.HasFocus(5008) + [Control.IsVisible(6001) | Control.IsVisible(6002) | Control.IsVisible(6003) | Control.IsVisible(6004) | Control.IsVisible(6005) | Control.IsVisible(6006) | Control.IsVisible(6007)]] | [Control.HasFocus(5012) + [Control.IsVisible(6011)]] | [Control.HasFocus(5013) + [Control.IsVisible(6011) | Control.IsVisible(6012)]] | [Control.HasFocus(5014) + [Control.IsVisible(6011) | Control.IsVisible(6012) | Control.IsVisible(6013)]] | [Control.HasFocus(5015) + [Control.IsVisible(6011) | Control.IsVisible(6012) | Control.IsVisible(6013) | Control.IsVisible(6014)]]">Conditional</animation>
+			<animation effect="fade" start="100" end="0" time="300" condition="[Control.HasFocus(5002) + [Control.IsVisible(6001)]] | [Control.HasFocus(5003) + [Control.IsVisible(6001) | Control.IsVisible(6002)]] | [Control.HasFocus(5004) + [Control.IsVisible(6001) | Control.IsVisible(6002) | Control.IsVisible(6003)]] | [Control.HasFocus(5005) + [Control.IsVisible(6001) | Control.IsVisible(6002) | Control.IsVisible(6003) | Control.IsVisible(6004)]] | [Control.HasFocus(5006) + [Control.IsVisible(6001) | Control.IsVisible(6002) | Control.IsVisible(6003) | Control.IsVisible(6004) | Control.IsVisible(6005)]] | [Control.HasFocus(5007) + [Control.IsVisible(6001) | Control.IsVisible(6002) | Control.IsVisible(6003) | Control.IsVisible(6004) | Control.IsVisible(6005) | Control.IsVisible(6006)]] | [Control.HasFocus(5008) + [Control.IsVisible(6001) | Control.IsVisible(6002) | Control.IsVisible(6003) | Control.IsVisible(6004) | Control.IsVisible(6005) | Control.IsVisible(6006) | Control.IsVisible(6007)]] | [Control.HasFocus(5012) + [Control.IsVisible(6011)]] | [Control.HasFocus(5013) + [Control.IsVisible(6011) | Control.IsVisible(6012)]] | [Control.HasFocus(5014) + [Control.IsVisible(6011) | Control.IsVisible(6012) | Control.IsVisible(6013)]] | [Control.HasFocus(5015) + [Control.IsVisible(6011) | Control.IsVisible(6012) | Control.IsVisible(6013) | Control.IsVisible(6014)]]">Conditional</animation>
 			<include content="LumenTabBar"><param name="tex10" value="lumen/pill.png" /></include>
 			<include>LumenClock</include>
 		</control>

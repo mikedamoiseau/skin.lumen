@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Re-opens Home. Home's rows read their paths only when Home opens, and Kodi ignores ActivateWindow(home)
+     while Home is open, so the kids button passes through here to load the kids rows. -->
+<window id="1114">
+	<onload>ReplaceWindow(home)</onload>
+	<controls />
+</window>
