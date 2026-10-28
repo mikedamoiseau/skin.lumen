@@ -44,4 +44,11 @@
         <onstart>Dialog.Close(1116,true)</onstart>
         <stop>!Window.IsVisible(1116)</stop>
     </timer>
+    <timer>
+        <name>lumenmoreopenfail</name>
+        <description>The film picked in a More like this row didn't load (gone from the library, or the database didn't answer): after 10 seconds the helper closes rather than leave its backdrop on screen</description>
+        <start reset="true">Window.IsVisible(1116)</start>
+        <stop>!Window.IsVisible(1116) | Integer.IsGreaterOrEqual(Skin.TimerElapsedSecs(lumenmoreopenfail),10)</stop>
+        <onstop>Dialog.Close(1116,true)</onstop>
+    </timer>
 </timers>
