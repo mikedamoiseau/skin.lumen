@@ -642,6 +642,8 @@ def log_errors(lines):
             if " error <general>:" in l and "/addons/screensaver." not in l
             # a page with nothing on it: its onload SetFocus finds an empty grid
             and "Control 5150 in window 11115 has been asked to focus, but it can't" not in l
+            # a kids show page has no buttons, so its default control (Play) can't take focus; onload moves it on
+            and "Control 8 in window 12003 has been asked to focus, but it can't" not in l
             # an add-on's own window (Python windows are 13000-13099), e.g. a screensaver's
             and not re.search(r"in window 130\d\d has been asked to focus", l)
             # a studio the logo pack has no logo for (the detail page can't tell beforehand)
