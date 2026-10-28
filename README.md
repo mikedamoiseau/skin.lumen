@@ -58,14 +58,16 @@ hardware (see [Performance](#performance)).
 - **Player**: thin seek bar with elapsed/remaining time, "Ends at", resolution,
   HDR, audio codec and channel badges, plus round transport buttons in the OSD.
   A sleep timer (moon button) stops playback after 15, 30, 60 or 90 minutes.
+  On a live TV channel it shows the channel's name and number and "Live" instead
+  of the times.
 - **Kids mode**: a Home that shows only the films and shows tagged
   `Cinematheque Kids` in the library (the tag the Cinémathèque app writes), with
   Continue Watching, New Episodes, Recently Added, TV Shows and Discover rows,
   Movies and TV Shows grids and a search limited to those titles. Anyone can
   switch it on with the smiling-face button next to power; leaving it with the
-  lock button asks for a parent's PIN. Settings, add-ons, the long-press menu,
-  the cast row, trailers and the player's settings are out of reach, and kids
-  mode stays on after a restart. See [Kids mode](#kids-mode).
+  lock button asks for a parent's PIN. Settings, add-ons, live TV, the long-press
+  menu, the cast row, trailers and the player's settings are out of reach, and
+  kids mode stays on after a restart. See [Kids mode](#kids-mode).
 - **Everything else**: settings, select/confirm/progress/keyboard dialogs,
   notifications, a background-task pill for library scans, Favourites and the
   skin settings page all share the same glass look.
@@ -157,6 +159,7 @@ tools/
   kids_check.py NAME|all     kids-mode checks on a box: rows, grids, search, PIN, blocked windows, player
   actor_check.py NAME|all    actor-page checks on a box: entry, titles, directors, Back, Play, kids mode
   morelike_check.py NAME|all detail page checks on a box: logo, More like this rows, walking and opening them, kids mode
+  livetv_check.py NAME|all   live TV checks on a box: a channel plays, the player shows it, kids mode stops it
   search_regress.py Q...     types each query into Search and prints the rows' counts
   shownext_regress.py        the show page's Play button against the next-episode rule
   mibox_install.sh           builds the working tree and installs it on an Android TV box
@@ -199,6 +202,10 @@ point.
    mode after asking for the PIN.
 3. To change the PIN, choose **Remove kids PIN** (it asks for the current one),
    then set a new one. Each device keeps its own PIN.
+
+Live TV is off in kids mode, since nothing filters channels for children: the
+TV and radio windows send back to Home, and a channel, radio station or
+recording started while it's on (from a phone app, say) stops.
 
 Kids mode needs Kodi's "Show parent folder items" off (the default in the table
 above): a ".." item would lead from the kids lists into the whole library, so

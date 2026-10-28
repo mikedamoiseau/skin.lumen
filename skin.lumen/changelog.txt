@@ -1,3 +1,7 @@
+[B]0.5.0[/B]
+• Live TV: on a channel (from a PVR add-on such as IPTV Simple) the player shows the channel's name and number, the programme when the guide has one, and "Live" in place of the times. "Ends at" gives way to the sleep timer.
+• Kids mode turns live TV off: the TV and radio windows send back to Home, and a channel, radio station or recording started while kids mode is on, or playing when it comes on, stops. Nothing filters channels for children.
+
 [B]0.4.0[/B]
 • More like this: a film's detail page ends with up to three rows under the cast: more from its collection in release order, more by its director newest first, and more of its first genre best rated first. A show's page gets the genre row. Selecting a film opens its page; selecting a show opens its show page. In kids mode the rows list only kids titles.
 • Studio and network logos: with Kodi's "Studio Icons - White" pack installed, the detail page's info line ends with the film's studio or the show's network logo.
