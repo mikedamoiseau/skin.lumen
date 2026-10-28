@@ -36,6 +36,13 @@
         <stop>!Window.IsVisible(1115)</stop>
     </timer>
     <timer>
+        <name>lumenkidslivetv</name>
+        <description>No live TV in kids mode (nothing filters channels for children): a channel, radio station or recording started while it's on (from a phone app, say), or playing when it comes on, stops</description>
+        <start reset="true">Skin.HasSetting(CinemathequeKids) + [PVR.IsPlayingTV | PVR.IsPlayingRadio | PVR.IsPlayingRecording | PVR.IsPlayingEpgTag]</start>
+        <onstart>PlayerControl(Stop)</onstart>
+        <stop>!PVR.IsPlayingTV + !PVR.IsPlayingRadio + !PVR.IsPlayingRecording + !PVR.IsPlayingEpgTag</stop>
+    </timer>
+    <timer>
         <name>lumenmoreopen</name>
         <description>A film picked in a More like this row (Custom_1116_LumenOpen.xml): once its one-film list has loaded, Info on it opens its detail page like from any grid; then the helper goes, so Back leaves the page for where it was opened from</description>
         <start reset="true">Window.IsTopMost(1116) + Integer.IsGreater(Container(5180).NumItems,0) + !Container(5180).IsUpdating</start>
