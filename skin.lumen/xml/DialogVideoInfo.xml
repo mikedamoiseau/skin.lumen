@@ -2,6 +2,9 @@
 <!-- Lumen detail page. Kodi wires: 8 play/browse, 11 trailer, 14 versions, 15 extras, 10 artwork, 6 refresh, 50 cast (or set movies). -->
 <window>
 	<defaultcontrol always="true">8</defaultcontrol>
+	<!-- kids mode hides every button on a show's page: its genre row is all there is to reach (a list that is still loading
+	     can take focus) -->
+	<onload condition="$EXP[LumenKids] + String.IsEqual(ListItem.DBType,tvshow)">SetFocus(5173)</onload>
 	<controls>
 		<!-- backdrop -->
 		<control type="group">
