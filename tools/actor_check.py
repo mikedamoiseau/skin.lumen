@@ -643,12 +643,13 @@ def log_errors(lines):
             # a page with nothing on it: its onload SetFocus finds an empty grid
             and "Control 5150 in window 11115 has been asked to focus, but it can't" not in l
             # an add-on's own window (Python windows are 13000-13099), e.g. a screensaver's
-            and not re.search(r"in window 130\d\d has been asked to focus", l)]
+            and not re.search(r"in window 130\d\d has been asked to focus", l)
+            # a studio the logo pack has no logo for (the detail page can't tell beforehand)
+            and "Direct texture file loading failed for resource://resource.images.studios.white/" not in l]
 
 
-def check_log(r, visit, ignore=()):
-    """No skin error since the skin loaded, and no failed fetch while visit(r) opens the pages (see c_log_clean);
-    errors starting with one of ignore don't count."""
+def check_log(r, visit):
+    """No skin error since the skin loaded, and no failed fetch while visit(r) opens the pages (see c_log_clean)."""
     reset_home()
     # reload only from Home with nothing open or playing (a reload under open dialogs crashed Kodi)
     if (rpc("Player.GetActivePlayers")["result"] == [] and not cond("System.HasActiveModalDialog")
@@ -663,8 +664,7 @@ def check_log(r, visit, ignore=()):
     gui = next((w for w in lines[start].split() if w.startswith("T:")), "") if lines else ""
     bad = log_errors(l for l in lines[start:] if f" {gui} " in l)
     r.ok("no skin errors in Kodi's log since the skin loaded", gui and not bad, bad[:4])
-    bad = [e for e in log_errors(lines[max(before, start):]) if "smb://" not in e and e != "GetDirectory - Error getting"
-           and not any(e.split(" - ", 1)[-1].startswith(i) for i in ignore)]
+    bad = [e for e in log_errors(lines[max(before, start):]) if "smb://" not in e and e != "GetDirectory - Error getting"]
     r.ok("and no failed fetch while the pages opened", not bad, bad[:4])
 
 

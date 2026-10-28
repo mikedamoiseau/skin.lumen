@@ -402,6 +402,23 @@ def c_swap(r):
     reset_home()
 
 
+@check("open_fail")
+def c_open_fail(r):
+    """The helper that opens a film picked in a row (window 1116) gives up when the film doesn't load, instead of
+    leaving its backdrop on screen. Needs builtins, so LibreELEC only (kodi-send over SSH)."""
+    if not SSH:
+        return r.skip("needs kodi-send (LibreELEC)")
+    reset_home()
+    gone = max(m["movieid"] for m in actor_check._movies([])) + 100000
+    for action in (f"SetProperty(lumen.openid,{gone},home)", "ActivateWindow(1116)"):
+        subprocess.run(["ssh", SSH, f'kodi-send --action="{action}"'], capture_output=True, timeout=30)
+    r.ok("the helper opens for a film that isn't in the library", wait_for(lambda: cond("Window.IsVisible(1116)"), 5))
+    r.ok("it closes by itself", wait_for(lambda: not cond("Window.IsVisible(1116)"), 20))
+    r.ok("and clears the film it was given", lab("Window(home).Property(lumen.openid)") == "",
+         lab("Window(home).Property(lumen.openid)"))
+    reset_home()
+
+
 @check("show_ok")
 def c_show_ok(r):
     """OK on a show in a row opens its show page; Back returns to where the detail page was opened from."""
@@ -509,6 +526,47 @@ def c_kids_nav(r):
         reset_home()
 
 
+@check("kids_stale")
+def c_kids_stale(r):
+    """Kids mode right after a grown-up film's page: Down and OK while the new page's rows still hold that film's
+    collection (a list keeps its items until its new ones load) never open an untagged film."""
+    tagged = kids_check.tagged_movies()
+    films = unique(actor_check._movies(["setid", "title", "year"]))
+    members = {}
+    for m in films:
+        if m["setid"]:
+            members.setdefault(m["setid"], []).append(m["movieid"])
+    grown = next((m for m in films if len(members.get(m["setid"], [])) >= 2
+                  and not any(i in tagged for i in members[m["setid"]])), None)
+    kid = next((m for m in films if m["movieid"] in tagged), None)
+    if not r.ok("a grown-up film in a collection and a kids film", grown and kid):
+        return
+    try:
+        if not r.ok("the grown-up film's page opens, its collection row loads", open_detail("movie", grown["movieid"]) and rows_loaded()):
+            return
+        rpc("Input.Back")
+        wait_for(lambda: not cond("Window.IsVisible(movieinformation)"), 5)
+        kids_check.kids(True)
+        path = actor_check._xsp_path("videodb://movies/titles/", "movies",
+                                     [actor_check._is("title", [kid["title"]]), actor_check._is("year", [str(kid["year"])])])
+        if not r.ok("the kids film is listed", actor_check.open_path(path)
+                    and (lab("ListItem.DBID") == str(kid["movieid"]) or actor_check.goto_dbid(kid["movieid"]))):
+            return
+        rpc("Input.Info")
+        wait_for(lambda: cond("Window.IsVisible(movieinformation)"), 5, 0.02)
+        stale = cond(f"Container({SET_ROW}).IsUpdating")
+        rpc("Input.Down")
+        rpc("Input.Select")
+        time.sleep(3)
+        shown = lab("ListItem.DBID") if cond("Window.IsVisible(movieinformation)") else ""
+        r.ok("Down and OK at once: still on a kids film", shown.isdigit() and int(shown) in tagged,
+             f"page shows {shown or 'nothing'}, the row was {'still' if stale else 'no longer'} loading")
+    finally:
+        close_detail()
+        kids_check.kids(False)
+        reset_home()
+
+
 @check("rows_speed")
 def c_rows_speed(r):
     """Time Info → detail page shown with its cast and rows loaded (compare with actor_check detail_speed, which waits
@@ -553,8 +611,7 @@ def c_log_clean(r):
         close_detail()
         r.ok("an episode page opens", open_detail("episode", rpc("VideoLibrary.GetEpisodes", {"limits": {"start": 0, "end": 1}})["result"]["episodes"][0]["episodeid"]))
         close_detail()
-    # a studio the pack has no logo for: Kodi can't tell beforehand, tries the file and logs it
-    actor_check.check_log(r, visit, ignore=("Direct texture file loading failed for resource://resource.images.studios.white/",))
+    actor_check.check_log(r, visit)
 
 
 CHECKS["cleanup"] = kids_check.CHECKS["cleanup"]
