@@ -807,6 +807,43 @@
 		<onup>$PARAM[onup]</onup>
 		<ondown>$PARAM[ondown]</ondown>
 	</include>
+	<!-- a poster row's cards: poster, focus lift, the title under the focused one -->
+	<include name="LumenPosterLayouts">
+		<definition>
+			<itemlayout width="240" height="420">
+				<control type="group">
+					<left>30</left>
+					<top>14</top>
+					<include>LumenPosterCard</include>
+				</control>
+			</itemlayout>
+			<focusedlayout width="240" height="420">
+				<control type="group">
+					<left>30</left>
+					<top>14</top>
+					<include content="LumenCardFocus">
+						<param name="cx" value="105" />
+						<param name="cy" value="157" />
+					</include>
+					<include content="LumenPosterCard">
+						<param name="focused" value="Control.HasFocus($PARAM[id])" />
+					</include>
+				</control>
+				<control type="label">
+					<left>10</left>
+					<top>352</top>
+					<width>250</width>
+					<height>40</height>
+					<align>center</align>
+					<font>lm_label_bold</font>
+					<textcolor>text</textcolor>
+					<label>$INFO[ListItem.Label]</label>
+					<visible>Control.HasFocus($PARAM[id])</visible>
+					<animation effect="fade" start="0" end="100" time="220" delay="80">Visible</animation>
+				</control>
+			</focusedlayout>
+		</definition>
+	</include>
 	<include name="LumenPosterList">
 		<param name="sortby">none</param>
 		<param name="sortorder">ascending</param>
@@ -830,38 +867,9 @@
 					<param name="ondown" value="$PARAM[ondown]" />
 				</include>
 				<onclick condition="$PARAM[onclick_condition]">$PARAM[onclick]</onclick>
-				<itemlayout width="240" height="420">
-					<control type="group">
-						<left>30</left>
-						<top>14</top>
-						<include>LumenPosterCard</include>
-					</control>
-				</itemlayout>
-				<focusedlayout width="240" height="420">
-					<control type="group">
-						<left>30</left>
-						<top>14</top>
-						<include content="LumenCardFocus">
-							<param name="cx" value="105" />
-							<param name="cy" value="157" />
-						</include>
-						<include content="LumenPosterCard">
-							<param name="focused" value="Control.HasFocus($PARAM[id])" />
-						</include>
-					</control>
-					<control type="label">
-						<left>10</left>
-						<top>352</top>
-						<width>250</width>
-						<height>40</height>
-						<align>center</align>
-						<font>lm_label_bold</font>
-						<textcolor>text</textcolor>
-						<label>$INFO[ListItem.Label]</label>
-						<visible>Control.HasFocus($PARAM[id])</visible>
-						<animation effect="fade" start="0" end="100" time="220" delay="80">Visible</animation>
-					</control>
-				</focusedlayout>
+				<include content="LumenPosterLayouts">
+					<param name="id" value="$PARAM[id]" />
+				</include>
 				<content target="videos" sortby="$PARAM[sortby]" sortorder="$PARAM[sortorder]" limit="$PARAM[limit]">$PARAM[path]</content>
 			</control>
 		</definition>
@@ -1196,6 +1204,122 @@
 	<variable name="LumenInfoAudioLine">
 		<value condition="!String.IsEmpty(ListItem.AudioCodec)">Audio   $VAR[LumenAudioCodecLabel]$VAR[LumenChannelsLabel]$INFO[ListItem.AudioLanguage,  ·  [UPPERCASE],[/UPPERCASE]]</value>
 	</variable>
+
+	<!-- ============ More like this (detail page) ============ -->
+	<!-- Three rows under the cast: the film's collection, its directors' other films, its first genre (a show page: shows of
+	     its first genre). Every path is a fixed smart-playlist rule set: a title or a name goes in only when it can't break
+	     the URL or the xsp ("&" splits the options, "%" and "#" are decoded or cut), and a broken xsp lists nothing. A "+"
+	     can't be tested for (Kodi reads it as "and" inside a condition): it decodes to a space, so the title then shows in
+	     its own rows. A row with nothing to show gets a path that finds nothing, never an empty path (Kodi keeps a list's
+	     old items when its path goes empty). -->
+	<!-- leaves the page's own title out of its rows, by title and year (a remake stays in); follows another rule -->
+	<variable name="LumenMoreNotSelf">
+		<value condition="!String.Contains(ListItem.Title,&amp;) + !String.Contains(ListItem.Title,%) + !String.Contains(ListItem.Title,#)">%2C%7B%22or%22%3A%5B%7B%22field%22%3A%22title%22%2C%22operator%22%3A%22isnot%22%2C%22value%22%3A%5B$ESCINFO[ListItem.Title]%5D%7D%2C%7B%22field%22%3A%22year%22%2C%22operator%22%3A%22isnot%22%2C%22value%22%3A%5B%22$INFO[ListItem.Year]%22%5D%7D%5D%7D</value>
+	</variable>
+	<!-- kids mode: tagged titles only; follows another rule -->
+	<variable name="LumenMoreKids">
+		<value condition="$EXP[LumenKids]">%2C%7B%22field%22%3A%22tag%22%2C%22operator%22%3A%22is%22%2C%22value%22%3A%5B%22Cinematheque%20Kids%22%5D%7D</value>
+	</variable>
+	<!-- the collection's other films (the first rule is one every film passes, so the others can follow it) -->
+	<variable name="LumenMoreSetPath">
+		<value condition="String.IsEqual(ListItem.DBType,movie) + Integer.IsGreater(ListItem.SetId,0)">videodb://movies/titles/?setid=$INFO[ListItem.SetId]&amp;xsp=%7B%22type%22%3A%22movies%22%2C%22rules%22%3A%7B%22and%22%3A%5B%7B%22field%22%3A%22title%22%2C%22operator%22%3A%22isnot%22%2C%22value%22%3A%5B%22%22%5D%7D$VAR[LumenMoreNotSelf]$VAR[LumenMoreKids]%5D%7D%7D</value>
+		<value>videodb://movies/titles/?setid=-1</value>
+	</variable>
+	<!-- the film's directors (up to three), looked up by id in list 5161, in kids mode too -->
+	<variable name="LumenMoreDirectorsPath">
+		<value condition="String.IsEqual(ListItem.DBType,movie)">videodb://movies/directors/?videoversionid=-1&amp;mediaid=$INFO[ListItem.DBID]</value>
+		<value>videodb://movies/directors/?setid=-1</value>
+	</variable>
+	<!-- the other films of any of them; one value per number of directors, as an empty name would break the rule -->
+	<variable name="LumenMoreDirectorPath">
+		<value condition="String.IsEqual(ListItem.DBType,movie) + !Container(5161).IsUpdating + Integer.IsEqual(Container(5161).NumItems,1) + !String.Contains(Container(5161).ListItemAbsolute(0).Label,&amp;) + !String.Contains(Container(5161).ListItemAbsolute(0).Label,%) + !String.Contains(Container(5161).ListItemAbsolute(0).Label,#)">videodb://movies/titles/?xsp=%7B%22type%22%3A%22movies%22%2C%22rules%22%3A%7B%22and%22%3A%5B%7B%22field%22%3A%22director%22%2C%22operator%22%3A%22is%22%2C%22value%22%3A%5B$ESCINFO[Container(5161).ListItemAbsolute(0).Label]%5D%7D$VAR[LumenMoreNotSelf]$VAR[LumenMoreKids]%5D%7D%7D</value>
+		<value condition="String.IsEqual(ListItem.DBType,movie) + !Container(5161).IsUpdating + Integer.IsEqual(Container(5161).NumItems,2) + !String.Contains(Container(5161).ListItemAbsolute(0).Label,&amp;) + !String.Contains(Container(5161).ListItemAbsolute(0).Label,%) + !String.Contains(Container(5161).ListItemAbsolute(0).Label,#) + !String.Contains(Container(5161).ListItemAbsolute(1).Label,&amp;) + !String.Contains(Container(5161).ListItemAbsolute(1).Label,%) + !String.Contains(Container(5161).ListItemAbsolute(1).Label,#)">videodb://movies/titles/?xsp=%7B%22type%22%3A%22movies%22%2C%22rules%22%3A%7B%22and%22%3A%5B%7B%22field%22%3A%22director%22%2C%22operator%22%3A%22is%22%2C%22value%22%3A%5B$ESCINFO[Container(5161).ListItemAbsolute(0).Label]%2C$ESCINFO[Container(5161).ListItemAbsolute(1).Label]%5D%7D$VAR[LumenMoreNotSelf]$VAR[LumenMoreKids]%5D%7D%7D</value>
+		<value condition="String.IsEqual(ListItem.DBType,movie) + !Container(5161).IsUpdating + Integer.IsEqual(Container(5161).NumItems,3) + !String.Contains(Container(5161).ListItemAbsolute(0).Label,&amp;) + !String.Contains(Container(5161).ListItemAbsolute(0).Label,%) + !String.Contains(Container(5161).ListItemAbsolute(0).Label,#) + !String.Contains(Container(5161).ListItemAbsolute(1).Label,&amp;) + !String.Contains(Container(5161).ListItemAbsolute(1).Label,%) + !String.Contains(Container(5161).ListItemAbsolute(1).Label,#) + !String.Contains(Container(5161).ListItemAbsolute(2).Label,&amp;) + !String.Contains(Container(5161).ListItemAbsolute(2).Label,%) + !String.Contains(Container(5161).ListItemAbsolute(2).Label,#)">videodb://movies/titles/?xsp=%7B%22type%22%3A%22movies%22%2C%22rules%22%3A%7B%22and%22%3A%5B%7B%22field%22%3A%22director%22%2C%22operator%22%3A%22is%22%2C%22value%22%3A%5B$ESCINFO[Container(5161).ListItemAbsolute(0).Label]%2C$ESCINFO[Container(5161).ListItemAbsolute(1).Label]%2C$ESCINFO[Container(5161).ListItemAbsolute(2).Label]%5D%7D$VAR[LumenMoreNotSelf]$VAR[LumenMoreKids]%5D%7D%7D</value>
+		<value>videodb://movies/titles/?setid=-1</value>
+	</variable>
+	<!-- the first genre, from the library's (TMDB's) genre names: a longer name first where one starts another. An unknown
+	     genre gives no row -->
+	<variable name="LumenMoreGenre">
+		<value condition="String.StartsWith(ListItem.Genre,Action &amp; Adventure)">Action &amp; Adventure</value>
+		<value condition="String.StartsWith(ListItem.Genre,War &amp; Politics)">War &amp; Politics</value>
+		<value condition="String.StartsWith(ListItem.Genre,Sci-Fi &amp; Fantasy)">Sci-Fi &amp; Fantasy</value>
+		<value condition="String.StartsWith(ListItem.Genre,Action)">Action</value>
+		<value condition="String.StartsWith(ListItem.Genre,Adventure)">Adventure</value>
+		<value condition="String.StartsWith(ListItem.Genre,Animation)">Animation</value>
+		<value condition="String.StartsWith(ListItem.Genre,Comedy)">Comedy</value>
+		<value condition="String.StartsWith(ListItem.Genre,Crime)">Crime</value>
+		<value condition="String.StartsWith(ListItem.Genre,Documentary)">Documentary</value>
+		<value condition="String.StartsWith(ListItem.Genre,Drama)">Drama</value>
+		<value condition="String.StartsWith(ListItem.Genre,Family)">Family</value>
+		<value condition="String.StartsWith(ListItem.Genre,Fantasy)">Fantasy</value>
+		<value condition="String.StartsWith(ListItem.Genre,History)">History</value>
+		<value condition="String.StartsWith(ListItem.Genre,Horror)">Horror</value>
+		<value condition="String.StartsWith(ListItem.Genre,Kids)">Kids</value>
+		<value condition="String.StartsWith(ListItem.Genre,Music)">Music</value>
+		<value condition="String.StartsWith(ListItem.Genre,Mystery)">Mystery</value>
+		<value condition="String.StartsWith(ListItem.Genre,News)">News</value>
+		<value condition="String.StartsWith(ListItem.Genre,Reality)">Reality</value>
+		<value condition="String.StartsWith(ListItem.Genre,Romance)">Romance</value>
+		<value condition="String.StartsWith(ListItem.Genre,Science Fiction)">Science Fiction</value>
+		<value condition="String.StartsWith(ListItem.Genre,Soap)">Soap</value>
+		<value condition="String.StartsWith(ListItem.Genre,Talk)">Talk</value>
+		<value condition="String.StartsWith(ListItem.Genre,Thriller)">Thriller</value>
+		<value condition="String.StartsWith(ListItem.Genre,TV Movie)">TV Movie</value>
+		<value condition="String.StartsWith(ListItem.Genre,War)">War</value>
+		<value condition="String.StartsWith(ListItem.Genre,Western)">Western</value>
+	</variable>
+	<variable name="LumenMoreGenreRule">
+		<value condition="String.StartsWith(ListItem.Genre,Action &amp; Adventure)">Action %26 Adventure</value>
+		<value condition="String.StartsWith(ListItem.Genre,War &amp; Politics)">War %26 Politics</value>
+		<value condition="String.StartsWith(ListItem.Genre,Sci-Fi &amp; Fantasy)">Sci-Fi %26 Fantasy</value>
+		<value>$VAR[LumenMoreGenre]</value>
+	</variable>
+	<variable name="LumenMoreGenrePath">
+		<value condition="String.IsEqual(ListItem.DBType,movie)">videodb://movies/titles/?xsp=%7B%22type%22%3A%22movies%22%2C%22rules%22%3A%7B%22and%22%3A%5B%7B%22field%22%3A%22genre%22%2C%22operator%22%3A%22is%22%2C%22value%22%3A%5B%22$VAR[LumenMoreGenreRule]%22%5D%7D$VAR[LumenMoreNotSelf]$VAR[LumenMoreKids]%5D%7D%7D</value>
+		<value condition="String.IsEqual(ListItem.DBType,tvshow)">videodb://tvshows/titles/?xsp=%7B%22type%22%3A%22tvshows%22%2C%22rules%22%3A%7B%22and%22%3A%5B%7B%22field%22%3A%22genre%22%2C%22operator%22%3A%22is%22%2C%22value%22%3A%5B%22$VAR[LumenMoreGenreRule]%22%5D%7D$VAR[LumenMoreNotSelf]$VAR[LumenMoreKids]%5D%7D%7D</value>
+		<value>videodb://movies/titles/?setid=-1</value>
+	</variable>
+	<!-- one row: a header and a poster list. The list stays visible (an empty one draws nothing): a hidden list isn't
+	     processed and keeps the previous page's titles. OK on a film is Kodi's own (Default select action = Show
+	     information swaps this page to it); OK on a show opens its show page, as Kodi can't open another title's page from
+	     inside this one, nor change window while it's open -->
+	<include name="LumenMoreRow">
+		<param name="sortorder">descending</param>
+		<param name="limit">20</param>
+		<definition>
+			<control type="group">
+				<top>$PARAM[top]</top>
+				<control type="label" id="$PARAM[header_id]">
+					<left>lm_margin</left>
+					<width>1700</width>
+					<height>44</height>
+					<aligny>center</aligny>
+					<font>lm_headline</font>
+					<textcolor>E6FFFFFF</textcolor>
+					<label>$PARAM[header]</label>
+					<visible>Integer.IsGreater(Container($PARAM[id]).NumItems,0)</visible>
+				</control>
+				<control type="list" id="$PARAM[id]">
+					<left>80</left>
+					<top>44</top>
+					<width>1840</width>
+					<height>420</height>
+					<orientation>horizontal</orientation>
+					<scrolltime tween="cubic" easing="out">360</scrolltime>
+					<preloaditems>0</preloaditems>
+					<onup>$PARAM[onup]</onup>
+					<ondown>$PARAM[ondown]</ondown>
+					<onback>8</onback>
+					<onclick condition="String.IsEqual(Container($PARAM[id]).ListItem.DBType,tvshow)">Dialog.Close(movieinformation,true)</onclick>
+					<onclick condition="String.IsEqual(Container($PARAM[id]).ListItem.DBType,tvshow)">ActivateWindow(Videos,videodb://tvshows/titles/$INFO[Container($PARAM[id]).ListItem.DBID]/,return)</onclick>
+					<include content="LumenPosterLayouts">
+						<param name="id" value="$PARAM[id]" />
+					</include>
+					<content target="videos" sortby="$PARAM[sortby]" sortorder="$PARAM[sortorder]" limit="$PARAM[limit]" browse="never">$PARAM[path]</content>
+				</control>
+			</control>
+		</definition>
+	</include>
 
 	<!-- ============ Actor page (Custom_1115_LumenPerson.xml) ============ -->
 	<!-- the name goes into the paths as is: Kodi decodes each multipath part, then its xsp option, and a raw name

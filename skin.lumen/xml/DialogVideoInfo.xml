@@ -396,6 +396,49 @@
 					</focusedlayout>
 				</control>
 			</control>
+			<!-- More like this: the film's collection, its directors, its first genre (a show: its first genre) -->
+			<include content="LumenNextLookup">
+				<param name="id" value="5161" />
+				<param name="path" value="$VAR[LumenMoreDirectorsPath]" />
+				<param name="limit" value="3" />
+			</include>
+			<control type="group" id="6070">
+				<top>1320</top>
+				<animation effect="fade" start="0" end="100" time="500" delay="260">WindowOpen</animation>
+				<animation effect="fade" start="100" end="0" time="200">WindowClose</animation>
+				<include content="LumenMoreRow">
+					<param name="id" value="5171" />
+					<param name="header_id" value="6171" />
+					<param name="header" value="$INFO[ListItem.Set]" />
+					<param name="path" value="$VAR[LumenMoreSetPath]" />
+					<param name="sortby" value="year" />
+					<param name="sortorder" value="ascending" />
+					<param name="limit" value="25" />
+					<param name="top" value="0" />
+					<param name="onup" value="9000" />
+					<param name="ondown" value="noop" />
+				</include>
+				<include content="LumenMoreRow">
+					<param name="id" value="5172" />
+					<param name="header_id" value="6172" />
+					<param name="header" value="$INFO[ListItem.Director,Directed by ]" />
+					<param name="path" value="$VAR[LumenMoreDirectorPath]" />
+					<param name="sortby" value="year" />
+					<param name="top" value="500" />
+					<param name="onup" value="9000" />
+					<param name="ondown" value="noop" />
+				</include>
+				<include content="LumenMoreRow">
+					<param name="id" value="5173" />
+					<param name="header_id" value="6173" />
+					<param name="header" value="More $VAR[LumenMoreGenre]" />
+					<param name="path" value="$VAR[LumenMoreGenrePath]" />
+					<param name="sortby" value="rating" />
+					<param name="top" value="1000" />
+					<param name="onup" value="9000" />
+					<param name="ondown" value="noop" />
+				</include>
+			</control>
 		</control>
 		<include>LumenClock</include>
 	</controls>
