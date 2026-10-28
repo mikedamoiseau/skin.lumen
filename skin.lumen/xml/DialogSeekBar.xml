@@ -82,8 +82,8 @@
 				<align>right</align>
 				<font>lm_caption</font>
 				<textcolor>text_mute</textcolor>
-				<label>$INFO[Player.FinishTime,Ends at ]$VAR[LumenSleepSuffix]</label>
-				<visible>Player.SeekEnabled + !Player.ChannelPreviewActive</visible>
+				<label>$VAR[LumenPlayerEndLine]</label>
+				<visible>[[Player.SeekEnabled + !VideoPlayer.Content(livetv)] | [VideoPlayer.Content(livetv) + System.HasAlarm(lumensleep)]] + !Player.ChannelPreviewActive</visible>
 			</control>
 		</control>
 

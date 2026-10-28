@@ -1622,11 +1622,13 @@
 		<value>$INFO[Player.Art(tvshow.clearlogo)]</value>
 	</variable>
 	<variable name="LumenPlayerTitle">
+		<value condition="VideoPlayer.Content(livetv)">$INFO[VideoPlayer.ChannelName]</value>
 		<value condition="!String.IsEmpty(VideoPlayer.TVShowTitle)">$INFO[VideoPlayer.TVShowTitle]</value>
 		<value condition="!String.IsEmpty(VideoPlayer.Title)">$INFO[VideoPlayer.Title]</value>
 		<value>$INFO[Player.Title]</value>
 	</variable>
 	<variable name="LumenPlayerSubtitle">
+		<value condition="VideoPlayer.Content(livetv)">$INFO[VideoPlayer.ChannelNumberLabel,Channel ]$INFO[VideoPlayer.Title,  ·  ]</value>
 		<value condition="!String.IsEmpty(VideoPlayer.TVShowTitle)">$INFO[VideoPlayer.Season,S]$INFO[VideoPlayer.Episode, E]$INFO[VideoPlayer.Title,  ·  ]</value>
 		<value condition="!String.IsEmpty(Player.Art(clearlogo))">$INFO[VideoPlayer.Year]</value>
 		<value>$INFO[VideoPlayer.Year]$INFO[VideoPlayer.Genre,  ·  ]</value>
@@ -1656,8 +1658,14 @@
 		<value condition="Player.Forwarding | Player.Rewinding">$INFO[Player.PlaySpeed,,×]</value>
 	</variable>
 	<variable name="LumenPlayerElapsed">
+		<value condition="VideoPlayer.Content(livetv)">Live</value>
 		<value condition="Player.Seeking | !String.IsEmpty(Player.SeekNumeric)">$INFO[Player.SeekTime]</value>
 		<value>$INFO[Player.Time]</value>
+	</variable>
+	<!-- under the clock: when a film ends; on live TV only the sleep timer -->
+	<variable name="LumenPlayerEndLine">
+		<value condition="VideoPlayer.Content(livetv)">Sleep in $VAR[LumenSleepLeft]</value>
+		<value>$INFO[Player.FinishTime,Ends at ]$VAR[LumenSleepSuffix]</value>
 	</variable>
 	<variable name="LumenSkinSettingHelp">
 		<value condition="Control.HasFocus(902)">Kids mode shows only the titles chosen in the Cinémathèque app. Set a PIN to show the Kids button on Home; leaving kids mode asks for it.</value>
