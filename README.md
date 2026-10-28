@@ -232,9 +232,12 @@ kids mode. Other apps can tell whether a device is in kids mode by reading
 - The actor page lists nothing for a name with "&" or "/" in it: Kodi splits its
   library paths there. Search's cast & crew row lists films, not people: Kodi 21
   can't look people up by name for a skin.
-- A title with "&", "%", "#" or "+" in its name can show up in its own More like
-  this rows. A studio missing from the logo pack shows no logo, and Kodi logs a
-  texture error for it.
+- More like this: a title with "&", "%", "#" or "+" in its name can show up in
+  its own rows, and a film whose director has one in their name may get no
+  director row. The genre row knows TMDB's English genre names only: a title
+  whose first genre is another one gets no genre row.
+- The detail page's logo shows only for a title with one studio or network that
+  the logo pack has a logo for. Kodi logs a texture error for a missing one.
 
 ## Credits & license
 
