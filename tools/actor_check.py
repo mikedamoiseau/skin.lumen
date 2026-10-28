@@ -629,13 +629,26 @@ def c_log_clean(r):
     only while this check opens the pages, and not for the NAS (smb://) nor for an empty path — after a play or a
     library update Kodi refetches a list even when its path is empty (DirectoryProvider.cpp:261), which the show
     page's Play-next lookups (0.2) do once a show page has been visited."""
-    def errors(lines):
-        return [l.split("<general>:")[-1].strip() for l in lines
-                if " error <general>:" in l and "/addons/screensaver." not in l
-                # a page with nothing on it: its onload SetFocus finds an empty grid
-                and "Control 5150 in window 11115 has been asked to focus, but it can't" not in l
-                # an add-on's own window (Python windows are 13000-13099), e.g. a screensaver's
-                and not re.search(r"in window 130\d\d has been asked to focus", l)]
+    def visit(r):
+        f = cast_film()
+        r.ok("actor page opens", open_person(f["movieid"], 1))
+        page_grid()
+        close_detail()
+    check_log(r, visit)
+
+
+def log_errors(lines):
+    return [l.split("<general>:")[-1].strip() for l in lines
+            if " error <general>:" in l and "/addons/screensaver." not in l
+            # a page with nothing on it: its onload SetFocus finds an empty grid
+            and "Control 5150 in window 11115 has been asked to focus, but it can't" not in l
+            # an add-on's own window (Python windows are 13000-13099), e.g. a screensaver's
+            and not re.search(r"in window 130\d\d has been asked to focus", l)]
+
+
+def check_log(r, visit, ignore=()):
+    """No skin error since the skin loaded, and no failed fetch while visit(r) opens the pages (see c_log_clean);
+    errors starting with one of ignore don't count."""
     reset_home()
     # reload only from Home with nothing open or playing (a reload under open dialogs crashed Kodi)
     if (rpc("Player.GetActivePlayers")["result"] == [] and not cond("System.HasActiveModalDialog")
@@ -643,17 +656,15 @@ def c_log_clean(r):
         time.sleep(5)
         wait_for(lambda: lab("System.CurrentWindow") == "Home", 20)
     before = len(kodi_log())
-    f = cast_film()
-    r.ok("actor page opens", open_person(f["movieid"], 1))
-    page_grid()
-    close_detail()
+    visit(r)
     reset_home()
     lines = kodi_log()
     start = max((i for i, l in enumerate(lines) if "load skin from:" in l), default=0)
     gui = next((w for w in lines[start].split() if w.startswith("T:")), "") if lines else ""
-    bad = errors(l for l in lines[start:] if f" {gui} " in l)
+    bad = log_errors(l for l in lines[start:] if f" {gui} " in l)
     r.ok("no skin errors in Kodi's log since the skin loaded", gui and not bad, bad[:4])
-    bad = [e for e in errors(lines[max(before, start):]) if "smb://" not in e and e != "GetDirectory - Error getting"]
+    bad = [e for e in log_errors(lines[max(before, start):]) if "smb://" not in e and e != "GetDirectory - Error getting"
+           and not any(e.split(" - ", 1)[-1].startswith(i) for i in ignore)]
     r.ok("and no failed fetch while the pages opened", not bad, bad[:4])
 
 
