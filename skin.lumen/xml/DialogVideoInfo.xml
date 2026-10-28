@@ -28,13 +28,17 @@
 			<control type="image">
 				<include>FullScreenDimensions</include>
 				<texture colordiffuse="99000000">lumen/white.png</texture>
-				<animation effect="fade" start="0" end="100" time="400" tween="sine" easing="out" condition="$EXP[LumenCastFocus]">Conditional</animation>
+				<animation effect="fade" start="0" end="100" time="400" tween="sine" easing="out" condition="$EXP[LumenLowerFocus]">Conditional</animation>
 			</control>
 		</control>
 
-		<!-- page content; slides up when the cast row takes focus -->
+		<!-- page content; slides up when the cast row takes focus, and on by each row it passes on the way to a More like this
+		     row (the cast 430, a row 500): the focused row sits where the cast row does -->
 		<control type="group">
-			<animation effect="slide" end="0,-340" time="460" tween="cubic" easing="out" condition="$EXP[LumenCastFocus]">Conditional</animation>
+			<animation effect="slide" end="0,-340" time="460" tween="cubic" easing="out" condition="$EXP[LumenLowerFocus]">Conditional</animation>
+			<animation effect="slide" end="0,-430" time="460" tween="cubic" easing="out" condition="$EXP[LumenMoreFocus] + $EXP[LumenCastShown]">Conditional</animation>
+			<animation effect="slide" end="0,-500" time="460" tween="cubic" easing="out" condition="[Control.HasFocus(5172) | Control.HasFocus(5173)] + Integer.IsGreater(Container(5171).NumItems,0)">Conditional</animation>
+			<animation effect="slide" end="0,-500" time="460" tween="cubic" easing="out" condition="Control.HasFocus(5173) + Integer.IsGreater(Container(5172).NumItems,0)">Conditional</animation>
 			<control type="group">
 				<left>lm_margin</left>
 				<top>130</top>
@@ -43,7 +47,7 @@
 					<effect type="slide" start="0,40" end="0,0" time="620" delay="120" tween="cubic" easing="out" />
 				</animation>
 				<animation effect="fade" start="100" end="0" time="200">WindowClose</animation>
-				<animation effect="fade" start="100" end="20" time="400" condition="$EXP[LumenCastFocus]">Conditional</animation>
+				<animation effect="fade" start="100" end="20" time="400" condition="$EXP[LumenLowerFocus]">Conditional</animation>
 				<!-- logo / title -->
 				<control type="image">
 					<width>720</width>
@@ -99,8 +103,8 @@
 						<font>lm_body_l</font>
 						<textcolor>text_dim</textcolor>
 						<label>$INFO[ListItem.Plot]</label>
-						<!-- $EXP isn't expanded in autoscroll: LumenCastFocus written out -->
-						<autoscroll delay="8000" time="3000" repeat="8000">![Control.HasFocus(50) | Control.HasFocus(6051) | Control.HasFocus(5060)]</autoscroll>
+						<!-- $EXP isn't expanded in autoscroll: LumenLowerFocus written out -->
+						<autoscroll delay="8000" time="3000" repeat="8000">![Control.HasFocus(50) | Control.HasFocus(6051) | Control.HasFocus(5060) | Control.HasFocus(5171) | Control.HasFocus(5172) | Control.HasFocus(5173)]</autoscroll>
 					</control>
 					<control type="label">
 						<width>960</width>
@@ -234,7 +238,7 @@
 				<animation effect="fade" start="0" end="100" time="500" delay="300">WindowOpen</animation>
 				<animation effect="fade" start="100" end="0" time="200">WindowClose</animation>
 				<visible>!String.IsEmpty(ListItem.VideoCodec) | !String.IsEmpty(ListItem.AudioCodec)</visible>
-				<animation effect="fade" start="100" end="0" time="300" condition="$EXP[LumenCastFocus]">Conditional</animation>
+				<animation effect="fade" start="100" end="0" time="300" condition="$EXP[LumenLowerFocus]">Conditional</animation>
 				<control type="label">
 					<width>560</width>
 					<height>34</height>
@@ -267,7 +271,9 @@
 			<control type="group" id="6050">
 				<top>820</top>
 				<!-- on every film page: the directors (5060) only load while it shows, and a film may have no cast -->
-				<visible>!$EXP[LumenKids] + [Integer.IsGreater(Container(50).NumItems,0) | Container(50).IsUpdating | String.IsEqual(ListItem.DBType,movie)]</visible>
+				<visible>$EXP[LumenCastShown]</visible>
+				<!-- dimmed while a row below has focus, as it scrolls up under the clock -->
+				<animation effect="fade" start="100" end="20" time="400" condition="$EXP[LumenMoreFocus]">Conditional</animation>
 				<animation effect="fade" start="0" end="100" time="500" delay="260">WindowOpen</animation>
 				<animation effect="fade" start="100" end="0" time="200">WindowClose</animation>
 				<control type="label">
@@ -295,7 +301,7 @@
 					<onright condition="Integer.IsGreater(Container(50).NumItems,0)">6051</onright>
 					<onright condition="!Integer.IsGreater(Container(50).NumItems,0)">noop</onright>
 					<onup>9000</onup>
-					<ondown>noop</ondown>
+					<ondown>5171</ondown>
 					<onback>8</onback>
 					<onclick>SetProperty(lumen.person,$ESCINFO[Container(5060).ListItem.Label],home)</onclick>
 					<onclick>SetProperty(lumen.personthumb,$ESCINFO[Container(5060).ListItem.Art(thumb)],home)</onclick>
@@ -337,7 +343,7 @@
 					<onleft condition="!Integer.IsEqual(Container(50).CurrentItem,1) | !Integer.IsGreater(Container(5060).NumItems,0) | !String.IsEqual(ListItem.DBType,movie)">Control.Move(50,-1)</onleft>
 					<onright>Control.Move(50,1)</onright>
 					<onup>9000</onup>
-					<ondown>noop</ondown>
+					<ondown>5171</ondown>
 					<onback>8</onback>
 					<onclick>SetProperty(lumen.person,$ESCINFO[Container(50).ListItem.Label],home)</onclick>
 					<onclick>SetProperty(lumen.personthumb,$ESCINFO[Container(50).ListItem.Art(thumb)],home)</onclick>
@@ -402,8 +408,11 @@
 				<param name="path" value="$VAR[LumenMoreDirectorsPath]" />
 				<param name="limit" value="3" />
 			</include>
+			<!-- an empty row folds away (the rows below it move up a row); with no cast row (kids mode, a show without one)
+			     the rows take its place -->
 			<control type="group" id="6070">
-				<top>1320</top>
+				<top>1250</top>
+				<animation effect="slide" end="0,-430" time="300" tween="cubic" easing="out" condition="!$EXP[LumenCastShown]">Conditional</animation>
 				<animation effect="fade" start="0" end="100" time="500" delay="260">WindowOpen</animation>
 				<animation effect="fade" start="100" end="0" time="200">WindowClose</animation>
 				<include content="LumenMoreRow">
@@ -415,8 +424,11 @@
 					<param name="sortorder" value="ascending" />
 					<param name="limit" value="25" />
 					<param name="top" value="0" />
-					<param name="onup" value="9000" />
-					<param name="ondown" value="noop" />
+					<param name="dim" value="Control.HasFocus(5172) | Control.HasFocus(5173)" />
+					<param name="up_if" value="Control.IsVisible(6051)" />
+					<param name="onup" value="6051" />
+					<param name="onup_else" value="5060" />
+					<param name="ondown" value="5172" />
 				</include>
 				<include content="LumenMoreRow">
 					<param name="id" value="5172" />
@@ -425,8 +437,10 @@
 					<param name="path" value="$VAR[LumenMoreDirectorPath]" />
 					<param name="sortby" value="year" />
 					<param name="top" value="500" />
-					<param name="onup" value="9000" />
-					<param name="ondown" value="noop" />
+					<param name="dim" value="Control.HasFocus(5173)" />
+					<param name="fold1" value="!Integer.IsGreater(Container(5171).NumItems,0)" />
+					<param name="onup" value="5171" />
+					<param name="ondown" value="5173" />
 				</include>
 				<include content="LumenMoreRow">
 					<param name="id" value="5173" />
@@ -435,7 +449,9 @@
 					<param name="path" value="$VAR[LumenMoreGenrePath]" />
 					<param name="sortby" value="rating" />
 					<param name="top" value="1000" />
-					<param name="onup" value="9000" />
+					<param name="fold1" value="!Integer.IsGreater(Container(5171).NumItems,0)" />
+					<param name="fold2" value="!Integer.IsGreater(Container(5172).NumItems,0)" />
+					<param name="onup" value="5172" />
 					<param name="ondown" value="noop" />
 				</include>
 			</control>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Opens the detail page of a film picked in a More like this row (Includes_Lumen.xml, LumenMoreRow), which closed its
+     own page first: Window(home).Property(lumen.openid) is the film, lumen.openfanart its backdrop, drawn here so the
+     screen doesn't flash the window below. Timers.xml (lumenmoreopen) presses Info on the film once it has loaded, then
+     closes this window. -->
+<window type="dialog" id="1116">
+	<onunload>ClearProperty(lumen.openid,home)</onunload>
+	<onunload>ClearProperty(lumen.openfanart,home)</onunload>
+	<controls>
+		<control type="image">
+			<include>FullScreenDimensions</include>
+			<texture colordiffuse="background">lumen/white.png</texture>
+		</control>
+		<control type="image">
+			<include>FullScreenDimensions</include>
+			<aspectratio>scale</aspectratio>
+			<texture background="true">$INFO[Window(home).Property(lumen.openfanart)]</texture>
+		</control>
+		<control type="image">
+			<include>FullScreenDimensions</include>
+			<texture>lumen/hero_scrim.png</texture>
+		</control>
+		<control type="list" id="5180">
+			<left>-20</left>
+			<top>-20</top>
+			<width>1</width>
+			<height>1</height>
+			<itemlayout width="1" height="1" />
+			<focusedlayout width="1" height="1" />
+			<content target="videos" browse="never">$VAR[LumenMoreOpenPath]</content>
+		</control>
+	</controls>
+</window>

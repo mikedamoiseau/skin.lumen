@@ -35,4 +35,13 @@
         <onstart>ReplaceWindow(home)</onstart>
         <stop>!Window.IsVisible(1115)</stop>
     </timer>
+    <timer>
+        <name>lumenmoreopen</name>
+        <description>A film picked in a More like this row (Custom_1116_LumenOpen.xml): once its one-film list has loaded, Info on it opens its detail page like from any grid; then the helper goes, so Back leaves the page for where it was opened from</description>
+        <start reset="true">Window.IsTopMost(1116) + Integer.IsGreater(Container(5180).NumItems,0) + !Container(5180).IsUpdating</start>
+        <onstart>SetFocus(5180)</onstart>
+        <onstart>Action(Info)</onstart>
+        <onstart>Dialog.Close(1116,true)</onstart>
+        <stop>!Window.IsVisible(1116)</stop>
+    </timer>
 </timers>

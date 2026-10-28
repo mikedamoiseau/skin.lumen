@@ -12,6 +12,10 @@
 	<!-- detail page: the cast row has focus, through Kodi's list 50 (collections), its stand-in 6051 (people)
 	     or the directors at its front (5060) -->
 	<expression name="LumenCastFocus">Control.HasFocus(50) | Control.HasFocus(6051) | Control.HasFocus(5060)</expression>
+	<!-- detail page: the More like this rows under the cast have focus; the cast row shows (6050's condition) -->
+	<expression name="LumenMoreFocus">Control.HasFocus(5171) | Control.HasFocus(5172) | Control.HasFocus(5173)</expression>
+	<expression name="LumenLowerFocus">$EXP[LumenCastFocus] | $EXP[LumenMoreFocus]</expression>
+	<expression name="LumenCastShown">!$EXP[LumenKids] + [Integer.IsGreater(Container(50).NumItems,0) | Container(50).IsUpdating | String.IsEqual(ListItem.DBType,movie)]</expression>
 	<!-- the directors (5060) and the cast (50) act as one row: the directors show while the row is at its start and
 	     the cursor can still move right without leaving the screen (list 50 pages 8 cards, Position is its slot) -->
 	<expression name="LumenDirFront1">String.IsEqual(ListItem.DBType,movie) + Integer.IsEqual(Container(5060).NumItems,1) + !Container(50).HasPrevious + Integer.IsLess(Container(50).Position,7)</expression>
@@ -1280,15 +1284,32 @@
 		<value>videodb://movies/titles/?setid=-1</value>
 	</variable>
 	<!-- one row: a header and a poster list. The list stays visible (an empty one draws nothing): a hidden list isn't
-	     processed and keeps the previous page's titles. OK on a film is Kodi's own (Default select action = Show
-	     information swaps this page to it); OK on a show opens its show page, as Kodi can't open another title's page from
-	     inside this one, nor change window while it's open -->
+	     processed and keeps the previous page's titles. Kodi can't open another title's page from inside this one (Info
+	     closes the page; Kodi's own click swaps the title in place but leaves the cast row empty), nor change window while
+	     it's open: OK on a film closes the page and lets Custom_1116_LumenOpen.xml open the film's; OK on a show opens its
+	     show page -->
+	<!-- the film picked in a row, alone (videodb's mediaid filter); never mediaid=0, which lists the whole library -->
+	<variable name="LumenMoreOpenPath">
+		<value condition="Integer.IsGreater(Window(home).Property(lumen.openid),0)">videodb://movies/titles/?videoversionid=-1&amp;mediaid=$INFO[Window(home).Property(lumen.openid)]</value>
+		<value>videodb://movies/titles/?setid=-1</value>
+	</variable>
 	<include name="LumenMoreRow">
 		<param name="sortorder">descending</param>
 		<param name="limit">20</param>
+		<!-- Up goes to onup, or to onup_else when up_if is false -->
+		<param name="up_if">true</param>
+		<param name="onup_else">noop</param>
+		<!-- an empty row above folds away: this row moves up a row for each -->
+		<param name="fold1">false</param>
+		<param name="fold2">false</param>
+		<!-- dimmed while a row below has focus, as it scrolls up under the clock -->
+		<param name="dim">false</param>
 		<definition>
 			<control type="group">
 				<top>$PARAM[top]</top>
+				<animation effect="slide" end="0,-500" time="300" tween="cubic" easing="out" condition="$PARAM[fold1]">Conditional</animation>
+				<animation effect="slide" end="0,-500" time="300" tween="cubic" easing="out" condition="$PARAM[fold2]">Conditional</animation>
+				<animation effect="fade" start="100" end="20" time="400" condition="$PARAM[dim]">Conditional</animation>
 				<control type="label" id="$PARAM[header_id]">
 					<left>lm_margin</left>
 					<width>1700</width>
@@ -1307,9 +1328,14 @@
 					<orientation>horizontal</orientation>
 					<scrolltime tween="cubic" easing="out">360</scrolltime>
 					<preloaditems>0</preloaditems>
-					<onup>$PARAM[onup]</onup>
+					<onup condition="$PARAM[up_if]">$PARAM[onup]</onup>
+					<onup condition="!$PARAM[up_if]">$PARAM[onup_else]</onup>
 					<ondown>$PARAM[ondown]</ondown>
 					<onback>8</onback>
+					<onclick condition="String.IsEqual(Container($PARAM[id]).ListItem.DBType,movie)">SetProperty(lumen.openid,$INFO[Container($PARAM[id]).ListItem.DBID],home)</onclick>
+					<onclick condition="String.IsEqual(Container($PARAM[id]).ListItem.DBType,movie)">SetProperty(lumen.openfanart,$INFO[Container($PARAM[id]).ListItem.Art(fanart)],home)</onclick>
+					<onclick condition="String.IsEqual(Container($PARAM[id]).ListItem.DBType,movie)">Dialog.Close(movieinformation,true)</onclick>
+					<onclick condition="String.IsEqual(Container($PARAM[id]).ListItem.DBType,movie)">ActivateWindow(1116)</onclick>
 					<onclick condition="String.IsEqual(Container($PARAM[id]).ListItem.DBType,tvshow)">Dialog.Close(movieinformation,true)</onclick>
 					<onclick condition="String.IsEqual(Container($PARAM[id]).ListItem.DBType,tvshow)">ActivateWindow(Videos,videodb://tvshows/titles/$INFO[Container($PARAM[id]).ListItem.DBID]/,return)</onclick>
 					<include content="LumenPosterLayouts">
