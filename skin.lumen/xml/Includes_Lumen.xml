@@ -291,79 +291,103 @@
 
 	<!-- ============ Metadata line (year · genre · runtime · rating · badges) ============ -->
 	<include name="LumenBadge">
-		<control type="button">
-			<width>auto</width>
-			<height>34</height>
-			<label>$PARAM[label]</label>
-			<font>lm_micro</font>
-			<textoffsetx>12</textoffsetx>
-			<align>center</align>
-			<aligny>center</aligny>
-			<textcolor>text</textcolor>
-			<disabledcolor>text</disabledcolor>
-			<texturenofocus border="6" colordiffuse="B3FFFFFF">lumen/rr6_stroke.png</texturenofocus>
-			<texturefocus border="6" colordiffuse="B3FFFFFF">lumen/rr6_stroke.png</texturefocus>
-			<enable>false</enable>
-			<visible>$PARAM[visible]</visible>
-		</control>
+		<param name="top">0</param>
+		<definition>
+			<control type="button">
+				<top>$PARAM[top]</top>
+				<width>auto</width>
+				<height>34</height>
+				<label>$PARAM[label]</label>
+				<font>lm_micro</font>
+				<textoffsetx>12</textoffsetx>
+				<align>center</align>
+				<aligny>center</aligny>
+				<textcolor>text</textcolor>
+				<disabledcolor>text</disabledcolor>
+				<texturenofocus border="6" colordiffuse="B3FFFFFF">lumen/rr6_stroke.png</texturenofocus>
+				<texturefocus border="6" colordiffuse="B3FFFFFF">lumen/rr6_stroke.png</texturefocus>
+				<enable>false</enable>
+				<visible>$PARAM[visible]</visible>
+			</control>
+		</definition>
 	</include>
 	<include name="LumenMetaText">
-		<control type="label">
-			<width>auto</width>
-			<height>34</height>
-			<aligny>center</aligny>
-			<font>lm_label</font>
-			<textcolor>text_dim</textcolor>
-			<label>$PARAM[label]</label>
-			<visible>$PARAM[visible]</visible>
-		</control>
+		<param name="height">34</param>
+		<definition>
+			<control type="label">
+				<width>auto</width>
+				<height>$PARAM[height]</height>
+				<aligny>center</aligny>
+				<font>lm_label</font>
+				<textcolor>text_dim</textcolor>
+				<label>$PARAM[label]</label>
+				<visible>$PARAM[visible]</visible>
+			</control>
+		</definition>
 	</include>
 	<include name="LumenMetaLine">
 		<!-- $PARAM[item] is "ListItem" or "Container(id).ListItem" -->
 		<param name="item">ListItem</param>
 		<param name="align">left</param>
 		<param name="width">1200</param>
+		<!-- height / inset / top: the detail page makes the line taller, pulled up by the inset, so the logo has room
+		     and the text, badges and star stay where they were (a grouplist clips what overflows it) -->
+		<param name="height">34</param>
+		<param name="inset">0</param>
+		<param name="top">0</param>
+		<param name="logo">false</param>
+		<param name="logo_id"></param>
 		<definition>
 			<control type="grouplist">
 				<orientation>horizontal</orientation>
 				<itemgap>14</itemgap>
+				<top>$PARAM[top]</top>
 				<width>$PARAM[width]</width>
-				<height>34</height>
+				<height>$PARAM[height]</height>
 				<align>$PARAM[align]</align>
 				<usecontrolcoords>true</usecontrolcoords>
 				<include content="LumenMetaText">
+					<param name="height" value="$PARAM[height]" />
 					<param name="label" value="$INFO[$PARAM[item].Season,S, ]$INFO[$PARAM[item].Episode,E,  ·  ]$INFO[$PARAM[item].Title]" />
 					<param name="visible" value="String.IsEqual($PARAM[item].DBType,episode)" />
 				</include>
 				<include content="LumenMetaText">
+					<param name="height" value="$PARAM[height]" />
 					<param name="label" value="$INFO[$PARAM[item].Label]" />
 					<param name="visible" value="String.IsEqual($PARAM[item].DBType,season)" />
 				</include>
 				<include content="LumenMetaText">
+					<param name="height" value="$PARAM[height]" />
 					<param name="label" value="$INFO[$PARAM[item].Year]" />
 					<param name="visible" value="!String.IsEqual($PARAM[item].DBType,episode) + !String.IsEqual($PARAM[item].DBType,season) + !String.IsEmpty($PARAM[item].Year)" />
 				</include>
 				<include content="LumenMetaText">
+					<param name="height" value="$PARAM[height]" />
 					<param name="label" value="$INFO[$PARAM[item].Year,·  ]" />
 					<param name="visible" value="String.IsEqual($PARAM[item].DBType,season) + !String.IsEmpty($PARAM[item].Year)" />
 				</include>
 				<include content="LumenMetaText">
+					<param name="height" value="$PARAM[height]" />
 					<param name="label" value="$INFO[$PARAM[item].Genre,·  ]" />
 					<param name="visible" value="!String.IsEqual($PARAM[item].DBType,episode) + !String.IsEmpty($PARAM[item].Genre)" />
 				</include>
 				<include content="LumenMetaText">
+					<param name="height" value="$PARAM[height]" />
 					<param name="label" value="·  $INFO[$PARAM[item].Duration(h),,h ]$INFO[$PARAM[item].Duration(m),,m]" />
 					<param name="visible" value="!String.IsEmpty($PARAM[item].Duration) + !String.IsEqual($PARAM[item].DBType,tvshow) + !String.IsEqual($PARAM[item].Duration(h),0)" />
 				</include>
 				<include content="LumenMetaText">
+					<param name="height" value="$PARAM[height]" />
 					<param name="label" value="·  $INFO[$PARAM[item].Duration(m),,m]" />
 					<param name="visible" value="!String.IsEmpty($PARAM[item].Duration) + !String.IsEqual($PARAM[item].DBType,tvshow) + String.IsEqual($PARAM[item].Duration(h),0)" />
 				</include>
 				<include content="LumenMetaText">
+					<param name="height" value="$PARAM[height]" />
 					<param name="label" value="$INFO[$PARAM[item].Property(TotalSeasons),·  , $LOCALIZE[33054]]" />
 					<param name="visible" value="String.IsEqual($PARAM[item].DBType,tvshow) + Integer.IsGreater($PARAM[item].Property(TotalSeasons),1)" />
 				</include>
 				<include content="LumenMetaText">
+					<param name="height" value="$PARAM[height]" />
 					<param name="label" value="$INFO[$PARAM[item].Property(UnWatchedEpisodes),·  , $LOCALIZE[16101]]" />
 					<param name="visible" value="String.IsEqual($PARAM[item].DBType,tvshow) + Integer.IsGreater($PARAM[item].Property(UnWatchedEpisodes),0)" />
 				</include>
@@ -373,6 +397,7 @@
 					<texture />
 				</control>
 				<control type="image">
+					<top>$PARAM[inset]</top>
 					<width>22</width>
 					<height>34</height>
 					<aspectratio>keep</aspectratio>
@@ -380,6 +405,7 @@
 					<visible>Integer.IsGreater($PARAM[item].Rating,0)</visible>
 				</control>
 				<include content="LumenMetaText">
+					<param name="height" value="$PARAM[height]" />
 					<param name="label" value="$INFO[$PARAM[item].Rating]" />
 					<param name="visible" value="Integer.IsGreater($PARAM[item].Rating,0)" />
 				</include>
@@ -389,33 +415,56 @@
 					<texture />
 				</control>
 				<include content="LumenBadge">
+					<param name="top" value="$PARAM[inset]" />
 					<param name="label" value="4K" />
 					<param name="visible" value="String.IsEqual($PARAM[item].VideoResolution,4K)" />
 				</include>
 				<include content="LumenBadge">
+					<param name="top" value="$PARAM[inset]" />
 					<param name="label" value="HD" />
 					<param name="visible" value="String.IsEqual($PARAM[item].VideoResolution,1080) | String.IsEqual($PARAM[item].VideoResolution,720)" />
 				</include>
 				<include content="LumenBadge">
+					<param name="top" value="$PARAM[inset]" />
 					<param name="label" value="DOLBY VISION" />
 					<param name="visible" value="String.IsEqual($PARAM[item].HdrType,dolbyvision)" />
 				</include>
 				<include content="LumenBadge">
+					<param name="top" value="$PARAM[inset]" />
 					<param name="label" value="HDR" />
 					<param name="visible" value="String.IsEqual($PARAM[item].HdrType,hdr10) | String.IsEqual($PARAM[item].HdrType,hlg)" />
 				</include>
 				<include content="LumenBadge">
+					<param name="top" value="$PARAM[inset]" />
 					<param name="label" value="7.1" />
 					<param name="visible" value="String.IsEqual($PARAM[item].AudioChannels,8)" />
 				</include>
 				<include content="LumenBadge">
+					<param name="top" value="$PARAM[inset]" />
 					<param name="label" value="5.1" />
 					<param name="visible" value="String.IsEqual($PARAM[item].AudioChannels,6)" />
 				</include>
 				<include content="LumenBadge">
+					<param name="top" value="$PARAM[inset]" />
 					<param name="label" value="CC" />
 					<param name="visible" value="!String.IsEmpty($PARAM[item].SubtitleLanguage)" />
 				</include>
+				<!-- the detail page's studio logo (a show's network), from Kodi's logo pack. Kodi can't tell whether the pack
+				     has that studio: without its logo nothing draws, and the line just ends -->
+				<control type="image">
+					<width>10</width>
+					<height>34</height>
+					<texture />
+					<visible>$PARAM[logo] + System.AddonIsEnabled(resource.images.studios.white) + !String.IsEmpty($PARAM[item].Studio)</visible>
+				</control>
+				<!-- every logo in the pack is a 161x109 canvas with the mark centred: the whole canvas, at the line's height -->
+				<control type="image" id="$PARAM[logo_id]">
+					<width>95</width>
+					<height>$PARAM[height]</height>
+					<aspectratio>keep</aspectratio>
+					<texture background="true">$INFO[$PARAM[item].Studio,resource://resource.images.studios.white/,.png]</texture>
+					<visible>$PARAM[logo] + System.AddonIsEnabled(resource.images.studios.white) + !String.IsEmpty($PARAM[item].Studio)</visible>
+				</control>
 			</control>
 		</definition>
 	</include>

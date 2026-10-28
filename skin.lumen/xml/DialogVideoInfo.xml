@@ -62,10 +62,11 @@
 					<label>$VAR[LumenInfoTitle]</label>
 					<visible>String.IsEmpty(ListItem.Art(clearlogo)) + String.IsEmpty(ListItem.Art(tvshow.clearlogo))</visible>
 				</control>
-				<!-- text block, anchored to the buttons -->
+				<!-- text block, anchored to the buttons; as wide as the info line, which a long line's logo needs (a grouplist
+				     clips what overflows it) -->
 				<control type="grouplist">
 					<top>240</top>
-					<width>1100</width>
+					<width>1700</width>
 					<height>330</height>
 					<orientation>vertical</orientation>
 					<align>right</align>
@@ -80,10 +81,16 @@
 						<visible>!String.IsEmpty(ListItem.Tagline) | String.IsEqual(ListItem.DBType,season)</visible>
 					</control>
 					<control type="group">
-						<width>1100</width>
+						<width>1700</width>
 						<height>34</height>
 						<include content="LumenMetaLine">
 							<param name="item" value="ListItem" />
+							<param name="width" value="1700" />
+							<param name="height" value="64" />
+							<param name="inset" value="15" />
+							<param name="top" value="-15" />
+							<param name="logo" value="true" />
+							<param name="logo_id" value="6170" />
 						</include>
 					</control>
 					<control type="textbox">
