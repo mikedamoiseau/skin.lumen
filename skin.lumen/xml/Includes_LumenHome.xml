@@ -18,6 +18,12 @@
 		<value condition="String.IsEqual(Window(home).Property(lumen.row),5007) + !$EXP[LumenKids]">$INFO[Container(5007).ListItem.Art(tvshow.fanart)]</value>
 		<value condition="String.IsEqual(Window(home).Property(lumen.row),5008) + !$EXP[LumenKids] + !String.IsEmpty(Container(5008).ListItem.Art(fanart))">$INFO[Container(5008).ListItem.Art(fanart)]</value>
 		<value condition="String.IsEqual(Window(home).Property(lumen.row),5008) + !$EXP[LumenKids]">$INFO[Container(5008).ListItem.Art(tvshow.fanart)]</value>
+		<value condition="String.IsEqual(Window(home).Property(lumen.row),5021) + !$EXP[LumenKids] + !String.IsEmpty(Container(5021).ListItem.Art(fanart))">$INFO[Container(5021).ListItem.Art(fanart)]</value>
+		<value condition="String.IsEqual(Window(home).Property(lumen.row),5021) + !$EXP[LumenKids]">$INFO[Container(5021).ListItem.Art(tvshow.fanart)]</value>
+		<value condition="String.IsEqual(Window(home).Property(lumen.row),5022) + !$EXP[LumenKids] + !String.IsEmpty(Container(5022).ListItem.Art(fanart))">$INFO[Container(5022).ListItem.Art(fanart)]</value>
+		<value condition="String.IsEqual(Window(home).Property(lumen.row),5022) + !$EXP[LumenKids]">$INFO[Container(5022).ListItem.Art(tvshow.fanart)]</value>
+		<value condition="String.IsEqual(Window(home).Property(lumen.row),5023) + !$EXP[LumenKids] + !String.IsEmpty(Container(5023).ListItem.Art(fanart))">$INFO[Container(5023).ListItem.Art(fanart)]</value>
+		<value condition="String.IsEqual(Window(home).Property(lumen.row),5023) + !$EXP[LumenKids]">$INFO[Container(5023).ListItem.Art(tvshow.fanart)]</value>
 		<value condition="String.IsEqual(Window(home).Property(lumen.row),5011) + $EXP[LumenKids] + !String.IsEmpty(Container(5011).ListItem.Art(fanart))">$INFO[Container(5011).ListItem.Art(fanart)]</value>
 		<value condition="String.IsEqual(Window(home).Property(lumen.row),5011) + $EXP[LumenKids]">$INFO[Container(5011).ListItem.Art(tvshow.fanart)]</value>
 		<value condition="String.IsEqual(Window(home).Property(lumen.row),5012) + $EXP[LumenKids] + !String.IsEmpty(Container(5012).ListItem.Art(fanart))">$INFO[Container(5012).ListItem.Art(fanart)]</value>
@@ -29,6 +35,173 @@
 		<value condition="String.IsEqual(Window(home).Property(lumen.row),5015) + $EXP[LumenKids] + !String.IsEmpty(Container(5015).ListItem.Art(fanart))">$INFO[Container(5015).ListItem.Art(fanart)]</value>
 		<value condition="String.IsEqual(Window(home).Property(lumen.row),5015) + $EXP[LumenKids]">$INFO[Container(5015).ListItem.Art(tvshow.fanart)]</value>
 	</variable>
+	<expression name="LumenNoHomeRows">!$EXP[LumenKids] + Skin.HasSetting(lumen_hide_5001) + Skin.HasSetting(lumen_hide_5002) + Skin.HasSetting(lumen_hide_5003) + Skin.HasSetting(lumen_hide_5004) + Skin.HasSetting(lumen_hide_5005) + Skin.HasSetting(lumen_hide_5006) + Skin.HasSetting(lumen_hide_5007) + Skin.HasSetting(lumen_hide_5008) + String.IsEmpty(Skin.String(lumen.row1.path)) + String.IsEmpty(Skin.String(lumen.row2.path)) + String.IsEmpty(Skin.String(lumen.row3.path))</expression>
+	<variable name="LumenCustomRowName1">
+		<value condition="!String.IsEmpty(Skin.String(lumen.row1.name))">$INFO[Skin.String(lumen.row1.name)]</value>
+		<value>My row 1</value>
+	</variable>
+	<variable name="LumenCustomRowName2">
+		<value condition="!String.IsEmpty(Skin.String(lumen.row2.name))">$INFO[Skin.String(lumen.row2.name)]</value>
+		<value>My row 2</value>
+	</variable>
+	<variable name="LumenCustomRowName3">
+		<value condition="!String.IsEmpty(Skin.String(lumen.row3.name))">$INFO[Skin.String(lumen.row3.name)]</value>
+		<value>My row 3</value>
+	</variable>
+	<include name="LumenHomeRowSettings">
+		<control type="label" id="910">
+			<height>90</height>
+			<aligny>center</aligny>
+			<textoffsetx>40</textoffsetx>
+			<font>lm_caption_bold</font>
+			<textcolor>text_mute</textcolor>
+			<label>Home rows</label>
+		</control>
+		<control type="radiobutton" id="911">
+			<label>Continue Watching</label>
+			<include>DefaultSettingButton</include>
+			<selected>!Skin.HasSetting(lumen_hide_5001)</selected>
+			<onclick>Skin.ToggleSetting(lumen_hide_5001)</onclick>
+		</control>
+		<control type="radiobutton" id="912">
+			<label>Up Next</label>
+			<include>DefaultSettingButton</include>
+			<selected>!Skin.HasSetting(lumen_hide_5002)</selected>
+			<onclick>Skin.ToggleSetting(lumen_hide_5002)</onclick>
+		</control>
+		<control type="radiobutton" id="913">
+			<label>Recently Added Movies</label>
+			<include>DefaultSettingButton</include>
+			<selected>!Skin.HasSetting(lumen_hide_5003)</selected>
+			<onclick>Skin.ToggleSetting(lumen_hide_5003)</onclick>
+		</control>
+		<control type="radiobutton" id="914">
+			<label>New Episodes</label>
+			<include>DefaultSettingButton</include>
+			<selected>!Skin.HasSetting(lumen_hide_5004)</selected>
+			<onclick>Skin.ToggleSetting(lumen_hide_5004)</onclick>
+		</control>
+		<control type="radiobutton" id="915">
+			<label>Discover</label>
+			<include>DefaultSettingButton</include>
+			<selected>!Skin.HasSetting(lumen_hide_5005)</selected>
+			<onclick>Skin.ToggleSetting(lumen_hide_5005)</onclick>
+		</control>
+		<control type="radiobutton" id="916">
+			<label>Top Rated</label>
+			<include>DefaultSettingButton</include>
+			<selected>!Skin.HasSetting(lumen_hide_5006)</selected>
+			<onclick>Skin.ToggleSetting(lumen_hide_5006)</onclick>
+		</control>
+		<control type="radiobutton" id="917">
+			<label>TV Shows</label>
+			<include>DefaultSettingButton</include>
+			<selected>!Skin.HasSetting(lumen_hide_5007)</selected>
+			<onclick>Skin.ToggleSetting(lumen_hide_5007)</onclick>
+		</control>
+		<control type="radiobutton" id="918">
+			<label>Collections</label>
+			<include>DefaultSettingButton</include>
+			<selected>!Skin.HasSetting(lumen_hide_5008)</selected>
+			<onclick>Skin.ToggleSetting(lumen_hide_5008)</onclick>
+		</control>
+		<control type="button" id="931">
+			<label>$VAR[LumenCustomRowName1]</label>
+			<label2>Rename</label2>
+			<include>DefaultSettingButton</include>
+			<onclick>Skin.SetString(lumen.row1.name)</onclick>
+			<visible>!String.IsEmpty(Skin.String(lumen.row1.path))</visible>
+		</control>
+		<control type="button" id="941">
+			<label>Remove this row</label>
+			<include>DefaultSettingButton</include>
+			<onclick>Skin.Reset(lumen.row1.path)</onclick>
+			<onclick>Skin.Reset(lumen.row1.name)</onclick>
+			<onclick>SetFocus(920)</onclick>
+			<visible>!String.IsEmpty(Skin.String(lumen.row1.path))</visible>
+		</control>
+		<control type="button" id="932">
+			<label>$VAR[LumenCustomRowName2]</label>
+			<label2>Rename</label2>
+			<include>DefaultSettingButton</include>
+			<onclick>Skin.SetString(lumen.row2.name)</onclick>
+			<visible>!String.IsEmpty(Skin.String(lumen.row2.path))</visible>
+		</control>
+		<control type="button" id="942">
+			<label>Remove this row</label>
+			<include>DefaultSettingButton</include>
+			<onclick>Skin.Reset(lumen.row2.path)</onclick>
+			<onclick>Skin.Reset(lumen.row2.name)</onclick>
+			<onclick>SetFocus(920)</onclick>
+			<visible>!String.IsEmpty(Skin.String(lumen.row2.path))</visible>
+		</control>
+		<control type="button" id="933">
+			<label>$VAR[LumenCustomRowName3]</label>
+			<label2>Rename</label2>
+			<include>DefaultSettingButton</include>
+			<onclick>Skin.SetString(lumen.row3.name)</onclick>
+			<visible>!String.IsEmpty(Skin.String(lumen.row3.path))</visible>
+		</control>
+		<control type="button" id="943">
+			<label>Remove this row</label>
+			<include>DefaultSettingButton</include>
+			<onclick>Skin.Reset(lumen.row3.path)</onclick>
+			<onclick>Skin.Reset(lumen.row3.name)</onclick>
+			<onclick>SetFocus(920)</onclick>
+			<visible>!String.IsEmpty(Skin.String(lumen.row3.path))</visible>
+		</control>
+		<control type="button" id="921">
+			<label>Add a row…</label>
+			<include>DefaultSettingButton</include>
+			<onclick>Skin.SetFile(lumen.row1.path,.xsp,special://videoplaylists/)</onclick>
+			<onclick>SetProperty(lumen.rowask,1,home)</onclick>
+			<visible>String.IsEmpty(Skin.String(lumen.row1.path))</visible>
+		</control>
+		<control type="button" id="922">
+			<label>Add a row…</label>
+			<include>DefaultSettingButton</include>
+			<onclick>Skin.SetFile(lumen.row2.path,.xsp,special://videoplaylists/)</onclick>
+			<onclick>SetProperty(lumen.rowask,2,home)</onclick>
+			<visible>String.IsEmpty(Skin.String(lumen.row2.path)) + !String.IsEmpty(Skin.String(lumen.row1.path))</visible>
+		</control>
+		<control type="button" id="923">
+			<label>Add a row…</label>
+			<include>DefaultSettingButton</include>
+			<onclick>Skin.SetFile(lumen.row3.path,.xsp,special://videoplaylists/)</onclick>
+			<onclick>SetProperty(lumen.rowask,3,home)</onclick>
+			<visible>String.IsEmpty(Skin.String(lumen.row3.path)) + !String.IsEmpty(Skin.String(lumen.row1.path)) + !String.IsEmpty(Skin.String(lumen.row2.path))</visible>
+		</control>
+		<control type="button" id="920">
+			<label>Make a smart playlist…</label>
+			<include>DefaultSettingButton</include>
+			<onclick>ActivateWindow(videos,special://videoplaylists/,return)</onclick>
+		</control>
+	</include>
+	<variable name="LumenRowPath5001">
+		<value condition="!Skin.HasSetting(lumen_hide_5001)">special://skin/playlists/inprogress_movies.xsp</value>
+	</variable>
+	<variable name="LumenRowPath5002">
+		<value condition="!Skin.HasSetting(lumen_hide_5002)">videodb://inprogresstvshows/</value>
+	</variable>
+	<variable name="LumenRowPath5003">
+		<value condition="!Skin.HasSetting(lumen_hide_5003)">videodb://recentlyaddedmovies/</value>
+	</variable>
+	<variable name="LumenRowPath5004">
+		<value condition="!Skin.HasSetting(lumen_hide_5004)">special://skin/playlists/recent_unwatched_episodes.xsp</value>
+	</variable>
+	<variable name="LumenRowPath5005">
+		<value condition="!Skin.HasSetting(lumen_hide_5005)">special://skin/playlists/lumen_discover_movies.xsp</value>
+	</variable>
+	<variable name="LumenRowPath5006">
+		<value condition="!Skin.HasSetting(lumen_hide_5006)">special://skin/playlists/lumen_toprated_movies.xsp</value>
+	</variable>
+	<variable name="LumenRowPath5007">
+		<value condition="!Skin.HasSetting(lumen_hide_5007)">videodb://tvshows/titles/</value>
+	</variable>
+	<variable name="LumenRowPath5008">
+		<value condition="!Skin.HasSetting(lumen_hide_5008)">videodb://movies/sets/</value>
+	</variable>
+	<expression name="LumenHomeRowsGone">!Control.IsVisible(6001) + !Control.IsVisible(6002) + !Control.IsVisible(6003) + !Control.IsVisible(6004) + !Control.IsVisible(6005) + !Control.IsVisible(6006) + !Control.IsVisible(6007) + !Control.IsVisible(6008) + !Control.IsVisible(6021) + !Control.IsVisible(6022) + !Control.IsVisible(6023) + !Control.IsVisible(6011) + !Control.IsVisible(6012) + !Control.IsVisible(6013) + !Control.IsVisible(6014) + !Control.IsVisible(6015)</expression>
 	<variable name="LumenKidsPath5011">
 		<value condition="$EXP[LumenKids]">multipath://special%3a%2f%2fskin%2fplaylists%2fkids%2finprogress_movies.xsp/special%3a%2f%2fskin%2fplaylists%2fkids%2finprogress_tvshows.xsp/</value>
 	</variable>

@@ -67,4 +67,21 @@
         <onstart>ClearProperty(lumen.sortdir,home)</onstart>
         <stop>String.IsEmpty(Window(home).Property(lumen.sortdir))</stop>
     </timer>
+    <timer>
+        <name>lumenhomeempty</name>
+        <description>Home with no row to show (every row switched off, or the ones left on are empty; Home's control 6017 says so, as $EXP isn't expanded here): after 2 seconds of that, with nothing loading, the tab bar takes focus, or the remote would have nothing to move</description>
+        <start reset="true">Window.IsActive(home) + Control.IsVisible(6017) + !ControlGroup(9000).HasFocus</start>
+        <stop>!Window.IsActive(home) | !Control.IsVisible(6017) | ControlGroup(9000).HasFocus | Integer.IsGreaterOrEqual(Skin.TimerElapsedSecs(lumenhomeempty),2)</stop>
+        <onstop condition="Window.IsActive(home) + Control.IsVisible(6017) + !ControlGroup(9000).HasFocus + !System.HasActiveModalDialog">SetFocus(9000)</onstop>
+    </timer>
+    <timer>
+        <name>lumenrowname</name>
+        <description>Configure skin › Home rows › Add a row: once the file browser closes with a playlist picked, ask for the row's name (nothing if it was cancelled)</description>
+        <start reset="true">!String.IsEmpty(Window(home).Property(lumen.rowask)) + !Window.IsVisible(filebrowser)</start>
+        <onstart condition="String.IsEqual(Window(home).Property(lumen.rowask),1) + !String.IsEmpty(Skin.String(lumen.row1.path))">Skin.SetString(lumen.row1.name)</onstart>
+        <onstart condition="String.IsEqual(Window(home).Property(lumen.rowask),2) + !String.IsEmpty(Skin.String(lumen.row2.path))">Skin.SetString(lumen.row2.name)</onstart>
+        <onstart condition="String.IsEqual(Window(home).Property(lumen.rowask),3) + !String.IsEmpty(Skin.String(lumen.row3.path))">Skin.SetString(lumen.row3.name)</onstart>
+        <onstart>ClearProperty(lumen.rowask,home)</onstart>
+        <stop>String.IsEmpty(Window(home).Property(lumen.rowask))</stop>
+    </timer>
 </timers>

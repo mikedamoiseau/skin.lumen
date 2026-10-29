@@ -1670,6 +1670,11 @@
 	<variable name="LumenSkinSettingHelp">
 		<value condition="Control.HasFocus(902)">Kids mode shows only the titles chosen in the Cinémathèque app. Set a PIN to show the Kids button on Home; leaving kids mode asks for it.</value>
 		<value condition="Control.HasFocus(903)">Asks for the current PIN, then removes it and hides the Kids button.[CR][CR]To change the PIN, remove it and set a new one.</value>
+		<value condition="Integer.IsGreaterOrEqual(System.CurrentControlId,911) + Integer.IsLessOrEqual(System.CurrentControlId,918)">Shows or hides this row on Home.[CR][CR]Kids mode keeps its own rows.</value>
+		<value condition="Control.HasFocus(921) | Control.HasFocus(922) | Control.HasFocus(923)">Adds a row at the end of Home from a smart playlist you pick, then asks for its name. Up to three.[CR][CR]Not shown in kids mode.</value>
+		<value condition="Control.HasFocus(931) | Control.HasFocus(932) | Control.HasFocus(933)">Changes the row's name on Home.</value>
+		<value condition="Control.HasFocus(941) | Control.HasFocus(942) | Control.HasFocus(943)">Takes the row off Home. The playlist itself stays.</value>
+		<value condition="Control.HasFocus(920)">Opens Kodi's video playlists. Choose "New smart playlist…", pick Movies or TV shows and the rules (for example Genre is Documentary), then save it and add it here.</value>
 		<value condition="Control.HasFocus(901)">Slowly zooms the backdrop on Home, library and detail pages.[CR][CR]Looks great, but the whole screen redraws every frame: on a Raspberry Pi menus drop to about half the frame rate. Off by default.</value>
 	</variable>
 </includes>

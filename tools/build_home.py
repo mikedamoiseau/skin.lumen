@@ -29,13 +29,34 @@ KIDS_ROWS = [
     (5014, "poster", "TV Shows", "special://skin/playlists/kids/tvshows.xsp", "dateadded", "descending", None),
     (5015, "poster", "Discover", "special://skin/playlists/kids/discover.xsp", "none", "ascending", "Action(Info)"),
 ]
+# Rows of the user's own (Configure skin > Home rows > Add a row): a smart playlist each, after the rows above, normal
+# mode only. Skin strings lumen.rowN.path / lumen.rowN.name; OK on a film opens its detail page, anything else Kodi's way.
+CUSTOM_ROWS = [
+    (5020 + n, "poster", f"$VAR[LumenCustomRowName{n}]", f"$INFO[Skin.String(lumen.row{n}.path)]", "none", "ascending",
+     ("String.IsEqual(ListItem.DBType,movie)", "Action(Info)"))
+    for n in (1, 2, 3)
+]
+CUSTOM_IDS = [r[0] for r in CUSTOM_ROWS]
 # smart playlists come back sorted by label, so rows that need an order say so in sortby
 # each mode's rows are visible only in that mode. A hidden list still loads its path whenever Home opens
 # (GUIBaseContainer::AllocResources), so kids rows read their path from a variable that is empty outside
 # kids mode; the kids button re-opens Home (window 1114) so they load right away.
-MODES = [("!$EXP[LumenKids]", ROWS), ("$EXP[LumenKids]", KIDS_ROWS)]
+MODES = [("!$EXP[LumenKids]", ROWS + CUSTOM_ROWS), ("$EXP[LumenKids]", KIDS_ROWS)]
 KIDS_PATH = lambda rid: f"LumenKidsPath{rid}"
-row_path = lambda rows, rid, path: f"$VAR[{KIDS_PATH(rid)}]" if rows is KIDS_ROWS else path
+# a switched-off row reads its path from a variable that is then empty, so Home doesn't load it for nothing
+ROW_PATH = lambda rid: f"LumenRowPath{rid}"
+row_path = lambda rows, rid, path: (f"$VAR[{KIDS_PATH(rid)}]" if rows is KIDS_ROWS else
+                                    f"$VAR[{ROW_PATH(rid)}]" if any(rid == r[0] for r in ROWS) else path)
+assert len(ROWS) <= 8, "settings switches 911-918: 920 and up are taken"
+
+
+def row_visible(mode, rid):
+    """Built-in normal rows can be switched off (skin bool lumen_hide_<id>); an added row shows once it has a playlist."""
+    if rid in CUSTOM_IDS:
+        return f"{mode} + !String.IsEmpty(Skin.String(lumen.row{CUSTOM_IDS.index(rid) + 1}.path))"
+    if any(rid == r[0] for r in ROWS):
+        return f"{mode} + !Skin.HasSetting(lumen_hide_{rid})"
+    return mode
 DOCK_Y = 600
 ROW_H = 500  # must match the row group height in Includes_Lumen.xml
 GROUP = lambda rid: rid + 1000  # 5001 -> 6001
@@ -49,6 +70,61 @@ def focus_any(ids):
     return " | ".join(f"Control.HasFocus({i})" for i in ids)
 
 
+def settings_include():
+    """Configure skin > Home rows (SkinSettings.xml): a switch per built-in row, then the added rows. One "Add a row"
+    button shows, for the first free slot. Add picks a playlist (Skin.SetFile); lumenrowname in Timers.xml then asks
+    for the name, only if one was picked."""
+    S = ['\t<include name="LumenHomeRowSettings">']
+    S.append('\t\t<control type="label" id="910">')
+    S.append("\t\t\t<height>90</height>")
+    S.append("\t\t\t<aligny>center</aligny>")
+    S.append("\t\t\t<textoffsetx>40</textoffsetx>")
+    S.append("\t\t\t<font>lm_caption_bold</font>")
+    S.append("\t\t\t<textcolor>text_mute</textcolor>")
+    S.append("\t\t\t<label>Home rows</label>")
+    S.append("\t\t</control>")
+    for i, (rid, kind, header, *_) in enumerate(ROWS):
+        S.append(f'\t\t<control type="radiobutton" id="{911 + i}">')
+        S.append(f"\t\t\t<label>{header}</label>")
+        S.append("\t\t\t<include>DefaultSettingButton</include>")
+        S.append(f"\t\t\t<selected>!Skin.HasSetting(lumen_hide_{rid})</selected>")
+        S.append(f"\t\t\t<onclick>Skin.ToggleSetting(lumen_hide_{rid})</onclick>")
+        S.append("\t\t</control>")
+    for n in (1, 2, 3):
+        filled = lambda k: f"!String.IsEmpty(Skin.String(lumen.row{k}.path))"
+        S.append(f'\t\t<control type="button" id="{930 + n}">')
+        S.append(f"\t\t\t<label>$VAR[LumenCustomRowName{n}]</label>")
+        S.append("\t\t\t<label2>Rename</label2>")
+        S.append("\t\t\t<include>DefaultSettingButton</include>")
+        S.append(f"\t\t\t<onclick>Skin.SetString(lumen.row{n}.name)</onclick>")
+        S.append(f"\t\t\t<visible>{filled(n)}</visible>")
+        S.append("\t\t</control>")
+        S.append(f'\t\t<control type="button" id="{940 + n}">')
+        S.append("\t\t\t<label>Remove this row</label>")
+        S.append("\t\t\t<include>DefaultSettingButton</include>")
+        S.append(f"\t\t\t<onclick>Skin.Reset(lumen.row{n}.path)</onclick>")
+        S.append(f"\t\t\t<onclick>Skin.Reset(lumen.row{n}.name)</onclick>")
+        S.append("\t\t\t<onclick>SetFocus(920)</onclick>")
+        S.append(f"\t\t\t<visible>{filled(n)}</visible>")
+        S.append("\t\t</control>")
+    for n in (1, 2, 3):
+        S.append(f'\t\t<control type="button" id="{920 + n}">')
+        S.append("\t\t\t<label>Add a row…</label>")
+        S.append("\t\t\t<include>DefaultSettingButton</include>")
+        S.append(f"\t\t\t<onclick>Skin.SetFile(lumen.row{n}.path,.xsp,special://videoplaylists/)</onclick>")
+        S.append(f"\t\t\t<onclick>SetProperty(lumen.rowask,{n},home)</onclick>")
+        before = "".join(f" + !String.IsEmpty(Skin.String(lumen.row{k}.path))" for k in range(1, n))
+        S.append(f"\t\t\t<visible>String.IsEmpty(Skin.String(lumen.row{n}.path)){before}</visible>")
+        S.append("\t\t</control>")
+    S.append('\t\t<control type="button" id="920">')
+    S.append("\t\t\t<label>Make a smart playlist…</label>")
+    S.append("\t\t\t<include>DefaultSettingButton</include>")
+    S.append("\t\t\t<onclick>ActivateWindow(videos,special://videoplaylists/,return)</onclick>")
+    S.append("\t\t</control>")
+    S.append("\t</include>")
+    return S
+
+
 def build():
     L = []
     w = L.append
@@ -58,7 +134,16 @@ def build():
     w("\t<defaultcontrol always=\"true\">9100</defaultcontrol>")
     w("\t<backgroundcolor>background</backgroundcolor>")
     w("\t<onload>ClearProperty(lumen.row,home)</onload>")
+    # no row to focus: the tab bar takes it, or the remote would have nothing to move
+    w("\t<onload condition=\"$EXP[LumenNoHomeRows]\">SetFocus(9000)</onload>")
     w("\t<controls>")
+    # shown when no row is: Timers.xml (lumenhomeempty) reads it, as Kodi doesn't expand $EXP in Timers.xml
+    w('\t\t<control type="image" id="6017">')
+    w("\t\t\t<width>1</width>")
+    w("\t\t\t<height>1</height>")
+    w("\t\t\t<texture />")
+    w("\t\t\t<visible>$EXP[LumenHomeRowsGone]</visible>")
+    w("\t\t</control>")
     w('\t\t<control type="group">')
     w("\t\t<visible>!$EXP[infodialog_active]</visible>")
     w('\t\t<animation effect="fade" time="300">VisibleChange</animation>')
@@ -95,7 +180,7 @@ def build():
             inc = "LumenPosterRow" if kind == "poster" else "LumenLandscapeRow"
             w(f'\t\t\t\t<include content="{inc}">')
             w(f'\t\t\t\t\t<param name="id" value="{rid}" />')
-            w(f'\t\t\t\t\t<param name="visible" value="{mode}" />')
+            w(f'\t\t\t\t\t<param name="visible" value="{row_visible(mode, rid)}" />')
             w(f'\t\t\t\t\t<param name="group" value="{GROUP(rid)}" />')
             w(f'\t\t\t\t\t<param name="header" value="{header}" />')
             w(f'\t\t\t\t\t<param name="path" value="{row_path(rows, rid, path)}" />')
@@ -106,8 +191,9 @@ def build():
             w(f'\t\t\t\t\t<param name="onup" value="{ids[i - 1] if i else 9000}" />')
             w(f'\t\t\t\t\t<param name="ondown" value="{ids[i + 1] if later else "noop"}" />')
             if onclick:
-                w('\t\t\t\t\t<param name="onclick_condition" value="true" />')
-                w(f'\t\t\t\t\t<param name="onclick" value="{onclick}" />')
+                cond, action = onclick if isinstance(onclick, tuple) else ("true", onclick)
+                w(f'\t\t\t\t\t<param name="onclick_condition" value="{cond}" />')
+                w(f'\t\t\t\t\t<param name="onclick" value="{action}" />')
             w("\t\t\t\t</include>")
     w("\t\t\t</control>")
     # kids mode with nothing tagged yet: say where the list comes from
@@ -121,6 +207,17 @@ def build():
     w("\t\t\t\t<label>No titles for kids yet. A parent can choose them in the Cinémathèque app.</label>")
     w("\t\t\t\t<visible>$EXP[LumenKids] + !Integer.IsGreater(Container(5013).NumItems,0) + !Integer.IsGreater(Container(5014).NumItems,0)"
       " + !Container(5013).IsUpdating + !Container(5014).IsUpdating</visible>")
+    w("\t\t\t</control>")
+    # every row switched off: say where they come back from (the tab bar keeps focus, see onload)
+    w('\t\t\t<control type="label" id="6018">')
+    w("\t\t\t\t<left>lm_margin</left>")
+    w("\t\t\t\t<top>44</top>")
+    w("\t\t\t\t<width>1500</width>")
+    w("\t\t\t\t<height>60</height>")
+    w("\t\t\t\t<font>lm_body</font>")
+    w("\t\t\t\t<textcolor>text_dim</textcolor>")
+    w("\t\t\t\t<label>All Home rows are off. Turn them back on in Settings › Interface › Skin › Configure skin.</label>")
+    w("\t\t\t\t<visible>$EXP[LumenNoHomeRows]</visible>")
     w("\t\t\t</control>")
     w("\t\t</control>")
 
@@ -152,6 +249,22 @@ def build():
             V.append(f'\t\t<value condition="{on} + !String.IsEmpty({c}.Art(fanart))">$INFO[{c}.Art(fanart)]</value>')
             V.append(f'\t\t<value condition="{on}">$INFO[{c}.Art(tvshow.fanart)]</value>')
     V.append("\t</variable>")
+    V.append('\t<expression name="LumenNoHomeRows">!$EXP[LumenKids] + '
+             + " + ".join([f"Skin.HasSetting(lumen_hide_{r[0]})" for r in ROWS]
+                          + [f"String.IsEmpty(Skin.String(lumen.row{n}.path))" for n in (1, 2, 3)]) + "</expression>")
+    for n in (1, 2, 3):
+        V.append(f'\t<variable name="LumenCustomRowName{n}">')
+        V.append(f'\t\t<value condition="!String.IsEmpty(Skin.String(lumen.row{n}.name))">$INFO[Skin.String(lumen.row{n}.name)]</value>')
+        V.append(f"\t\t<value>My row {n}</value>")
+        V.append("\t</variable>")
+    V.extend(settings_include())
+    for rid, kind, header, path, *_ in ROWS:
+        V.append(f'\t<variable name="{ROW_PATH(rid)}">')
+        V.append(f'\t\t<value condition="!Skin.HasSetting(lumen_hide_{rid})">{path}</value>')
+        V.append("\t</variable>")
+    # no row group shown at all (every row off, or the ones on are empty): Home's control 6017, for Timers.xml
+    groups = [GROUP(r[0]) for _, rows in MODES for r in rows]
+    V.append('\t<expression name="LumenHomeRowsGone">' + " + ".join(f"!Control.IsVisible({g})" for g in groups) + "</expression>")
     for rid, kind, header, path, *_ in KIDS_ROWS:
         V.append(f'\t<variable name="{KIDS_PATH(rid)}">')
         V.append(f'\t\t<value condition="$EXP[LumenKids]">{path}</value>')
