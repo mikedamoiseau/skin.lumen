@@ -5,6 +5,10 @@
 <window type="dialog" id="1117">
 	<!-- the group focuses its first visible control: All genres, or the decade list -->
 	<defaultcontrol always="true">9000</defaultcontrol>
+	<!-- the lists would reopen on the row picked last time, away from the tick: back to the top -->
+	<onload condition="String.IsEqual(Window(home).Property(lumen.fpick),genre)">SetFocus(11,0,absolute)</onload>
+	<onload condition="String.IsEqual(Window(home).Property(lumen.fpick),genre)">SetFocus(10)</onload>
+	<onload condition="!String.IsEqual(Window(home).Property(lumen.fpick),genre)">SetFocus(12,0,absolute)</onload>
 	<include>Animation_DialogPopupOpenClose</include>
 	<depth>DepthDialog+</depth>
 	<controls>
