@@ -31,8 +31,8 @@
 		<value>$INFO[ListItem.Label2]</value>
 	</variable>
 
-	<!-- show page (seasons of a show, or a show's episodes) -->
-	<expression name="LumenShowPage">Container.Content(seasons) | [Container.Content(episodes) + [String.StartsWith(Container.FolderPath,videodb://tvshows/titles/) | String.StartsWith(Container.FolderPath,videodb://inprogresstvshows/)]]</expression>
+	<!-- show page (seasons of a show, or a show's episodes; a show opened from a Genre pick sits under its genre) -->
+	<expression name="LumenShowPage">Container.Content(seasons) | [Container.Content(episodes) + [String.StartsWith(Container.FolderPath,videodb://tvshows/titles/) | String.StartsWith(Container.FolderPath,videodb://inprogresstvshows/) | String.StartsWith(Container.FolderPath,videodb://tvshows/genres/)]]</expression>
 	<expression name="LumenNextLastPlayed">Integer.IsGreater(Container(5110).NumItems,0) + String.IsEqual(Container(5110).ListItem.TvShowDBID,ListItem.TvShowDBID) + [Container(5110).ListItem.IsResumable | !Integer.IsGreater(Container(5110).ListItem.PlayCount,0)]</expression>
 	<expression name="LumenNextAfterLast">Integer.IsGreater(Container(5110).NumItems,0) + String.IsEqual(Container(5110).ListItem.TvShowDBID,ListItem.TvShowDBID) + !$EXP[LumenNextLastPlayed] + Integer.IsGreater(Container(5111).NumItems,0) + String.IsEqual(Container(5111).ListItem.TvShowDBID,ListItem.TvShowDBID)</expression>
 	<expression name="LumenNextFirstUnwatched">![Integer.IsGreater(Container(5110).NumItems,0) + String.IsEqual(Container(5110).ListItem.TvShowDBID,ListItem.TvShowDBID)] + Integer.IsGreater(Container(5112).NumItems,0) + String.IsEqual(Container(5112).ListItem.TvShowDBID,ListItem.TvShowDBID)</expression>
@@ -712,8 +712,9 @@
 				<param name="path" value="$VAR[LumenFirstEpisodePath]" />
 			</include>
 		</control>
-		<!-- show page: "Play S2 E5" -->
-		<control type="group">
+		<!-- show page: "Play S2 E5" (id: the checks ask whether the show page is up; a control inside a hidden group
+		     keeps its own visible flag) -->
+		<control type="group" id="5100">
 			<left>lm_margin</left>
 			<top>516</top>
 			<visible>[Control.IsVisible(501) | Control.IsVisible(502)] + $EXP[LumenShowPage] + Integer.IsGreater(Container.NumItems,0)</visible>
