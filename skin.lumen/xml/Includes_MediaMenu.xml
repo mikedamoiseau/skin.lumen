@@ -366,9 +366,12 @@
 			<height>100%</height>
 			<onleft>9000</onleft>
 			<onup>9000</onup>
+			<!-- a grid the quick filters emptied hides its view: go to the empty-grid button (MyVideoNav 6061) -->
+			<onright condition="$EXP[LumenFilteredEmpty]">6061</onright>
 			<onright condition="![Window.IsVisible(musicplaylist) | Window.IsVisible(videoplaylist)]">50</onright>
 			<onright condition="Window.IsVisible(musicplaylist) | Window.IsVisible(videoplaylist)">55</onright>
 			<ondown>9000</ondown>
+			<onback condition="$EXP[LumenFilteredEmpty]">6061</onback>
 			<onback>50</onback>
 			<control type="label" id="200">
 				<include>MediaMenuLabelCommon</include>

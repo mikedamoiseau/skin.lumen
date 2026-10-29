@@ -268,10 +268,10 @@
 		<value condition="$EXP[LumenKids]">Leave kids mode</value>
 		<value>Kids mode</value>
 	</variable>
-	<!-- kids mode: an empty grid still holds Kodi's ".." item, and a hidden list keeps focus and acts on OK,
-	     so the view hands focus to MyVideoNav's empty-grid button (6061), which does nothing -->
+	<!-- kids mode, or a grid only Unwatched emptied: an empty grid still holds Kodi's ".." item, and a hidden list
+	     keeps focus and acts on OK, so the view hands focus to MyVideoNav's empty-grid button (6061), which does nothing -->
 	<include name="LumenKidsEmptyFocus">
-		<onfocus condition="$EXP[LumenKids] + !Integer.IsGreater(Container.NumItems,0)">SetFocus(6061)</onfocus>
+		<onfocus condition="[$EXP[LumenKids] | $EXP[LumenFilteredEmpty]] + !Integer.IsGreater(Container.NumItems,0)">SetFocus(6061)</onfocus>
 	</include>
 	<include name="LumenClock">
 		<control type="group">

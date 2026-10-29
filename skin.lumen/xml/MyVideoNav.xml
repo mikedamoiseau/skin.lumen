@@ -32,9 +32,10 @@
 			<visible>!$EXP[infodialog_active]</visible>
 			<animation effect="fade" time="250">VisibleChange</animation>
 			<!-- kids mode: Kodi gives an empty list a ".." item even with parent folder items off, and from a kids
-			     grid it leads up into the whole library, so an empty kids grid shows a message and nothing to select -->
+			     grid it leads up into the whole library, so an empty kids grid shows a message and nothing to select.
+			     A grid that only the Unwatched chip emptied does the same, so the chips stay in reach -->
 			<control type="group">
-				<visible>!$EXP[LumenKids] | Integer.IsGreater(Container.NumItems,0)</visible>
+				<visible>[!$EXP[LumenKids] + !$EXP[LumenFilteredEmpty]] | Integer.IsGreater(Container.NumItems,0)</visible>
 				<include>View_Lumen_Posters</include>
 				<include>View_Lumen_Showcase</include>
 				<include>View_Lumen_LandscapeGrid</include>
@@ -47,8 +48,8 @@
 				<height>60</height>
 				<font>lm_body</font>
 				<textcolor>text_dim</textcolor>
-				<label>Nothing here yet. A parent can choose titles in the Cinémathèque app.</label>
-				<visible>$EXP[LumenKids] + !Integer.IsGreater(Container.NumItems,0) + !Container.IsUpdating</visible>
+				<label>$VAR[LumenEmptyGridText]</label>
+				<visible>[$EXP[LumenKids] | $EXP[LumenFilteredEmpty]] + !Integer.IsGreater(Container.NumItems,0) + !Container.IsUpdating</visible>
 			</control>
 			<!-- holds focus in an empty kids grid so OK can't reach ".." (LumenKidsEmptyFocus) -->
 			<control type="button" id="6061">
@@ -56,7 +57,8 @@
 				<height>1</height>
 				<texturefocus />
 				<texturenofocus />
-				<visible>$EXP[LumenKids] + !Integer.IsGreater(Container.NumItems,0)</visible>
+				<onup condition="Control.IsVisible(6210)">6210</onup>
+				<visible>[$EXP[LumenKids] | $EXP[LumenFilteredEmpty]] + !Integer.IsGreater(Container.NumItems,0)</visible>
 			</control>
 			<control type="group">
 				<visible>!Control.IsVisible(501) + !Control.IsVisible(502)</visible>

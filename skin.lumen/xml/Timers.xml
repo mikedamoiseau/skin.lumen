@@ -58,4 +58,13 @@
         <stop>!Window.IsVisible(1116) | Integer.IsGreaterOrEqual(Skin.TimerElapsedSecs(lumenmoreopenfail),10)</stop>
         <onstop>Dialog.Close(1116,true)</onstop>
     </timer>
+    <timer>
+        <name>lumensortdir</name>
+        <description>A sort chip above a library grid (LumenSortChip) picked its sort: Kodi gives a sort the direction it last had, so once the grid is sorted, turn it the way the chip asks (newest, highest first; titles A to Z)</description>
+        <start reset="true">!String.IsEmpty(Window(home).Property(lumen.sortdir))</start>
+        <onstart condition="Window.IsActive(videos) + String.IsEqual(Window(home).Property(lumen.sortdir),descending) + Container.SortDirection(ascending)">Container.SetSortDirection</onstart>
+        <onstart condition="Window.IsActive(videos) + String.IsEqual(Window(home).Property(lumen.sortdir),ascending) + Container.SortDirection(descending)">Container.SetSortDirection</onstart>
+        <onstart>ClearProperty(lumen.sortdir,home)</onstart>
+        <stop>String.IsEmpty(Window(home).Property(lumen.sortdir))</stop>
+    </timer>
 </timers>

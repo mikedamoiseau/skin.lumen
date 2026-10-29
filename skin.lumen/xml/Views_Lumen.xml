@@ -87,20 +87,195 @@
 				<font>lm_caption</font>
 				<textcolor>text_mute</textcolor>
 				<label>$INFO[Container.NumItems,, items]$INFO[Container.SortMethod,  ·  $LOCALIZE[31022] ]</label>
+				<visible>!$EXP[LumenQuickFilters]</visible>
 			</control>
+			<include>LumenQuickFilterBar</include>
 			<control type="group">
 				<left>720</left>
 				<top>112</top>
 				<width>1120</width>
-				<visible>!ListItem.IsFolder | ListItem.IsCollection | String.IsEqual(ListItem.DBType,tvshow)</visible>
+				<visible>[!ListItem.IsFolder | ListItem.IsCollection | String.IsEqual(ListItem.DBType,tvshow)] + !$EXP[LumenQuickFilters]</visible>
 				<include content="LumenMetaLine">
 					<param name="item" value="ListItem" />
 					<param name="align" value="right" />
 					<param name="width" value="1120" />
 				</include>
 			</control>
+			<!-- over a chip row the line moves up beside the title ("Movies" or "TV shows"), short of the clock -->
+			<control type="group">
+				<left>640</left>
+				<top>68</top>
+				<width>1000</width>
+				<visible>[!ListItem.IsFolder | ListItem.IsCollection | String.IsEqual(ListItem.DBType,tvshow)] + $EXP[LumenQuickFilters]</visible>
+				<include content="LumenMetaLine">
+					<param name="item" value="ListItem" />
+					<param name="align" value="right" />
+					<param name="width" value="1000" />
+				</include>
+			</control>
 		</control>
 		<include>LumenClock</include>
+	</include>
+
+	<!-- Quick filters: a chip row above a film or show grid (not a collection's films, not recently added, whose
+	     sorts differ). The chips use Kodi's own watched filter and sort, so the side menu agrees with them.
+	     The watched filter is the window's button 14: All <-> Unwatched, and from the side menu's Watched mode, All. -->
+	<expression name="LumenQuickFilters">[Container.Content(movies) | Container.Content(tvshows)] + [[String.StartsWith(Container.FolderPath,videodb://movies/) + !String.StartsWith(Container.FolderPath,videodb://movies/sets/)] | String.StartsWith(Container.FolderPath,videodb://tvshows/) | String.EndsWith(Container.FolderPath,.xsp)] + !Control.IsVisible(501) + !Control.IsVisible(502)</expression>
+	<!-- Kodi labels the side menu's watched button with the mode; 6219 holds the label for All -->
+	<expression name="LumenWatchAll">String.IsEqual(Control.GetLabel(10),Control.GetLabel(6219))</expression>
+	<!-- an empty grid that a watched filter emptied (the chip's Unwatched, or the side menu's Watched mode): say so,
+	     and keep focus off Kodi's ".." item (as in kids mode). Kodi keeps the filter per device, kids grids included -->
+	<expression name="LumenFilteredEmpty">!$EXP[LumenWatchAll] + $EXP[LumenQuickFilters] + !Integer.IsGreater(Container.NumItems,0)</expression>
+	<variable name="LumenEmptyGridText">
+		<value condition="System.Setting(hidewatched)">Nothing unwatched here.</value>
+		<value condition="$EXP[LumenFilteredEmpty]">Nothing watched here.</value>
+		<value>Nothing here yet. A parent can choose titles in the Cinémathèque app.</value>
+	</variable>
+	<variable name="LumenSortArrow29">
+		<value condition="Container.SortMethod(29) + Container.SortDirection(descending)">  ↓</value>
+		<value condition="Container.SortMethod(29)">  ↑</value>
+	</variable>
+	<variable name="LumenSortArrow40">
+		<value condition="Container.SortMethod(40) + Container.SortDirection(descending)">  ↓</value>
+		<value condition="Container.SortMethod(40)">  ↑</value>
+	</variable>
+	<variable name="LumenSortArrow16">
+		<value condition="Container.SortMethod(16) + Container.SortDirection(descending)">  ↓</value>
+		<value condition="Container.SortMethod(16)">  ↑</value>
+	</variable>
+	<variable name="LumenSortArrow17">
+		<value condition="Container.SortMethod(17) + Container.SortDirection(descending)">  ↓</value>
+		<value condition="Container.SortMethod(17)">  ↑</value>
+	</variable>
+	<include name="LumenChip">
+		<param name="onclick2_condition">false</param>
+		<param name="onclick2">noop</param>
+		<param name="onclick3_condition">false</param>
+		<param name="onclick3">noop</param>
+		<definition>
+			<!-- label and altlabel alike: the row lays chips out by the label's width -->
+			<control type="togglebutton" id="$PARAM[id]">
+				<width>auto</width>
+				<height>48</height>
+				<font>lm_caption_bold</font>
+				<textoffsetx>22</textoffsetx>
+				<align>center</align>
+				<aligny>center</aligny>
+				<textcolor>text</textcolor>
+				<focusedcolor>focus_text</focusedcolor>
+				<label>$PARAM[label]</label>
+				<altlabel>$PARAM[label]</altlabel>
+				<texturefocus border="24" colordiffuse="FFFFFFFF">lumen/pill.png</texturefocus>
+				<texturenofocus border="24" colordiffuse="14FFFFFF">lumen/pill.png</texturenofocus>
+				<alttexturefocus border="24" colordiffuse="FFFFFFFF">lumen/pill.png</alttexturefocus>
+				<alttexturenofocus border="24" colordiffuse="4DFFFFFF">lumen/pill.png</alttexturenofocus>
+				<usealttexture>$PARAM[selected]</usealttexture>
+				<onclick condition="$PARAM[onclick_condition]">$PARAM[onclick]</onclick>
+				<onclick condition="$PARAM[onclick2_condition]">$PARAM[onclick2]</onclick>
+				<onclick condition="$PARAM[onclick3_condition]">$PARAM[onclick3]</onclick>
+			</control>
+		</definition>
+	</include>
+	<!-- a sort chip: picks its sort; Kodi then gives it the direction it last had, so it also asks for its own
+	     (lumensortdir in Timers.xml turns it once the list is sorted); pressed again, it turns the order round -->
+	<include name="LumenSortChip">
+		<definition>
+			<include content="LumenChip">
+				<param name="id" value="$PARAM[id]" />
+				<param name="label" value="$PARAM[label]$VAR[LumenSortArrow$PARAM[sort]]" />
+				<param name="selected" value="Container.SortMethod($PARAM[sort])" />
+				<param name="onclick_condition" value="Container.SortMethod($PARAM[sort])" />
+				<param name="onclick" value="Container.SetSortDirection" />
+				<param name="onclick2_condition" value="!Container.SortMethod($PARAM[sort])" />
+				<param name="onclick2" value="Container.SetSortMethod($PARAM[sort])" />
+				<param name="onclick3_condition" value="!Container.SortMethod($PARAM[sort])" />
+				<param name="onclick3" value="SetProperty(lumen.sortdir,$PARAM[direction],home)" />
+			</include>
+		</definition>
+	</include>
+	<include name="LumenQuickFilterBar">
+		<control type="label" id="6219">
+			<visible>false</visible>
+			<label>$LOCALIZE[16100]</label>
+		</control>
+		<control type="grouplist" id="6210">
+			<left>lm_margin</left>
+			<top>126</top>
+			<width>1100</width>
+			<height>48</height>
+			<orientation>horizontal</orientation>
+			<itemgap>10</itemgap>
+			<usecontrolcoords>true</usecontrolcoords>
+			<visible>$EXP[LumenQuickFilters] + [Integer.IsGreater(Container.NumItems,0) | !$EXP[LumenWatchAll]]</visible>
+			<onleft>9000</onleft>
+			<onright>noop</onright>
+			<onup>noop</onup>
+			<!-- the first id whose condition holds wins. Empty grid first: its view sits in a hidden group but still
+			     counts as visible. Ids, not SetFocus: a SetFocus doesn't count as handling Back, so the window would close too -->
+			<ondown condition="$EXP[LumenFilteredEmpty]">6061</ondown>
+			<ondown condition="Control.IsVisible(500)">500</ondown>
+			<ondown condition="Control.IsVisible(503)">503</ondown>
+			<ondown condition="Control.IsVisible(50)">50</ondown>
+			<onback condition="$EXP[LumenFilteredEmpty]">6061</onback>
+			<onback condition="Control.IsVisible(500)">500</onback>
+			<onback condition="Control.IsVisible(503)">503</onback>
+			<onback condition="Control.IsVisible(50)">50</onback>
+			<include content="LumenChip">
+				<param name="id" value="6211" />
+				<param name="label" value="$LOCALIZE[593]" />
+				<param name="selected" value="$EXP[LumenWatchAll]" />
+				<param name="onclick_condition" value="!$EXP[LumenWatchAll]" />
+				<param name="onclick" value="SendClick(14)" />
+			</include>
+			<!-- from Watched, the first click lands on All -->
+			<include content="LumenChip">
+				<param name="id" value="6212" />
+				<param name="label" value="$LOCALIZE[16101]" />
+				<param name="selected" value="System.Setting(hidewatched)" />
+				<param name="onclick_condition" value="!System.Setting(hidewatched)" />
+				<param name="onclick" value="SendClick(14)" />
+				<param name="onclick2_condition" value="!System.Setting(hidewatched) + !$EXP[LumenWatchAll]" />
+				<param name="onclick2" value="SendClick(14)" />
+			</include>
+			<!-- a gap between the watched and sort chips; an id keeps the row's left/right chain going -->
+			<control type="image" id="6218">
+				<width>24</width>
+				<height>48</height>
+				<texture />
+			</control>
+			<include content="LumenSortChip">
+				<param name="id" value="6213" />
+				<param name="label" value="$LOCALIZE[369]" />
+				<param name="sort" value="29" />
+				<param name="direction" value="ascending" />
+			</include>
+			<include content="LumenSortChip">
+				<param name="id" value="6214" />
+				<param name="label" value="$LOCALIZE[570]" />
+				<param name="sort" value="40" />
+				<param name="direction" value="descending" />
+			</include>
+			<include content="LumenSortChip">
+				<param name="id" value="6215" />
+				<param name="label" value="$LOCALIZE[562]" />
+				<param name="sort" value="16" />
+				<param name="direction" value="descending" />
+			</include>
+			<include content="LumenSortChip">
+				<param name="id" value="6216" />
+				<param name="label" value="$LOCALIZE[563]" />
+				<param name="sort" value="17" />
+				<param name="direction" value="descending" />
+			</include>
+			<control type="label">
+				<width>auto</width>
+				<height>48</height>
+				<aligny>center</aligny>
+				<font>lm_caption</font>
+				<textcolor>text_mute</textcolor>
+				<label>$INFO[Container.NumItems,     , items]</label>
+			</control>
+		</control>
 	</include>
 
 	<!-- 500: poster grid -->
@@ -113,7 +288,8 @@
 			<height>910</height>
 			<onleft>9000</onleft>
 			<onright>noop</onright>
-			<onup>noop</onup>
+			<onup condition="Control.IsVisible(6210)">6210</onup>
+			<onup condition="!Control.IsVisible(6210)">noop</onup>
 			<ondown>noop</ondown>
 			<orientation>vertical</orientation>
 			<scrolltime tween="cubic" easing="out">380</scrolltime>
@@ -477,7 +653,8 @@
 			<height>910</height>
 			<onleft>9000</onleft>
 			<onright>noop</onright>
-			<onup>noop</onup>
+			<onup condition="Control.IsVisible(6210)">6210</onup>
+			<onup condition="!Control.IsVisible(6210)">noop</onup>
 			<ondown>noop</ondown>
 			<orientation>vertical</orientation>
 			<scrolltime tween="cubic" easing="out">380</scrolltime>
@@ -644,7 +821,8 @@
 			<height>880</height>
 			<onleft>9000</onleft>
 			<onright>noop</onright>
-			<onup>noop</onup>
+			<onup condition="Control.IsVisible(6210)">6210</onup>
+			<onup condition="!Control.IsVisible(6210)">noop</onup>
 			<ondown>noop</ondown>
 			<scrolltime tween="cubic" easing="out">260</scrolltime>
 			<viewtype label="List">biglist</viewtype>
