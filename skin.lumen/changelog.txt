@@ -1,3 +1,7 @@
+[B]0.6.0[/B]
+• Quick filters: the Movies and TV Shows grids get a row of chips above them: All or Unwatched, and sort by Title, Date added, Year or Rating, newest and best first. Pressing the chosen sort again turns the order round. Up from the top row reaches them; they use Kodi's own watched filter and sort, so the side menu agrees. A grid that Unwatched empties says so. Kids grids have them too.
+• Home rows: Configure skin has a switch for each Home row, and adds up to three rows of your own from smart playlists, each with a name of your choice, at the end of Home. Kids mode keeps its own rows.
+
 [B]0.5.0[/B]
 • Live TV: on a channel (from a PVR add-on such as IPTV Simple) the player shows the channel's name and number, the programme when the guide has one, and "Live" in place of the times. "Ends at" gives way to the sleep timer.
 • Kids mode turns live TV off: the TV and radio windows send back to Home, and a channel, radio station or recording started while kids mode is on, or playing when it comes on, stops. Nothing filters channels for children.

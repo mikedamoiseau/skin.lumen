@@ -31,14 +31,21 @@ hardware (see [Performance](#performance)).
   Continue Watching, Up Next, Recently Added Movies, New Episodes, Discover,
   Top Rated, TV Shows and Collections. The hero above the rows shows the focused
   item's logo, year, genre, runtime, rating, quality badges and plot. Empty rows
-  hide themselves. The power icon at the end of the tab bar opens Kodi's power
-  menu (Exit, Power off, Reboot, depending on the device).
+  hide themselves. Any row can be turned off, and up to three rows of your own
+  can be added from smart playlists (see [Skin settings](#skin-settings)). The
+  power icon at the end of the tab bar opens Kodi's power menu (Exit, Power off,
+  Reboot, depending on the device).
 - **Search**: the Search tab opens the keyboard over a Lumen search page. Movies
   and shows whose title matches appear while you type; confirming shows full
   rows for movies, TV shows (also by cast) and a cast & crew row.
 - **Library views**: Posters (movies, shows, collections), Showcase (seasons,
   movies in a collection), Episodes (landscape thumbnails), Landscape grid and a
   List view with preview.
+- **Quick filters**: above the Movies and TV Shows grids, a row of chips:
+  All or Unwatched, and sort by Title, Date added, Year or Rating (newest and
+  best first). Pressing the chosen sort again turns the order round. Up from the
+  grid's top row reaches them. They use Kodi's own watched filter and sort, so
+  the side menu agrees with them.
 - **Show page**: opening a TV show gives one screen with a "Play S2 E5" button
   for the next episode to watch, season tabs and that season's episodes.
 - **Detail page**: clearlogo, tagline, plot, Play/Resume with progress, Trailer,
@@ -117,6 +124,12 @@ Lumen is designed around these three settings. Kodi's defaults work, but feel le
   library and detail pages. It looks great, but the whole screen has to redraw
   every frame. On a Raspberry Pi 4 that roughly halves the menu frame rate, so
   it ships off.
+- **Home rows**: a switch for each Home row. **Add a row…** picks a smart
+  playlist and asks for the row's name; the row then shows at the end of Home
+  (up to three, each with **Rename** and **Remove this row**). **Make a smart
+  playlist…** opens Kodi's video playlists, where *New smart playlist…* builds
+  one (for example Movies whose genre is Documentary). Kids mode keeps its own
+  rows. Each device keeps its own choice.
 
 ## Performance
 
@@ -149,7 +162,7 @@ skin.lumen/                  the skin; this folder is what gets installed
   playlists/kids/            kids mode's lists: only titles tagged "Cinematheque Kids"
 tools/
   gen_textures.py            draws every Lumen texture, the Estuary texture overrides, icon and fanart
-  build_home.py              Home rows (the ROWS list) and the row-docking animations
+  build_home.py              Home rows (the ROWS list), their settings switches and the row-docking animations
   deploy.sh                  lint all XML, copy the skin to a Kodi box over SSH, reload the skin
   shot.sh NAME               take a screenshot on the box and copy it locally
   rpc.sh                     JSON-RPC helper
@@ -160,6 +173,8 @@ tools/
   actor_check.py NAME|all    actor-page checks on a box: entry, titles, directors, Back, Play, kids mode
   morelike_check.py NAME|all detail page checks on a box: logo, More like this rows, walking and opening them, kids mode
   livetv_check.py NAME|all   live TV checks on a box: a channel plays, the player shows it, kids mode stops it
+  filters_check.py NAME|all  quick-filter checks on a box: the chip row, sorts, Unwatched, an emptied grid, kids mode
+  homerows_check.py NAME|all Home rows checks on a box: switching rows off, adding, renaming and removing one
   search_regress.py Q...     types each query into Search and prints the rows' counts
   shownext_regress.py        the show page's Play button against the next-episode rule
   mibox_install.sh           builds the working tree and installs it on an Android TV box
@@ -189,7 +204,7 @@ path) and runs `ReloadSkin()`.
 The Python checks read `KH=<kodi-ip>:8080`, plus `KODI_SSH` on LibreELEC (an
 Android TV box is reached over ADB instead). They press keys on the box, so run
 them while nobody is watching. `all` runs every check, then puts the box back
-(kids mode off, no PIN, nothing playing). Checks that change a Kodi setting run
+(kids mode off, the kids PIN as it was, nothing playing). Checks that change a Kodi setting run
 only with `KIDS_OK_SETTINGS=1`, and test plays use only films without a resume
 point.
 
@@ -245,6 +260,10 @@ kids mode. Other apps can tell whether a device is in kids mode by reading
   whose first genre is another one gets no genre row.
 - The detail page's logo shows only for a title with one studio or network that
   the logo pack has a logo for. Kodi logs a texture error for a missing one.
+- A row of your own shows posters, so it suits a playlist of films or shows.
+- The quick filters are Kodi's own watched filter and sort, which Kodi keeps per
+  device: Unwatched chosen in a kids grid is still on in the normal Movies grid,
+  and the other way round.
 
 ## Credits & license
 
