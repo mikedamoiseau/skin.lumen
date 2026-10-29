@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Quick-filter chip checks (the All / Unwatched and sort chips above the film and show grids) against a Kodi box.
+"""Quick-filter chip checks (the All / Unwatched, Genre / Decade and sort chips above the film and show grids) against
+a Kodi box.
 
     python3 tools/filters_check.py NAME [NAME ...]   # run the named checks
     python3 tools/filters_check.py all               # every check, then cleanup
@@ -21,6 +22,9 @@ from kodi_gui import SSH, cond, conds, focus_id, lab, labs, reset_home, rpc, sho
 CHECKS = {}
 BAR = 6210  # the chip row
 ALL, UNWATCHED, TITLE, ADDED, YEAR, RATING = range(6211, 6217)
+GENRE, DECADE = 6221, 6222
+CHIPS = set(range(ALL, RATING + 1)) | {GENRE, DECADE}
+PICKER = 1117  # the Genre / Decade picker: "All genres" button 10 and genre list 11, or the decade list 12
 # chip -> (Kodi sort id, direction it starts in)
 SORTS = {TITLE: (29, "ascending"), ADDED: (40, "descending"), YEAR: (16, "descending"), RATING: (17, "descending")}
 VIEWS = (500, 503, 50)
@@ -76,13 +80,13 @@ def settled():
 
 def to_bar():
     """Up from the grid's top row reaches the chip row (the grid reopens on the last film picked, so go to the top)."""
-    if int(lab("System.CurrentControlId") or 0) in range(ALL, RATING + 1):
+    if int(lab("System.CurrentControlId") or 0) in CHIPS:
         return True
     if int(lab("System.CurrentControlId") or 0) in VIEWS:
         rpc("Input.ExecuteAction", {"action": "firstpage"})
         time.sleep(0.6)
     rpc("Input.Up")
-    return wait_for(lambda: int(lab("System.CurrentControlId") or 0) in range(ALL, RATING + 1), 3)
+    return wait_for(lambda: int(lab("System.CurrentControlId") or 0) in CHIPS, 3)
 
 
 def press(chip):
@@ -90,7 +94,8 @@ def press(chip):
     if not to_bar():
         return False
     cur = int(lab("System.CurrentControlId") or 0)
-    if not focus_id(chip, ("Right",) if chip >= cur else ("Left",), 8):
+    order = [ALL, UNWATCHED, GENRE, DECADE, TITLE, ADDED, YEAR, RATING]
+    if not focus_id(chip, ("Right",) if order.index(chip) >= order.index(cur) else ("Left",), 10):
         return False
     rpc("Input.Select")
     time.sleep(0.8)
@@ -119,10 +124,10 @@ def first_items(n=40):
 
 
 def library(kind):
-    """{id: {dateadded, year, rating, playcount}} for every film or show."""
+    """{id: {dateadded, year, rating, playcount, genre}} for every film or show."""
     method, key, idk = (("VideoLibrary.GetMovies", "movies", "movieid") if kind == "movie" else
                         ("VideoLibrary.GetTVShows", "tvshows", "tvshowid"))
-    r = rpc(method, {"properties": ["dateadded", "year", "rating", "playcount"]}, timeout=120)["result"].get(key, [])
+    r = rpc(method, {"properties": ["dateadded", "year", "rating", "playcount", "genre"]}, timeout=120)["result"].get(key, [])
     return {str(m[idk]): m for m in r}
 
 
@@ -386,6 +391,256 @@ def c_elsewhere(r):
         reset_home()
         if r.ok(f"{p} opens", open_grid(p)):
             r.ok(f"{p}: no chip row", not cond(f"Control.IsVisible({BAR})"))
+    reset_home()
+
+
+# ---------- genre and decade ----------
+
+def plain(path, base):
+    """The grid unfiltered: the tab's own path, or the picker's "all" (base plus an empty rule set)."""
+    return path == base or path == base + "?xsp=%7B%22rules%22%3A%7B%22and%22%3A%5B%5D%7D%2C%22type%22%3A%22" + base.split("/")[2] + "%22%7D"
+
+
+DECADES = ["2020s", "2010s", "2000s", "1990s", "1980s", "1970s", "1960s", "1950s", "Before 1950"]
+
+
+def decade_years(label):
+    return (1, 1949) if label == "Before 1950" else (int(label[:4]), int(label[:4]) + 9)
+
+
+def pick(chip, label):
+    """Open the chip's picker and choose label ("All genres" / "All decades" or a genre or decade); True once the grid
+    has reloaded."""
+    if not press(chip) or not wait_for(lambda: cond(f"Window.IsVisible({PICKER})"), 4):
+        return False
+    before = lab("Container.FolderPath")
+    if label == "All genres":
+        ok = focus_id(10, ("Up",), 40)
+    else:
+        lst = 11 if chip == GENRE else 12
+        if not focus_id(lst, ("Down",), 3):
+            return False
+        ok = wait_for(lambda: int(lab(f"Container({lst}).NumItems") or 0) > 0, 5)
+        rpc("Input.ExecuteAction", {"action": "firstpage"})  # the list reopens on the last pick
+        time.sleep(0.4)
+        for _ in range(60):
+            if not ok or lab(f"Container({lst}).ListItem.Label") == label:
+                break
+            rpc("Input.Down"); time.sleep(0.25)
+        ok = ok and lab(f"Container({lst}).ListItem.Label") == label
+    if not ok:
+        rpc("Input.Back"); time.sleep(0.5)
+        return False
+    rpc("Input.Select")
+    if not wait_for(lambda: not cond(f"Window.IsVisible({PICKER})"), 4):
+        return False
+    wait_for(lambda: lab("Container.FolderPath") != before, 6)
+    time.sleep(0.5)
+    return settled()
+
+
+def listed(kind, lib, n=60):
+    """The films (or shows) the grid lists first, from the library; collections are skipped."""
+    return [lib[i] for t, i in first_items(n) if t == kind and i in lib]
+
+
+def chip_label(chip):
+    return lab(f"Control.GetLabel({chip})")
+
+
+def gd_start(r, path):
+    """start(), and the grid unfiltered by genre and decade (a check before may have left them)."""
+    s = start(r, path)
+    if s and lab("Container.FolderPath") != path:
+        r.ok("grid opens unfiltered", False, lab("Container.FolderPath"))
+        return None
+    return s
+
+
+@check("genre")
+def c_genre(r):
+    """Genre: the picker lists the library's genres, the grid then lists that genre's films only, the chip names it,
+    and Back still goes to Home."""
+    s = gd_start(r, MOVIES)
+    if not s:
+        return
+    lib = library("movie")
+    genres = rpc("Files.GetDirectory", {"directory": "videodb://movies/genres/", "media": "video"})["result"].get("files") or []
+    try:
+        r.ok("Genre and Decade chips shown", cond(f"Control.IsVisible({GENRE})") and cond(f"Control.IsVisible({DECADE})"))
+        r.ok("plain chip labels", (chip_label(GENRE), chip_label(DECADE)) == ("Genre", "Decade"), (chip_label(GENRE), chip_label(DECADE)))
+        r.ok("Genre opens the picker", press(GENRE) and wait_for(lambda: cond(f"Window.IsVisible({PICKER})"), 4))
+        r.ok("the picker lists every genre", wait_for(lambda: lab("Container(11).NumItems") == str(len(genres)), 5),
+             (lab("Container(11).NumItems"), len(genres)))
+        shot("filters-genre-picker")
+        rpc("Input.Back")
+        r.ok("Back closes the picker, grid unchanged", wait_for(lambda: not cond(f"Window.IsVisible({PICKER})"), 3)
+             and lab("Container.FolderPath") == MOVIES, lab("Container.FolderPath"))
+        r.ok("Comedy picked", pick(GENRE, "Comedy"))
+        r.ok("the grid is the Comedy films", lab("Container.FolderPath").startswith("videodb://movies/genres/"), lab("Container.FolderPath"))
+        films = listed("movie", lib)
+        r.ok("only comedies listed", films and all("Comedy" in f["genre"] for f in films), [f["label"] for f in films if "Comedy" not in f["genre"]][:5])
+        r.ok("the chip says Comedy", chip_label(GENRE) == "Comedy", chip_label(GENRE))
+        shot("filters-genre")
+        rpc("Input.Down"); time.sleep(0.5)  # Back from the chips goes to the grid; from the grid, it leaves
+        r.ok("Down to the grid", int(lab("System.CurrentControlId") or 0) in VIEWS, lab("System.CurrentControlId"))
+        rpc("Input.Back")
+        r.ok("Back from the filtered grid: Home", wait_for(lambda: lab("System.CurrentWindow") == "Home", 5), lab("System.CurrentWindow"))
+        r.ok("Movies again: unfiltered, plain chips", open_grid(MOVIES) and lab("Container.FolderPath") == MOVIES
+             and (chip_label(GENRE), chip_label(DECADE)) == ("Genre", "Decade"), (lab("Container.FolderPath"), chip_label(GENRE)))
+    finally:
+        r.ok("sort and filter put back", restore(*s), (s, sort_state(), watch_mode()))
+        reset_home()
+
+
+@check("decade")
+def c_decade(r):
+    """Decade, and decade with genre: the grid keeps both, each "All" drops one, both off is the plain grid again."""
+    s = gd_start(r, MOVIES)
+    if not s:
+        return
+    lib = library("movie")
+    try:
+        r.ok("1990s picked", pick(DECADE, "1990s"))
+        films = listed("movie", lib)
+        r.ok("only 1990s films", films and all(1990 <= f["year"] <= 1999 for f in films), [(f["label"], f["year"]) for f in films if not 1990 <= f["year"] <= 1999][:5])
+        r.ok("the chip says 1990s", chip_label(DECADE) == "1990s", chip_label(DECADE))
+        r.ok("Drama picked", pick(GENRE, "Drama"))
+        films = listed("movie", lib)
+        r.ok("only 1990s dramas", films and all(1990 <= f["year"] <= 1999 and "Drama" in f["genre"] for f in films),
+             [(f["label"], f["year"]) for f in films if not (1990 <= f["year"] <= 1999 and "Drama" in f["genre"])][:5])
+        r.ok("both chips named", (chip_label(GENRE), chip_label(DECADE)) == ("Drama", "1990s"), (chip_label(GENRE), chip_label(DECADE)))
+        shot("filters-genre-decade")
+        r.ok("Before 1950 picked", pick(DECADE, "Before 1950"))
+        films = listed("movie", lib)
+        r.ok("only dramas before 1950", all(1 <= f["year"] <= 1949 and "Drama" in f["genre"] for f in films), [(f["label"], f["year"]) for f in films][:5])
+        r.ok("All decades picked", pick(DECADE, "All decades"))
+        r.ok("genre kept, decade dropped", (chip_label(GENRE), chip_label(DECADE)) == ("Drama", "Decade")
+             and plain(lab("Container.FolderPath"), lab("Container.FolderPath").split("?")[0])
+             and lab("Container.FolderPath").startswith("videodb://movies/genres/"),
+             (chip_label(GENRE), chip_label(DECADE), lab("Container.FolderPath")))
+        r.ok("2000s picked", pick(DECADE, "2000s"))
+        r.ok("All genres picked", pick(GENRE, "All genres"))
+        films = listed("movie", lib)
+        r.ok("decade kept, genre dropped", (chip_label(GENRE), chip_label(DECADE)) == ("Genre", "2000s")
+             and films and all(2000 <= f["year"] <= 2009 for f in films), (chip_label(GENRE), chip_label(DECADE)))
+        r.ok("All decades again", pick(DECADE, "All decades"))
+        r.ok("both off: the plain grid", plain(lab("Container.FolderPath"), MOVIES) and (chip_label(GENRE), chip_label(DECADE)) == ("Genre", "Decade"),
+             lab("Container.FolderPath"))
+    finally:
+        r.ok("sort and filter put back", restore(*s), (s, sort_state(), watch_mode()))
+        reset_home()
+
+
+@check("gd_more")
+def c_gd_more(r):
+    """On a genre grid, Unwatched and the sorts still work; a genre and decade with nothing in them says so."""
+    s = gd_start(r, MOVIES)
+    if not s:
+        return
+    lib = library("movie")
+    genres = sorted({g for m in lib.values() for g in m["genre"]})
+    empty = next(((g, d) for d in DECADES for g in genres
+                  if not any(g in m["genre"] and decade_years(d)[0] <= m["year"] <= decade_years(d)[1] for m in lib.values())), None)
+    try:
+        r.ok("Comedy picked", pick(GENRE, "Comedy"))
+        r.ok("Unwatched pressed", press(UNWATCHED))
+        films = listed("movie", lib)
+        r.ok("unwatched comedies only", all("Comedy" in f["genre"] and not f["playcount"] for f in films), [f["label"] for f in films][:5])
+        r.ok("All pressed", press(ALL))
+        r.ok("Year pressed", press(YEAR))
+        vals = [f["year"] for f in listed("movie", lib)]
+        r.ok("comedies newest first", len(vals) > 5 and ordered(vals, "descending"), vals[:6])
+        if not empty:
+            r.skip("every genre has films in every decade")
+        else:
+            g, d = empty
+            r.ok(f"{g} picked", pick(GENRE, g))
+            r.ok(f"{d} picked", pick(DECADE, d))
+            r.ok("grid empty", int(lab("Container.NumItems") or 0) == 0, lab("Container.NumItems"))
+            r.ok("message shown", wait_for(lambda: cond("Control.IsVisible(6060)"), 3)
+                 and lab("Control.GetLabel(6060)") == "Nothing matches these filters.", lab("Control.GetLabel(6060)"))
+            r.ok("chip row still shown", cond(f"Control.IsVisible({BAR})"))
+            shot("filters-gd-empty")
+            rpc("Input.Down"); time.sleep(0.5)
+            r.ok("Down lands on the empty-grid button", lab("System.CurrentControlId") == "6061", lab("System.CurrentControlId"))
+            r.ok("Up reaches the chips", to_bar(), lab("System.CurrentControlId"))
+        r.ok("All genres picked", pick(GENRE, "All genres"))
+        if not plain(lab("Container.FolderPath"), MOVIES):
+            pick(DECADE, "All decades")
+        r.ok("back on the plain grid", plain(lab("Container.FolderPath"), MOVIES), lab("Container.FolderPath"))
+    finally:
+        r.ok("sort and filter put back", restore(*s), (s, sort_state(), watch_mode()))
+        reset_home()
+
+
+@check("gd_shows")
+def c_gd_shows(r):
+    """TV shows: a genre with "&" in its name and a decade."""
+    s = gd_start(r, SHOWS)
+    if not s:
+        return
+    lib = library("tvshow")
+    amp = sorted({g for m in lib.values() for g in m["genre"] if "&" in g})
+    try:
+        r.ok("Genre and Decade chips shown", cond(f"Control.IsVisible({GENRE})") and cond(f"Control.IsVisible({DECADE})"))
+        if not amp:
+            r.skip("no show genre with & in its name")
+        else:
+            r.ok(f"{amp[0]} picked", pick(GENRE, amp[0]))
+            shows = listed("tvshow", lib)
+            r.ok(f"only {amp[0]} shows", shows and all(amp[0] in m["genre"] for m in shows), [m["label"] for m in shows][:5])
+            r.ok("the chip names it", chip_label(GENRE) == amp[0], chip_label(GENRE))
+            r.ok("All genres picked", pick(GENRE, "All genres"))
+        r.ok("2020s picked", pick(DECADE, "2020s"))
+        shows = listed("tvshow", lib)
+        r.ok("only 2020s shows", shows and all(2020 <= m["year"] <= 2029 for m in shows), [(m["label"], m["year"]) for m in shows][:5])
+        r.ok("All decades picked", pick(DECADE, "All decades"))
+        r.ok("back on the plain grid", plain(lab("Container.FolderPath"), SHOWS), lab("Container.FolderPath"))
+    finally:
+        r.ok("sort and filter put back", restore(*s), (s, sort_state(), watch_mode()))
+        reset_home()
+
+
+@check("gd_kids")
+def c_gd_kids(r):
+    """Kids mode: no Genre or Decade chip (Kodi would group a filtered grid into collections, which kids mode never
+    shows); Right from Unwatched goes straight to the sorts."""
+    if rpc("Player.GetActivePlayers")["result"]:
+        r.skip("something is playing on the box; not touching it")
+        return
+    kids_check.kids(True)
+    try:
+        reset_home()
+        if not r.ok("kids films open", open_grid(KIDS + "movies.xsp")):
+            return
+        r.ok("chip row shown", cond(f"Control.IsVisible({BAR})"))
+        r.ok("no Genre or Decade chip", not cond(f"Control.IsVisible({GENRE})") and not cond(f"Control.IsVisible({DECADE})"))
+        to_bar()
+        focus_id(ALL, ("Left",), 8)
+        rpc("Input.Right"); time.sleep(0.4)
+        r.ok("Right from All: Unwatched", lab("System.CurrentControlId") == str(UNWATCHED), lab("System.CurrentControlId"))
+        rpc("Input.Right"); time.sleep(0.4)
+        r.ok("Right from Unwatched: Title", lab("System.CurrentControlId") == str(TITLE), lab("System.CurrentControlId"))
+    finally:
+        kids_check.kids(False)
+        reset_home()
+
+
+@check("gd_elsewhere")
+def c_gd_elsewhere(r):
+    """Genre and Decade only on the whole film and show grids: not on a genre browsed to, nor on a playlist."""
+    if rpc("Player.GetActivePlayers")["result"]:
+        r.skip("something is playing on the box; not touching it")
+        return
+    kids_check.kids(False)
+    genres = rpc("Files.GetDirectory", {"directory": "videodb://movies/genres/", "media": "video"})["result"].get("files") or []
+    paths = [g["file"] for g in genres if g["label"] == "Western"][:1] + ["special://skin/playlists/unwatched_movies.xsp"]
+    for p in paths:
+        reset_home()
+        if r.ok(f"{p} opens", open_grid(p)):
+            r.ok(f"{p}: chip row, without Genre and Decade", cond(f"Control.IsVisible({BAR})") and not cond(f"Control.IsVisible({GENRE})"),
+                 (cond(f"Control.IsVisible({BAR})"), cond(f"Control.IsVisible({GENRE})")))
     reset_home()
 
 
