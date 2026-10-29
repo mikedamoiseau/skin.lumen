@@ -29,6 +29,7 @@ NORMAL_ROWS = range(5001, 5009)
 TABS = range(10, 19)
 
 CHECKS = {}
+PIN_BEFORE = ""  # the kids PIN when the run started (main); cleanup puts it back
 
 
 def check(name):
@@ -963,8 +964,9 @@ def c_regress(r):
 def c_cleanup(r):
     for p in rpc("Player.GetActivePlayers")["result"]:
         rpc("Player.Stop", {"playerid": p["playerid"]})
-    # lumen.search: the Search page would open on the checks' last search word
-    for setting, value in ((KIDS_SETTING, False), ("lumen.pin", ""), ("lumen.search", "")):
+    # lumen.search: the Search page would open on the checks' last search word. The PIN goes back to what it was
+    # before the run: on a household box it's the family's
+    for setting, value in ((KIDS_SETTING, False), ("lumen.pin", PIN_BEFORE), ("lumen.search", "")):
         try:
             set_skin(setting, value)
         except RuntimeError:
@@ -972,26 +974,35 @@ def c_cleanup(r):
     r.ok("back on Home", reset_home() == "Home")
     r.ok("nothing playing", rpc("Player.GetActivePlayers")["result"] == [])
     r.ok("kids mode off", not cond("Skin.HasSetting(CinemathequeKids)"))
-    r.ok("no PIN", lab("Skin.String(lumen.pin)") == "")
+    r.ok("kids PIN as it was before the run", lab("Skin.String(lumen.pin)") == PIN_BEFORE)
 
 
 def main(names, checks=CHECKS):
+    global PIN_BEFORE
+    PIN_BEFORE = lab("Skin.String(lumen.pin)")
     if names == ["all"]:
         names = [n for n in checks if n not in ("baseline", "cleanup")] + ["cleanup"]
     failed = False
-    for name in names:
-        if name not in checks:
-            print(f"FAIL {name}: no such check (have: {', '.join(checks)})")
-            failed = True
-            continue
-        keepalive()
-        r = Report(name)
+    try:
+        for name in names:
+            if name not in checks:
+                print(f"FAIL {name}: no such check (have: {', '.join(checks)})")
+                failed = True
+                continue
+            keepalive()
+            r = Report(name)
+            try:
+                checks[name](r)
+            except Exception as e:  # a crashed check is a failed check
+                r.ok("ran without error", False, f"{type(e).__name__}: {e}")
+                traceback.print_exc(limit=2)
+            failed |= r.failed
+    finally:  # a run stopped early, or PIN checks run by name, still leave the household's PIN
         try:
-            checks[name](r)
-        except Exception as e:  # a crashed check is a failed check
-            r.ok("ran without error", False, f"{type(e).__name__}: {e}")
-            traceback.print_exc(limit=2)
-        failed |= r.failed
+            if lab("Skin.String(lumen.pin)") != PIN_BEFORE:
+                set_skin("lumen.pin", PIN_BEFORE)
+        except Exception:
+            pass
     return 1 if failed else 0
 
 
