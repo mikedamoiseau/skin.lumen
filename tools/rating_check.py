@@ -52,28 +52,91 @@ def ratings():
     return out
 
 
+def holds(condition, mpaa):
+    """Evaluate a badge's visible condition for a rating: Kodi's ! + | [ ] over String.IsEmpty / IsEqual / StartsWith
+    of $PARAM[item].Mpaa (case-insensitive, as in Kodi)."""
+    text = condition.replace(f"{ITEM}.Mpaa", "M")
+    pos = 0
+
+    def peek():
+        return text[pos] if pos < len(text) else ""
+
+    def skip():
+        nonlocal pos
+        while peek() == " ":
+            pos += 1
+
+    def unary():
+        nonlocal pos
+        skip()
+        if peek() == "!":
+            pos += 1
+            return not unary()
+        if peek() == "[":
+            pos += 1
+            v = either()
+            skip()
+            assert peek() == "]", text[pos:]
+            pos += 1
+            return v
+        end = text.index(")", pos) + 1
+        atom, pos = text[pos:end], end
+        name, args = atom[:atom.index("(")], atom[atom.index("(") + 1:-1].split(",", 1)
+        assert args[0] == "M", atom
+        if name == "String.IsEmpty":
+            return mpaa == ""
+        if name == "String.IsEqual":
+            return mpaa.lower() == args[1].lower()
+        if name == "String.StartsWith":
+            return mpaa.lower().startswith(args[1].lower())
+        raise ValueError(atom)
+
+    def both():
+        nonlocal pos
+        v = unary()
+        while True:
+            skip()
+            if peek() != "+":
+                return v
+            pos += 1
+            v = unary() and v
+
+    def either():
+        nonlocal pos
+        v = both()
+        while True:
+            skip()
+            if peek() != "|":
+                return v
+            pos += 1
+            v = both() or v
+
+    return either()
+
+
+def shown(b, mpaa):
+    """The labels the badges show for a rating."""
+    return [mpaa if label == f"$INFO[{ITEM}.Mpaa]" else label for label, v in b if holds(v, mpaa)]
+
+
+US = ["G", "PG", "PG-13", "R", "NC-17", "TV-Y", "TV-Y7", "TV-G", "TV-PG", "TV-14", "TV-MA"]
+
+
 @check("map")
 def c_map(r):
-    """Every US rating in the library has a badge without "Rated "; "NR" and empty show none; anything else (the app's
-    "FSK 12") shows as written."""
+    """US ratings show without "Rated "; "NR", "Not Rated", "Unrated" and no rating show nothing; anything else (the
+    app's "FSK 12", a US rating Lumen doesn't know) shows as written. Every rating in the library: one badge at most."""
     b = badges()
-    r.ok("the detail line has rating badges", b, b)
-    generic = [v for label, v in b if label == f"$INFO[{ITEM}.Mpaa]"]
-    r.ok("one badge shows the rating as written", len(generic) == 1, generic)
-    if generic:
-        r.ok("  but not empty ones", f"!String.IsEmpty({ITEM}.Mpaa)" in generic[0], generic[0])
-        r.ok("  nor US ones (they start with Rated)", f"!String.StartsWith({ITEM}.Mpaa,rated)" in generic[0], generic[0])
-    us = {v: label for label, v in b if label != f"$INFO[{ITEM}.Mpaa]"}
+    r.ok("the detail line has rating badges", b, len(b))
+    cases = {"": [], "Rated NR": [], "NR": [], "Not Rated": [], "Unrated": [], "FSK 12": ["FSK 12"], "FSK 0": ["FSK 0"],
+             "12": ["12"], "Rated X": ["Rated X"], "Rated TV-Y7-FV": ["Rated TV-Y7-FV"], "rated pg-13": ["PG-13"]}
+    cases.update({f"Rated {u}": [u] for u in US})
+    for mpaa, want in cases.items():
+        r.ok(f"{mpaa or '(none)'}: {want or 'no badge'}", shown(b, mpaa) == want, shown(b, mpaa))
     lib = ratings()
-    for rating, n in sorted(lib.items(), key=lambda t: -t[1]):
-        if not rating.lower().startswith("rated "):
-            continue
-        short = rating[6:]
-        want = f"String.IsEqual({ITEM}.Mpaa,{rating})"
-        if short == "NR":
-            r.ok(f"{rating} ({n}): no badge", want not in us, us.get(want))
-        else:
-            r.ok(f"{rating} ({n}): badge {short}", us.get(want) == short, us.get(want))
+    for mpaa, n in sorted(lib.items(), key=lambda t: -t[1]):
+        got = shown(b, mpaa)
+        r.ok(f"library {mpaa or '(none)'} ({n}): at most one badge", len(got) <= 1 and (got != []) == (mpaa not in ("", "Rated NR")), got)
     print(f"INFO map: ratings in the library: {sorted(lib.items(), key=lambda t: -t[1])}", flush=True)
 
 
