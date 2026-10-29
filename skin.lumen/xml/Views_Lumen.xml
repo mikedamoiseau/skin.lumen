@@ -123,10 +123,34 @@
 	<expression name="LumenQuickFilters">[Container.Content(movies) | Container.Content(tvshows)] + [[String.StartsWith(Container.FolderPath,videodb://movies/) + !String.StartsWith(Container.FolderPath,videodb://movies/sets/)] | String.StartsWith(Container.FolderPath,videodb://tvshows/) | String.EndsWith(Container.FolderPath,.xsp)] + !Control.IsVisible(501) + !Control.IsVisible(502)</expression>
 	<!-- Kodi labels the side menu's watched button with the mode; 6219 holds the label for All -->
 	<expression name="LumenWatchAll">String.IsEqual(Control.GetLabel(10),Control.GetLabel(6219))</expression>
+	<!-- Genre and Decade (Custom_1117): a pick opens the grid at a new path and keeps it in lumen.fpath, with what was
+	     picked in lumen.fgenre / fgenrename / fdecade. They apply only while the grid is still at that path, so the
+	     Movies tab opened again shows plain chips. Not in kids mode: Kodi groups a filtered grid into collections -->
+	<expression name="LumenFilterActive">!String.IsEmpty(Window(home).Property(lumen.fpath)) + String.IsEqual(Container.FolderPath,Window(home).Property(lumen.fpath))</expression>
+	<expression name="LumenGenreOn">$EXP[LumenFilterActive] + !String.IsEmpty(Window(home).Property(lumen.fgenre))</expression>
+	<expression name="LumenDecadeOn">$EXP[LumenFilterActive] + !String.IsEmpty(Window(home).Property(lumen.fdecade))</expression>
+	<expression name="LumenGenreDecade">!$EXP[LumenKids] + $EXP[LumenQuickFilters] + [String.IsEqual(Container.FolderPath,videodb://movies/titles/) | String.IsEqual(Container.FolderPath,videodb://tvshows/titles/) | $EXP[LumenFilterActive]]</expression>
+	<variable name="LumenGenreChip">
+		<value condition="$EXP[LumenGenreOn]">$INFO[Window(home).Property(lumen.fgenrename)]</value>
+		<value>Genre</value>
+	</variable>
+	<variable name="LumenDecadeChip">
+		<value condition="$EXP[LumenDecadeOn]">$INFO[Window(home).Property(lumen.fdecade)]</value>
+		<value>Decade</value>
+	</variable>
+	<variable name="LumenPickerTitle">
+		<value condition="String.IsEqual(Window(home).Property(lumen.fpick),genre)">Genre</value>
+		<value>Decade</value>
+	</variable>
+	<variable name="LumenGenreSource">
+		<value condition="Container.Content(tvshows)">videodb://tvshows/genres/</value>
+		<value>videodb://movies/genres/</value>
+	</variable>
 	<!-- an empty grid that a watched filter emptied (the chip's Unwatched, or the side menu's Watched mode): say so,
 	     and keep focus off Kodi's ".." item (as in kids mode). Kodi keeps the filter per device, kids grids included -->
-	<expression name="LumenFilteredEmpty">!$EXP[LumenWatchAll] + $EXP[LumenQuickFilters] + !Integer.IsGreater(Container.NumItems,0)</expression>
+	<expression name="LumenFilteredEmpty">[!$EXP[LumenWatchAll] | $EXP[LumenGenreOn] | $EXP[LumenDecadeOn]] + $EXP[LumenQuickFilters] + !Integer.IsGreater(Container.NumItems,0)</expression>
 	<variable name="LumenEmptyGridText">
+		<value condition="$EXP[LumenGenreOn] | $EXP[LumenDecadeOn]">Nothing matches these filters.</value>
 		<value condition="System.Setting(hidewatched)">Nothing unwatched here.</value>
 		<value condition="$EXP[LumenFilteredEmpty]">Nothing watched here.</value>
 		<value>Nothing here yet. A parent can choose titles in the Cinémathèque app.</value>
@@ -148,6 +172,7 @@
 		<value condition="Container.SortMethod(17)">  ↑</value>
 	</variable>
 	<include name="LumenChip">
+		<param name="visible">true</param>
 		<param name="onclick2_condition">false</param>
 		<param name="onclick2">noop</param>
 		<param name="onclick3_condition">false</param>
@@ -173,6 +198,7 @@
 				<onclick condition="$PARAM[onclick_condition]">$PARAM[onclick]</onclick>
 				<onclick condition="$PARAM[onclick2_condition]">$PARAM[onclick2]</onclick>
 				<onclick condition="$PARAM[onclick3_condition]">$PARAM[onclick3]</onclick>
+				<visible>$PARAM[visible]</visible>
 			</control>
 		</definition>
 	</include>
@@ -193,6 +219,85 @@
 			</include>
 		</definition>
 	</include>
+	<!-- the Genre / Decade picker's rows (Custom_1117): a pill, white while focused, a tick on what applies -->
+	<include name="LumenPickerLayouts">
+		<definition>
+			<itemlayout width="520" height="82">
+				<control type="image">
+					<width>520</width>
+					<height>72</height>
+					<texture border="32" colordiffuse="14FFFFFF">lumen/pill.png</texture>
+				</control>
+				<control type="label">
+					<left>32</left>
+					<width>400</width>
+					<height>72</height>
+					<aligny>center</aligny>
+					<font>lm_label_bold</font>
+					<textcolor>text</textcolor>
+					<label>$INFO[ListItem.Label]</label>
+				</control>
+				<control type="image">
+					<left>460</left>
+					<top>22</top>
+					<width>28</width>
+					<height>28</height>
+					<texture colordiffuse="text">lumen/icons/check.png</texture>
+					<visible>$PARAM[selected]</visible>
+				</control>
+			</itemlayout>
+			<focusedlayout width="520" height="82">
+				<control type="image">
+					<width>520</width>
+					<height>72</height>
+					<texture border="32" colordiffuse="14FFFFFF">lumen/pill.png</texture>
+					<visible>!Control.HasFocus($PARAM[list])</visible>
+				</control>
+				<control type="image">
+					<width>520</width>
+					<height>72</height>
+					<texture border="32" colordiffuse="FFFFFFFF">lumen/pill.png</texture>
+					<visible>Control.HasFocus($PARAM[list])</visible>
+				</control>
+				<control type="label">
+					<left>32</left>
+					<width>400</width>
+					<height>72</height>
+					<aligny>center</aligny>
+					<font>lm_label_bold</font>
+					<textcolor>text</textcolor>
+					<label>$INFO[ListItem.Label]</label>
+					<visible>!Control.HasFocus($PARAM[list])</visible>
+				</control>
+				<control type="label">
+					<left>32</left>
+					<width>400</width>
+					<height>72</height>
+					<aligny>center</aligny>
+					<font>lm_label_bold</font>
+					<textcolor>focus_text</textcolor>
+					<label>$INFO[ListItem.Label]</label>
+					<visible>Control.HasFocus($PARAM[list])</visible>
+				</control>
+				<control type="image">
+					<left>460</left>
+					<top>22</top>
+					<width>28</width>
+					<height>28</height>
+					<texture colordiffuse="focus_text">lumen/icons/check.png</texture>
+					<visible>Control.HasFocus($PARAM[list]) + [$PARAM[selected]]</visible>
+				</control>
+				<control type="image">
+					<left>460</left>
+					<top>22</top>
+					<width>28</width>
+					<height>28</height>
+					<texture colordiffuse="text">lumen/icons/check.png</texture>
+					<visible>!Control.HasFocus($PARAM[list]) + [$PARAM[selected]]</visible>
+				</control>
+			</focusedlayout>
+		</definition>
+	</include>
 	<include name="LumenQuickFilterBar">
 		<control type="label" id="6219">
 			<visible>false</visible>
@@ -201,12 +306,12 @@
 		<control type="grouplist" id="6210">
 			<left>lm_margin</left>
 			<top>126</top>
-			<width>1100</width>
+			<width>1760</width>
 			<height>48</height>
 			<orientation>horizontal</orientation>
 			<itemgap>10</itemgap>
 			<usecontrolcoords>true</usecontrolcoords>
-			<visible>$EXP[LumenQuickFilters] + [Integer.IsGreater(Container.NumItems,0) | !$EXP[LumenWatchAll]]</visible>
+			<visible>$EXP[LumenQuickFilters] + [Integer.IsGreater(Container.NumItems,0) | !$EXP[LumenWatchAll] | $EXP[LumenGenreOn] | $EXP[LumenDecadeOn]]</visible>
 			<onleft>9000</onleft>
 			<onright>noop</onright>
 			<onup>noop</onup>
@@ -236,6 +341,26 @@
 				<param name="onclick" value="SendClick(14)" />
 				<param name="onclick2_condition" value="!System.Setting(hidewatched) + !$EXP[LumenWatchAll]" />
 				<param name="onclick2" value="SendClick(14)" />
+			</include>
+			<include content="LumenChip">
+				<param name="id" value="6221" />
+				<param name="label" value="$VAR[LumenGenreChip]" />
+				<param name="selected" value="$EXP[LumenGenreOn]" />
+				<param name="onclick_condition" value="true" />
+				<param name="onclick" value="SetProperty(lumen.fpick,genre,home)" />
+				<param name="onclick2_condition" value="true" />
+				<param name="onclick2" value="ActivateWindow(1117)" />
+				<param name="visible" value="$EXP[LumenGenreDecade]" />
+			</include>
+			<include content="LumenChip">
+				<param name="id" value="6222" />
+				<param name="label" value="$VAR[LumenDecadeChip]" />
+				<param name="selected" value="$EXP[LumenDecadeOn]" />
+				<param name="onclick_condition" value="true" />
+				<param name="onclick" value="SetProperty(lumen.fpick,decade,home)" />
+				<param name="onclick2_condition" value="true" />
+				<param name="onclick2" value="ActivateWindow(1117)" />
+				<param name="visible" value="$EXP[LumenGenreDecade]" />
 			</include>
 			<!-- a gap between the watched and sort chips; an id keeps the row's left/right chain going -->
 			<control type="image" id="6218">

@@ -22,6 +22,7 @@
 	<include file="Variables.xml" />
 	<include file="Includes_Lumen.xml" />
 	<include file="Includes_LumenHome.xml" />
+	<include file="Includes_LumenFilters.xml" />
 	<include file="Views_Lumen.xml" />
 	<constant name="DepthDialog">0.50</constant>
 	<constant name="DepthDialog+">0.52</constant>
