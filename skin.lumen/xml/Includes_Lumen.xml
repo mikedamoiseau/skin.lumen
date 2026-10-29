@@ -396,11 +396,17 @@
 					<param name="visible" value="String.IsEqual($PARAM[item].DBType,tvshow) + Integer.IsGreater($PARAM[item].Property(UnWatchedEpisodes),0)" />
 				</include>
 				<!-- age rating: as written (the Cinémathèque app writes "FSK 12"), Kodi's US ones without "Rated "; none for
-				     "NR" or no rating. No string replace in a skin, hence a badge per US rating -->
+				     "NR" / "Not Rated" / "Unrated" or no rating. No string replace in a skin, hence a badge per US rating, and
+				     a "Rated …" Lumen doesn't know shows as written -->
 				<include content="LumenBadge">
 					<param name="top" value="$PARAM[inset]" />
 					<param name="label" value="$INFO[$PARAM[item].Mpaa]" />
-					<param name="visible" value="!String.IsEmpty($PARAM[item].Mpaa) + !String.StartsWith($PARAM[item].Mpaa,rated)" />
+					<param name="visible" value="!String.IsEmpty($PARAM[item].Mpaa) + !String.StartsWith($PARAM[item].Mpaa,rated) + !String.IsEqual($PARAM[item].Mpaa,NR) + !String.IsEqual($PARAM[item].Mpaa,Not Rated) + !String.IsEqual($PARAM[item].Mpaa,Unrated)" />
+				</include>
+				<include content="LumenBadge">
+					<param name="top" value="$PARAM[inset]" />
+					<param name="label" value="$INFO[$PARAM[item].Mpaa]" />
+					<param name="visible" value="String.StartsWith($PARAM[item].Mpaa,rated) + !String.IsEqual($PARAM[item].Mpaa,Rated NR) + ![String.IsEqual($PARAM[item].Mpaa,Rated G) | String.IsEqual($PARAM[item].Mpaa,Rated PG) | String.IsEqual($PARAM[item].Mpaa,Rated PG-13) | String.IsEqual($PARAM[item].Mpaa,Rated R) | String.IsEqual($PARAM[item].Mpaa,Rated NC-17) | String.IsEqual($PARAM[item].Mpaa,Rated TV-Y) | String.IsEqual($PARAM[item].Mpaa,Rated TV-Y7) | String.IsEqual($PARAM[item].Mpaa,Rated TV-G) | String.IsEqual($PARAM[item].Mpaa,Rated TV-PG) | String.IsEqual($PARAM[item].Mpaa,Rated TV-14) | String.IsEqual($PARAM[item].Mpaa,Rated TV-MA)]" />
 				</include>
 				<include content="LumenBadge">
 					<param name="top" value="$PARAM[inset]" />
