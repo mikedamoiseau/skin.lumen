@@ -272,8 +272,10 @@ kids mode. Other apps can tell whether a device is in kids mode by reading
   says so and the kids grids and rows stay empty.
 - Search matches words from their start ("man" finds "Spider-Man", not "Batman").
   It runs a small Python script inside the skin, as a skin can't build a search
-  path for text with "&", "+" or "%". Results wait for a one-second pause in
-  typing: Kodi's skin timers count whole seconds.
+  path for text with "&" or "+" (Kodi then logs a warning about a script outside
+  an add-on, once per search). "%" and "_" match any text, as in Kodi's own
+  smart playlists. Results wait for a one-second pause in typing: Kodi's skin
+  timers count whole seconds.
 - The actor page lists nothing for a name with "&" or "/" in it: Kodi splits its
   library paths there. Search's cast & crew row lists films, not people: Kodi 21
   can't look people up by name for a skin.
