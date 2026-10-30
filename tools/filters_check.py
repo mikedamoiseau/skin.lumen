@@ -808,11 +808,15 @@ def c_gd_kids(r):
     normal_path = None
     kids_check.kids(False)
     reset_home()
-    if open_grid(MOVIES) and tick(["Comedy"]):  # a filtered grid from normal mode, for the guard below
+    if open_grid(MOVIES) and tick(["Comedy"]):  # a filtered grid from normal mode, still applied as kids mode comes on
         normal_path = lab("Container.FolderPath")
-        pick(GENRE, "All genres")
     kids_check.kids(True)
     try:
+        if normal_path:
+            reset_home()
+            if r.ok("kids: the Comedy grid from normal mode opens", open_grid(normal_path)):
+                r.ok("kids: on it, no Genre or Decade chip (its path has no kids tag)",
+                     not cond(f"Control.IsVisible({GENRE})") and not cond(f"Control.IsVisible({DECADE})"))
         reset_home()
         if not r.ok("kids films open", open_grid(KIDS + "movies.xsp")):
             return
@@ -829,6 +833,16 @@ def c_gd_kids(r):
         r.ok("Kodi lists the kids films of either genre", path_count(path) == len(want), (path_count(path), len(want)))
         items = first_items(int(lab("Container.NumItems") or 0))
         r.ok("no collection in the grid", items and all(t == "movie" for t, _ in items), sorted({t for t, _ in items}))
+        # the control: the same filter on Kodi's usual film list does make collections, so the check above can fail
+        reset_home()
+        if open_grid(MOVIES + "?" + path.split("?", 1)[1]):
+            sets = sum(t == "set" for t, _ in first_items(int(lab("Container.NumItems") or 0)))
+            if sets:
+                r.ok(f"control: the same films from movies/titles/ make {sets} collections", True)
+            else:
+                r.skip("no two of these kids films share a collection: no control for the check above")
+        reset_home()
+        r.ok("back on the kids grid", open_grid(path), lab("Container.FolderPath")[:80])
         r.ok("kids films of either genre only", all(i in kids_films and any_genre(kids_films[i], pair) for _, i in items),
              [lib[i]["label"] for _, i in items if i in lib and i not in kids_films][:5])
         if watch_mode() == "All videos":
@@ -867,7 +881,7 @@ def c_gd_kids(r):
                 r.ok(f"kids shows: {g} kids shows only", got and all(i in kids_shows and g in kids_shows[i]["genre"] for i in got),
                      [shows.get(i, {}).get("label") for i in got][:5])
         # not outside the kids lists
-        for p in [MOVIES, SHOWS] + ([normal_path] if normal_path else []):
+        for p in [MOVIES, SHOWS]:
             reset_home()
             if r.ok(f"kids: {p[:60]} opens", open_grid(p)):
                 r.ok(f"kids: {p[:60]}: no Genre or Decade chip", not cond(f"Control.IsVisible({GENRE})") and not cond(f"Control.IsVisible({DECADE})"))
