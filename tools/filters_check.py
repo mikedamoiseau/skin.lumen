@@ -24,7 +24,7 @@ BAR = 6210  # the chip row
 ALL, UNWATCHED, TITLE, ADDED, YEAR, RATING = range(6211, 6217)
 GENRE, DECADE = 6221, 6222
 CHIPS = set(range(ALL, RATING + 1)) | {GENRE, DECADE}
-PICKER = 1117  # the Genre / Decade picker: "All genres" button 10 and genre list 11, or the decade list 12
+PICKER = 1117  # the Genre / Decade picker: Done button 13, "All genres" button 10 and genre list 11, or decade list 12
 # chip -> (Kodi sort id, direction it starts in)
 SORTS = {TITLE: (29, "ascending"), ADDED: (40, "descending"), YEAR: (16, "descending"), RATING: (17, "descending")}
 VIEWS = (500, 503, 50)
@@ -124,10 +124,10 @@ def first_items(n=40):
 
 
 def library(kind):
-    """{id: {dateadded, year, rating, playcount, genre}} for every film or show."""
+    """{id: {dateadded, year, rating, playcount, genre, tag}} for every film or show."""
     method, key, idk = (("VideoLibrary.GetMovies", "movies", "movieid") if kind == "movie" else
                         ("VideoLibrary.GetTVShows", "tvshows", "tvshowid"))
-    r = rpc(method, {"properties": ["dateadded", "year", "rating", "playcount", "genre"] + (["season"] if kind == "tvshow" else [])}, timeout=120)["result"].get(key, [])
+    r = rpc(method, {"properties": ["dateadded", "year", "rating", "playcount", "genre", "tag"] + (["season"] if kind == "tvshow" else [])}, timeout=120)["result"].get(key, [])
     return {str(m[idk]): m for m in r}
 
 
@@ -408,26 +408,92 @@ def decade_years(label):
     return (1, 1949) if label == "Before 1950" else (int(label[:4]), int(label[:4]) + 9)
 
 
+KIDS_TAG = "Cinematheque Kids"
+
+
+def open_picker(chip):
+    return press(chip) and wait_for(lambda: cond(f"Window.IsVisible({PICKER})"), 4)
+
+
+def to_row(lst, label):
+    """Focus the picker row label in list lst, walking down from the top."""
+    if not focus_id(lst, ("Down",), 3) or not wait_for(
+            lambda: int(lab(f"Container({lst}).NumItems") or 0) > 0 and not cond(f"Container({lst}).IsUpdating"), 6):
+        return False
+    rpc("Input.ExecuteAction", {"action": "firstpage"})
+    time.sleep(0.4)
+    for _ in range(int(lab(f"Container({lst}).NumItems") or 0)):
+        if lab(f"Container({lst}).ListItem.Label") == label:
+            return True
+        rpc("Input.Down"); time.sleep(0.25)
+    return lab(f"Container({lst}).ListItem.Label") == label
+
+
+def picker_rows(lst=11):
+    if not wait_for(lambda: int(lab(f"Container({lst}).NumItems") or 0) > 0 and not cond(f"Container({lst}).IsUpdating"), 6):
+        return []
+    names = [f"Container({lst}).ListItemAbsolute({i}).Label" for i in range(int(lab(f"Container({lst}).NumItems")))]
+    v = labs(names)
+    return [v[n] for n in names]
+
+
+def close_picker(how="back"):
+    """Close the picker with Back or its Done button; True once it's gone and the grid has settled."""
+    before = lab("Container.FolderPath")
+    if how == "done":
+        rpc("Input.ExecuteAction", {"action": "firstpage"})
+        time.sleep(0.3)
+        if not focus_id(13, ("Up",), 4):
+            return False
+        rpc("Input.Select")
+    else:
+        rpc("Input.Back")
+    if not wait_for(lambda: not cond(f"Window.IsVisible({PICKER})"), 4):
+        return False
+    wait_for(lambda: lab("Container.FolderPath") != before, 6)
+    time.sleep(0.5)
+    return settled()
+
+
+def tick(labels, how="back"):
+    """The genre picker: OK on each label ticks it (or unticks it) and keeps the picker open; then close it."""
+    if not open_picker(GENRE):
+        return False
+    for label in labels:
+        if not to_row(11, label):
+            rpc("Input.Back"); time.sleep(0.5)
+            return False
+        rpc("Input.Select")
+        time.sleep(0.6)
+        if not cond(f"Window.IsVisible({PICKER})"):
+            return False
+    return close_picker(how)
+
+
+def any_genre(m, genres):
+    return any(g in m["genre"] for g in genres)
+
+
+def in_decade(m, label):
+    a, b = decade_years(label)
+    return a <= m["year"] <= b
+
+
+def path_count(path):
+    """How many titles Kodi lists at path, without the window's collections."""
+    return len(rpc("Files.GetDirectory", {"directory": path, "media": "video"}, timeout=120)["result"].get("files") or [])
+
+
 def pick(chip, label):
-    """Open the chip's picker and choose label ("All genres" / "All decades" or a genre or decade); True once the grid
-    has reloaded."""
-    if not press(chip) or not wait_for(lambda: cond(f"Window.IsVisible({PICKER})"), 4):
+    """Open the chip's picker and choose label: a decade, "All decades" or "All genres", each of which closes it; True
+    once the grid has reloaded."""
+    if not open_picker(chip):
         return False
     before = lab("Container.FolderPath")
     if label == "All genres":
         ok = focus_id(10, ("Up",), 40)
     else:
-        lst = 11 if chip == GENRE else 12
-        if not focus_id(lst, ("Down",), 3):
-            return False
-        ok = wait_for(lambda: int(lab(f"Container({lst}).NumItems") or 0) > 0, 5)
-        rpc("Input.ExecuteAction", {"action": "firstpage"})  # the list reopens on the last pick
-        time.sleep(0.4)
-        for _ in range(60):
-            if not ok or lab(f"Container({lst}).ListItem.Label") == label:
-                break
-            rpc("Input.Down"); time.sleep(0.25)
-        ok = ok and lab(f"Container({lst}).ListItem.Label") == label
+        ok = to_row(12, label)
     if not ok:
         rpc("Input.Back"); time.sleep(0.5)
         return False
@@ -479,8 +545,9 @@ def c_genre(r):
         rpc("Input.Back")
         r.ok("Back closes the picker, grid unchanged", wait_for(lambda: not cond(f"Window.IsVisible({PICKER})"), 3)
              and lab("Container.FolderPath") == MOVIES, lab("Container.FolderPath"))
-        r.ok("Comedy picked", pick(GENRE, "Comedy"))
-        r.ok("the grid is the Comedy films", lab("Container.FolderPath").startswith("videodb://movies/genres/"), lab("Container.FolderPath"))
+        r.ok("Comedy ticked", tick(["Comedy"]))
+        r.ok("the grid is the Comedy films", lab("Container.FolderPath").startswith(MOVIES + "?xsp=")
+             and path_count(lab("Container.FolderPath")) == sum("Comedy" in m["genre"] for m in lib.values()), lab("Container.FolderPath"))
         films = listed("movie", lib)
         r.ok("only comedies listed", films and all("Comedy" in f["genre"] for f in films), [f["label"] for f in films if "Comedy" not in f["genre"]][:5])
         r.ok("the chip says Comedy", chip_label(GENRE) == "Comedy", chip_label(GENRE))
@@ -515,7 +582,7 @@ def c_decade(r):
              and wait_for(lambda: lab("Container(12).CurrentItem") == "1" and lab("System.CurrentControlId") == "12", 3),
              (lab("Container(12).CurrentItem"), lab("System.CurrentControlId")))
         rpc("Input.Back"); wait_for(lambda: not cond(f"Window.IsVisible({PICKER})"), 3)
-        r.ok("Drama picked", pick(GENRE, "Drama"))
+        r.ok("Drama ticked", tick(["Drama"]))
         r.ok("the genre picker reopens at the top", press(GENRE) and wait_for(lambda: cond(f"Window.IsVisible({PICKER})"), 4)
              and wait_for(lambda: lab("Container(11).CurrentItem") == "1" and lab("System.CurrentControlId") == "10", 3),
              (lab("Container(11).CurrentItem"), lab("System.CurrentControlId")))
@@ -532,8 +599,8 @@ def c_decade(r):
              [(f["label"], f["year"]) for f in films][:5])
         r.ok("All decades picked", pick(DECADE, "All decades"))
         r.ok("genre kept, decade dropped", (chip_label(GENRE), chip_label(DECADE)) == ("Drama", "Decade")
-             and plain(lab("Container.FolderPath"), lab("Container.FolderPath").split("?")[0])
-             and lab("Container.FolderPath").startswith("videodb://movies/genres/"),
+             and lab("Container.FolderPath").startswith(MOVIES + "?xsp=") and "year" not in lab("Container.FolderPath")
+             and path_count(lab("Container.FolderPath")) == sum("Drama" in m["genre"] for m in lib.values()),
              (chip_label(GENRE), chip_label(DECADE), lab("Container.FolderPath")))
         r.ok("2000s picked", pick(DECADE, "2000s"))
         r.ok("All genres picked", pick(GENRE, "All genres"))
@@ -559,7 +626,7 @@ def c_gd_more(r):
     empty = next(((g, d) for d in DECADES for g in genres
                   if not any(g in m["genre"] and decade_years(d)[0] <= m["year"] <= decade_years(d)[1] for m in lib.values())), None)
     try:
-        r.ok("Comedy picked", pick(GENRE, "Comedy"))
+        r.ok("Comedy ticked", tick(["Comedy"]))
         own = restorable(r)  # Kodi keeps a sort per path: the Comedy grid's own, put back below
         r.ok("Unwatched pressed", press(UNWATCHED))
         films = listed("movie", lib)
@@ -576,7 +643,7 @@ def c_gd_more(r):
             r.skip("every genre has films in every decade")
         else:
             g, d = empty
-            r.ok(f"{g} picked", pick(GENRE, g))
+            r.ok(f"Comedy unticked, {g} ticked", tick(["Comedy", g]))
             r.ok(f"{d} picked", pick(DECADE, d))
             r.ok("grid empty", int(lab("Container.NumItems") or 0) == 0, lab("Container.NumItems"))
             r.ok("message shown", wait_for(lambda: cond("Control.IsVisible(6060)"), 3)
@@ -608,7 +675,7 @@ def c_gd_shows(r):
         if not amp:
             r.skip("no show genre with & in its name")
         else:
-            r.ok(f"{amp[0]} picked", pick(GENRE, amp[0]))
+            r.ok(f"{amp[0]} ticked", tick([amp[0]]))
             shows = listed("tvshow", lib)
             r.ok(f"only {amp[0]} shows", shows and all(amp[0] in m["genre"] for m in shows), [m["label"] for m in shows][:5])
             r.ok("the chip names it", chip_label(GENRE) == amp[0], chip_label(GENRE))
@@ -641,7 +708,7 @@ def c_gd_showpage(r):
             show = next(m for m in lib.values() if g in m["genre"] and ((m["season"] == 1) == (seasons == "one")))
             reset_home()
             open_grid(SHOWS)
-            if not r.ok(f"{g} picked", pick(GENRE, g)):
+            if not r.ok(f"{g} ticked", tick([g])):
                 continue
             r.ok(f"{show['label']} ({seasons} season) focused", goto_dbid(show["tvshowid"]), lab("ListItem.Label"))
             before = lab("Container.FolderPath")
@@ -658,26 +725,152 @@ def c_gd_showpage(r):
         reset_home()
 
 
+@check("gd_multi")
+def c_gd_multi(r):
+    """Several genres: the grid lists the films in any of them, the chip names the first (A to Z) and how many more;
+    OK again unticks one."""
+    lib = library("movie")
+    pair = ["Comedy", "Drama"]
+    if not all(any(g in m["genre"] for m in lib.values()) for g in pair):
+        r.skip("no comedies or no dramas in the library")
+        return
+    s = gd_start(r, MOVIES)
+    if not s:
+        return
+    both = sum(any_genre(m, pair) for m in lib.values())
+    try:
+        r.ok("Genre opens the picker", open_picker(GENRE))
+        for g in pair:
+            r.ok(f"{g} ticked, the picker still open", to_row(11, g) and rpc("Input.Select") is not None
+                 and time.sleep(0.6) is None and cond(f"Window.IsVisible({PICKER})"))
+        shot("filters-genre-multi-picker")
+        r.ok("Done closes and opens them", close_picker("done"))
+        r.ok("the grid: films in either genre", path_count(lab("Container.FolderPath")) == both, (path_count(lab("Container.FolderPath")), both))
+        films = listed("movie", lib)
+        r.ok("each listed film is a comedy or a drama", films and all(any_genre(f, pair) for f in films), [f["label"] for f in films if not any_genre(f, pair)][:5])
+        r.ok("the chip says Comedy +1", chip_label(GENRE) == "Comedy +1", chip_label(GENRE))
+        shot("filters-genre-multi")
+        r.ok("Comedy unticked", tick(["Comedy"]))
+        r.ok("dramas only", path_count(lab("Container.FolderPath")) == sum("Drama" in m["genre"] for m in lib.values()), lab("Container.FolderPath")[:80])
+        r.ok("the chip says Drama", chip_label(GENRE) == "Drama", chip_label(GENRE))
+        r.ok("All genres picked", pick(GENRE, "All genres"))
+        r.ok("back on the plain grid", plain(lab("Container.FolderPath"), MOVIES), lab("Container.FolderPath"))
+    finally:
+        r.ok("sort and filter put back", restore(*s), (s, sort_state(), watch_mode()))
+        reset_home()
+
+
+@check("gd_listed")
+def c_gd_listed(r):
+    """With a decade picked, the genre picker lists only the genres that have films in that decade."""
+    lib = library("movie")
+    every = {g for m in lib.values() for g in m["genre"]}
+    by = {d: {g for m in lib.values() if in_decade(m, d) for g in m["genre"]} for d in DECADES}
+    d = min((d for d in DECADES if by[d] and by[d] != every), key=lambda d: len(by[d]), default=None)
+    if not d:
+        r.skip("every decade has films in every genre")
+        return
+    s = gd_start(r, MOVIES)
+    if not s:
+        return
+    try:
+        r.ok(f"{d} picked", pick(DECADE, d))
+        r.ok("Genre opens the picker", open_picker(GENRE))
+        rows = picker_rows()
+        r.ok(f"only the {len(by[d])} genres with films from the {d} listed", sorted(rows) == sorted(by[d]), (rows, sorted(by[d])))
+        shot("filters-genre-listed")
+        rpc("Input.Back")
+        r.ok("Back without a change: grid unchanged", wait_for(lambda: not cond(f"Window.IsVisible({PICKER})"), 3)
+             and chip_label(DECADE) == d, (chip_label(DECADE), lab("Container.FolderPath")[:80]))
+        r.ok("All decades picked", pick(DECADE, "All decades"))
+        r.ok("back on the plain grid", plain(lab("Container.FolderPath"), MOVIES), lab("Container.FolderPath"))
+    finally:
+        r.ok("sort and filter put back", restore(*s), (s, sort_state(), watch_mode()))
+        reset_home()
+
+
 @check("gd_kids")
 def c_gd_kids(r):
-    """Kids mode: no Genre or Decade chip (Kodi would group a filtered grid into collections, which kids mode never
-    shows); Right from Unwatched goes straight to the sorts."""
+    """Kids mode: Genre and Decade on the kids film and show grids. The genre picker lists only genres with kids
+    titles; what the chips open holds kids titles only, and films without collections (kids grids never show one).
+    Not on a grid outside the kids lists, nor on a filtered grid made in normal mode."""
     if rpc("Player.GetActivePlayers")["result"]:
         r.skip("something is playing on the box; not touching it")
         return
+    lib, shows = library("movie"), library("tvshow")
+    kids_films = {i: m for i, m in lib.items() if KIDS_TAG in m["tag"]}
+    kids_shows = {i: m for i, m in shows.items() if KIDS_TAG in m["tag"]}
+    film_genres = sorted({g for m in kids_films.values() for g in m["genre"]}, key=lambda g: -sum(g in m["genre"] for m in kids_films.values()))
+    if len(film_genres) < 2:
+        r.skip("fewer than two genres among the kids films")
+        return
+    pair = sorted(film_genres[:2])
+    normal_path = None
+    kids_check.kids(False)
+    reset_home()
+    if open_grid(MOVIES) and tick(["Comedy"]):  # a filtered grid from normal mode, for the guard below
+        normal_path = lab("Container.FolderPath")
+        pick(GENRE, "All genres")
     kids_check.kids(True)
     try:
         reset_home()
         if not r.ok("kids films open", open_grid(KIDS + "movies.xsp")):
             return
-        r.ok("chip row shown", cond(f"Control.IsVisible({BAR})"))
-        r.ok("no Genre or Decade chip", not cond(f"Control.IsVisible({GENRE})") and not cond(f"Control.IsVisible({DECADE})"))
-        to_bar()
-        # the kids grids are playlists, so test the guard itself too: the whole-library grids, opened in kids mode
-        for p in (KIDS + "tvshows.xsp", MOVIES, SHOWS):
+        r.ok("Genre and Decade chips shown", cond(f"Control.IsVisible({GENRE})") and cond(f"Control.IsVisible({DECADE})"))
+        r.ok("Genre opens the picker", open_picker(GENRE))
+        rows = picker_rows()
+        want_rows = {g for m in kids_films.values() for g in m["genre"]}
+        r.ok("only genres with kids films listed", sorted(rows) == sorted(want_rows), (rows, sorted(want_rows)))
+        rpc("Input.Back"); wait_for(lambda: not cond(f"Window.IsVisible({PICKER})"), 3)
+        r.ok(f"{' and '.join(pair)} ticked", tick(pair, "done"))
+        path = lab("Container.FolderPath")
+        want = [m for m in kids_films.values() if any_genre(m, pair)]
+        r.ok("the path holds the kids tag", "Cinematheque%20Kids" in path, path[:90])
+        r.ok("Kodi lists the kids films of either genre", path_count(path) == len(want), (path_count(path), len(want)))
+        items = first_items(int(lab("Container.NumItems") or 0))
+        r.ok("no collection in the grid", items and all(t == "movie" for t, _ in items), sorted({t for t, _ in items}))
+        r.ok("kids films of either genre only", all(i in kids_films and any_genre(kids_films[i], pair) for _, i in items),
+             [lib[i]["label"] for _, i in items if i in lib and i not in kids_films][:5])
+        if watch_mode() == "All videos":
+            r.ok("every one of them in the grid", len(items) == len(want), (len(items), len(want)))
+        r.ok(f"the chip says {pair[0]} +1", chip_label(GENRE) == f"{pair[0]} +1", chip_label(GENRE))
+        shot("filters-kids-genres")
+        if rpc("Settings.GetSettingValue", {"setting": "myvideos.selectaction"})["result"]["value"] != 3:
+            r.skip("OK on a film doesn't open its information here; not pressing it")
+        else:
+            rpc("Input.Down"); time.sleep(0.5)
+            film = lab("ListItem.DBID")
+            rpc("Input.Select")
+            r.ok("OK on a film: its detail page", wait_for(lambda: cond("Window.IsVisible(movieinformation)"), 6)
+                 and lab("ListItem.DBID") == film and not rpc("Player.GetActivePlayers")["result"], (film, lab("ListItem.DBID")))
+            rpc("Input.Back"); wait_for(lambda: not cond("Window.IsVisible(movieinformation)"), 4)
+            to_bar()
+        d = next((d for d in DECADES if any(in_decade(m, d) for m in want)), None)
+        if d:
+            r.ok(f"{d} picked", pick(DECADE, d))
+            items = first_items(int(lab("Container.NumItems") or 0))
+            r.ok(f"kids films from the {d} only, no collection", items and all(t == "movie" and i in kids_films and in_decade(kids_films[i], d)
+                 and any_genre(kids_films[i], pair) for t, i in items), [lib.get(i, {}).get("label") for t, i in items][:5])
+            r.ok("the path still holds the kids tag", "Cinematheque%20Kids" in lab("Container.FolderPath"))
+        rpc("Input.Down"); time.sleep(0.5)
+        rpc("Input.Back")
+        r.ok("Back from the filtered grid: Home", wait_for(lambda: lab("System.CurrentWindow") == "Home", 5), lab("System.CurrentWindow"))
+        # shows
+        show_genres = sorted({g for m in kids_shows.values() for g in m["genre"]})
+        reset_home()
+        if r.ok("kids shows open", open_grid(KIDS + "tvshows.xsp")):
+            r.ok("kids shows: Genre and Decade chips shown", cond(f"Control.IsVisible({GENRE})") and cond(f"Control.IsVisible({DECADE})"))
+            if show_genres:
+                g = show_genres[0]
+                r.ok(f"kids shows: {g} ticked", tick([g]))
+                got = [i for t, i in first_items(int(lab("Container.NumItems") or 0))]
+                r.ok(f"kids shows: {g} kids shows only", got and all(i in kids_shows and g in kids_shows[i]["genre"] for i in got),
+                     [shows.get(i, {}).get("label") for i in got][:5])
+        # not outside the kids lists
+        for p in [MOVIES, SHOWS] + ([normal_path] if normal_path else []):
             reset_home()
-            if r.ok(f"kids: {p} opens", open_grid(p)):
-                r.ok(f"kids: {p}: no Genre or Decade chip", not cond(f"Control.IsVisible({GENRE})") and not cond(f"Control.IsVisible({DECADE})"))
+            if r.ok(f"kids: {p[:60]} opens", open_grid(p)):
+                r.ok(f"kids: {p[:60]}: no Genre or Decade chip", not cond(f"Control.IsVisible({GENRE})") and not cond(f"Control.IsVisible({DECADE})"))
         reset_home()
         open_grid(KIDS + "movies.xsp")
         to_bar()
@@ -685,7 +878,7 @@ def c_gd_kids(r):
         rpc("Input.Right"); time.sleep(0.4)
         r.ok("Right from All: Unwatched", lab("System.CurrentControlId") == str(UNWATCHED), lab("System.CurrentControlId"))
         rpc("Input.Right"); time.sleep(0.4)
-        r.ok("Right from Unwatched: Title", lab("System.CurrentControlId") == str(TITLE), lab("System.CurrentControlId"))
+        r.ok("Right from Unwatched: Genre", lab("System.CurrentControlId") == str(GENRE), lab("System.CurrentControlId"))
     finally:
         kids_check.kids(False)
         reset_home()
