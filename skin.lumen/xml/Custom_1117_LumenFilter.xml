@@ -21,6 +21,11 @@
 	<include>Animation_DialogPopupOpenClose</include>
 	<depth>DepthDialog+</depth>
 	<controls>
+		<!-- the genre list again, unseen: which ticked genres list 11 doesn't have (LumenGenreVanishedItems) -->
+		<include content="LumenNextLookup">
+			<param name="id" value="9100" />
+			<param name="path" value="$VAR[LumenGenreSource]" />
+		</include>
 		<control type="group">
 			<centerleft>50%</centerleft>
 			<width>600</width>
@@ -100,7 +105,8 @@
 					</content>
 					<visible>!String.IsEqual(Window(home).Property(lumen.fpick),genre)</visible>
 				</control>
-				<!-- Kodi's genres for films or shows that have titles here (kids tag, decade), A to Z -->
+				<!-- Kodi's genres for films or shows that have titles here (kids tag, decade), A to Z; first, dimmed, a
+				     ticked genre without titles here (a decade picked after it), so it can be unticked -->
 				<control type="list" id="11">
 					<left>40</left>
 					<top>260</top>
@@ -115,8 +121,11 @@
 					<include content="LumenPickerLayouts">
 						<param name="list" value="11" />
 						<param name="selected" value="$EXP[LumenGenreTicked]" />
-						<param name="dim" value="!$EXP[LumenGenreKnown]" />
+						<param name="dim" value="!$EXP[LumenGenreKnown] | String.IsEqual(ListItem.Property(vanished),1)" />
 					</include>
+					<content>
+						<include>LumenGenreVanishedItems</include>
+					</content>
 					<content sortby="label" sortorder="ascending">$VAR[LumenGenreSource]</content>
 					<include>LumenGenrePickActions</include>
 					<visible>String.IsEqual(Window(home).Property(lumen.fpick),genre)</visible>

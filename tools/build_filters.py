@@ -188,6 +188,24 @@ def ticked():
     return " | ".join(f"[{is_genre(n)} + !String.IsEmpty({prop('lumen.fx.' + key(n))})]" for n in GENRES)
 
 
+LOOKUP = 9100  # Custom_1117's hidden copy of the genre list (the picker's own list also holds the rows below)
+LOOKUP_ROWS = 40  # more than the genres a library has
+
+
+def vanished_items():
+    """List 11's first rows: a ticked genre missing from the genre list (a decade picked after it has no title in it),
+    so it can still be unticked. Kodi's list has every other ticked genre, so no genre is listed twice."""
+    I = "\t\t\t"
+    out = []
+    for n in GENRES:
+        listed = " | ".join(f"String.IsEqual(Container({LOOKUP}).ListItemAbsolute({j}).Label,{n})" for j in range(LOOKUP_ROWS))
+        cond = (f"!String.IsEmpty({prop('lumen.fx.' + key(n))}) + Integer.IsGreater(Container({LOOKUP}).NumItems,0)"
+                f" + !Container({LOOKUP}).IsUpdating + ![{listed}]")
+        out += ["\t\t<item>", f"{I}<label>{n}</label>", f'{I}<property name="vanished">1</property>',
+                f"{I}<visible>{cond}</visible>", "\t\t</item>"]
+    return out
+
+
 def chip_label():
     """One genre: its name; several: the first (A to Z) and how many more."""
     L = ['\t<variable name="LumenGenreFirst">']
@@ -210,6 +228,7 @@ def main():
          "\t<include name=\"LumenGenrePickActions\">", *genre_actions(), "\t</include>",
          "\t<include name=\"LumenAllGenresActions\">", *all_genres_actions(), "\t</include>",
          "\t<include name=\"LumenDecadeItems\">", *decade_items(), "\t</include>",
+         "\t<include name=\"LumenGenreVanishedItems\">", *vanished_items(), "\t</include>",
          "\t<include name=\"LumenFilterResetOnload\">", *reset_onload(), "\t</include>",
          "</includes>", ""]
     with open(out, "w") as f:

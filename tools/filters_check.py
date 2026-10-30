@@ -839,6 +839,14 @@ def c_gd_kids(r):
             sets = sum(t == "set" for t, _ in first_items(int(lab("Container.NumItems") or 0)))
             if sets:
                 r.ok(f"control: the same films from movies/titles/ make {sets} collections", True)
+                # if a later Kodi grouped the kids grid too, a collection there must still open on kids films only
+                n = int(lab("Container.NumItems") or 0)
+                v = labs([f"Container.ListItemAbsolute({i}).{f}" for i in range(n) for f in ("DBType", "FolderPath")])
+                set_paths = [v[f"Container.ListItemAbsolute({i}).FolderPath"] for i in range(n) if v[f"Container.ListItemAbsolute({i}).DBType"] == "set"]
+                for sp in set_paths[:3]:
+                    inside = {str(f["id"]) for f in kids_check.dir_items(sp) if f.get("type") == "movie"}
+                    r.ok("control: a collection there opens on kids films only", inside and inside <= set(kids_films),
+                         (sp[:60], sorted(inside - set(kids_films))[:5]))
             else:
                 r.skip("no two of these kids films share a collection: no control for the check above")
         reset_home()
@@ -895,6 +903,83 @@ def c_gd_kids(r):
         r.ok("Right from Unwatched: Genre", lab("System.CurrentControlId") == str(GENRE), lab("System.CurrentControlId"))
     finally:
         kids_check.kids(False)
+        reset_home()
+
+
+@check("gd_vanish")
+def c_gd_vanish(r):
+    """A genre ticked, then a decade without it: the genre stays in the picker, ticked, so it can be unticked (Kodi's
+    genre list for the decade no longer has it)."""
+    lib = library("movie")
+    every = {g for m in lib.values() for g in m["genre"]}
+    by = {d: {g for m in lib.values() if in_decade(m, d) for g in m["genre"]} for d in DECADES}
+    d = min((d for d in DECADES if by[d] and by[d] != every), key=lambda d: len(by[d]), default=None)
+    if not d:
+        r.skip("every decade has films in every genre")
+        return
+    kept = sorted(by[d], key=lambda g: -sum(g in m["genre"] and in_decade(m, d) for m in lib.values()))[0]
+    gone = sorted(every - by[d])[0]
+    s = gd_start(r, MOVIES)
+    if not s:
+        return
+    try:
+        r.ok(f"{kept} and {gone} ticked", tick([kept, gone], "done"))
+        r.ok(f"{d} picked", pick(DECADE, d))
+        r.ok("Genre opens the picker", open_picker(GENRE))
+        rows = picker_rows()
+        r.ok(f"{gone} listed (ticked, no films from the {d}) with the {d}'s genres, once each",
+             sorted(rows) == sorted(by[d] | {gone}), (rows, sorted(by[d] | {gone})))
+        shot("filters-genre-vanished")
+        r.ok(f"{gone} unticked", to_row(11, gone) and rpc("Input.Select") is not None and time.sleep(0.8) is None
+             and cond(f"Window.IsVisible({PICKER})"))
+        r.ok(f"{gone} gone from the list", wait_for(lambda: sorted(picker_rows()) == sorted(by[d]), 6), picker_rows())
+        r.ok("Done closes and opens the rest", close_picker("done"))
+        r.ok(f"the chip says {kept}", chip_label(GENRE) == kept, chip_label(GENRE))
+        want = sum(kept in m["genre"] and in_decade(m, d) for m in lib.values())
+        r.ok(f"the grid: {kept} films from the {d}", path_count(lab("Container.FolderPath")) == want, (path_count(lab("Container.FolderPath")), want))
+        r.ok("All genres picked", pick(GENRE, "All genres"))
+        r.ok("All decades picked", pick(DECADE, "All decades"))
+        r.ok("back on the plain grid", plain(lab("Container.FolderPath"), MOVIES), lab("Container.FolderPath"))
+    finally:
+        r.ok("sort and filter put back", restore(*s), (s, sort_state(), watch_mode()))
+        reset_home()
+
+
+@check("gd_switch")
+def c_gd_switch(r):
+    """Filters picked on the films don't follow to the shows: there the chips start from nothing, the picker lists
+    the shows' genres, and the films are plain again afterwards."""
+    lib, shows = library("movie"), library("tvshow")
+    d = next((d for d in DECADES if any("Comedy" in m["genre"] and in_decade(m, d) for m in lib.values())), None)
+    if not d:
+        r.skip("no comedies in the library")
+        return
+    s = gd_start(r, MOVIES)
+    if not s:
+        return
+    try:
+        r.ok("Comedy ticked", tick(["Comedy"]))
+        r.ok(f"{d} picked", pick(DECADE, d))
+        reset_home()
+        if r.ok("TV shows open", open_grid(SHOWS)):
+            r.ok("shows: the chips start from nothing", (chip_label(GENRE), chip_label(DECADE)) == ("Genre", "Decade"),
+                 (chip_label(GENRE), chip_label(DECADE)))
+            r.ok("shows: the grid is plain", plain(lab("Container.FolderPath"), SHOWS), lab("Container.FolderPath")[:80])
+            r.ok("shows: Genre opens the picker", open_picker(GENRE))
+            want = {g for m in shows.values() for g in m["genre"]}
+            rows = picker_rows()
+            r.ok("shows: the shows' genres listed", sorted(rows) == sorted(want), (len(rows), len(want)))
+            rpc("Input.Back")
+            r.ok("shows: Back without a change, the grid unchanged", wait_for(lambda: not cond(f"Window.IsVisible({PICKER})"), 3)
+                 and plain(lab("Container.FolderPath"), SHOWS) and chip_label(GENRE) == "Genre")
+        reset_home()
+        if r.ok("films open again", open_grid(MOVIES)):
+            r.ok("films: plain, chips from nothing", plain(lab("Container.FolderPath"), MOVIES)
+                 and (chip_label(GENRE), chip_label(DECADE)) == ("Genre", "Decade"), (chip_label(GENRE), chip_label(DECADE)))
+    finally:
+        reset_home()
+        open_grid(MOVIES)
+        r.ok("sort and filter put back", restore(*s), (s, sort_state(), watch_mode()))
         reset_home()
 
 
