@@ -123,17 +123,14 @@
 	<expression name="LumenQuickFilters">[Container.Content(movies) | Container.Content(tvshows)] + [[String.StartsWith(Container.FolderPath,videodb://movies/) + !String.StartsWith(Container.FolderPath,videodb://movies/sets/)] | String.StartsWith(Container.FolderPath,videodb://tvshows/) | String.EndsWith(Container.FolderPath,.xsp)] + !Control.IsVisible(501) + !Control.IsVisible(502)</expression>
 	<!-- Kodi labels the side menu's watched button with the mode; 6219 holds the label for All -->
 	<expression name="LumenWatchAll">String.IsEqual(Control.GetLabel(10),Control.GetLabel(6219))</expression>
-	<!-- Genre and Decade (Custom_1117): a pick opens the grid at a new path and keeps it in lumen.fpath, with what was
-	     picked in lumen.fgenre / fgenrename / fdecade. They apply only while the grid is still at that path, so the
-	     Movies tab opened again shows plain chips. Not in kids mode: Kodi groups a filtered grid into collections -->
+	<!-- Genre and Decade (Custom_1117): closing the picker opens the grid at a new path and keeps it in lumen.fpath,
+	     with what was picked in lumen.fgenres (any of the ticked genres) and lumen.fdecade. They apply only while the
+	     grid is still at that path, so the Movies tab opened again shows plain chips. In kids mode they start from the
+	     kids lists, and a path they open always holds the kids tag (tools/build_filters.py) -->
 	<expression name="LumenFilterActive">!String.IsEmpty(Window(home).Property(lumen.fpath)) + String.IsEqual(Container.FolderPath,Window(home).Property(lumen.fpath))</expression>
-	<expression name="LumenGenreOn">$EXP[LumenFilterActive] + !String.IsEmpty(Window(home).Property(lumen.fgenre))</expression>
+	<expression name="LumenGenreOn">$EXP[LumenFilterActive] + !String.IsEmpty(Window(home).Property(lumen.fgenres))</expression>
 	<expression name="LumenDecadeOn">$EXP[LumenFilterActive] + !String.IsEmpty(Window(home).Property(lumen.fdecade))</expression>
-	<expression name="LumenGenreDecade">!$EXP[LumenKids] + $EXP[LumenQuickFilters] + [String.IsEqual(Container.FolderPath,videodb://movies/titles/) | String.IsEqual(Container.FolderPath,videodb://tvshows/titles/) | $EXP[LumenFilterActive]]</expression>
-	<variable name="LumenGenreChip">
-		<value condition="$EXP[LumenGenreOn]">$INFO[Window(home).Property(lumen.fgenrename)]</value>
-		<value>Genre</value>
-	</variable>
+	<expression name="LumenGenreDecade">$EXP[LumenQuickFilters] + [[!$EXP[LumenKids] + [String.IsEqual(Container.FolderPath,videodb://movies/titles/) | String.IsEqual(Container.FolderPath,videodb://tvshows/titles/) | $EXP[LumenFilterActive]]] | [$EXP[LumenKids] + [String.IsEqual(Container.FolderPath,special://skin/playlists/kids/movies.xsp) | String.IsEqual(Container.FolderPath,special://skin/playlists/kids/tvshows.xsp) | [$EXP[LumenFilterActive] + String.Contains(Window(home).Property(lumen.fpath),Cinematheque%20Kids)]]]]</expression>
 	<variable name="LumenDecadeChip">
 		<value condition="$EXP[LumenDecadeOn]">$INFO[Window(home).Property(lumen.fdecade)]</value>
 		<value>Decade</value>
@@ -141,10 +138,6 @@
 	<variable name="LumenPickerTitle">
 		<value condition="String.IsEqual(Window(home).Property(lumen.fpick),genre)">Genre</value>
 		<value>Decade</value>
-	</variable>
-	<variable name="LumenGenreSource">
-		<value condition="Container.Content(tvshows)">videodb://tvshows/genres/</value>
-		<value>videodb://movies/genres/</value>
 	</variable>
 	<!-- an empty grid that a watched filter emptied (the chip's Unwatched, or the side menu's Watched mode): say so,
 	     and keep focus off Kodi's ".." item (as in kids mode). Kodi keeps the filter per device, kids grids included -->
@@ -219,8 +212,10 @@
 			</include>
 		</definition>
 	</include>
-	<!-- the Genre / Decade picker's rows (Custom_1117): a pill, white while focused, a tick on what applies -->
+	<!-- the Genre / Decade picker's rows (Custom_1117): a pill, white while focused, a tick on what applies; dim: a
+	     row OK does nothing on -->
 	<include name="LumenPickerLayouts">
+		<param name="dim">false</param>
 		<definition>
 			<itemlayout width="520" height="82">
 				<control type="image">
@@ -236,6 +231,7 @@
 					<font>lm_label_bold</font>
 					<textcolor>text</textcolor>
 					<label>$INFO[ListItem.Label]</label>
+					<animation effect="fade" start="100" end="40" time="0" condition="$PARAM[dim]">Conditional</animation>
 				</control>
 				<control type="image">
 					<left>460</left>
@@ -267,6 +263,7 @@
 					<font>lm_label_bold</font>
 					<textcolor>text</textcolor>
 					<label>$INFO[ListItem.Label]</label>
+					<animation effect="fade" start="100" end="40" time="0" condition="$PARAM[dim]">Conditional</animation>
 					<visible>!Control.HasFocus($PARAM[list])</visible>
 				</control>
 				<control type="label">
@@ -277,6 +274,7 @@
 					<font>lm_label_bold</font>
 					<textcolor>focus_text</textcolor>
 					<label>$INFO[ListItem.Label]</label>
+					<animation effect="fade" start="100" end="40" time="0" condition="$PARAM[dim]">Conditional</animation>
 					<visible>Control.HasFocus($PARAM[list])</visible>
 				</control>
 				<control type="image">
