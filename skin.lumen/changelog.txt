@@ -1,3 +1,7 @@
+[B]0.8.0[/B]
+• Genre: tick several genres at once; the grid lists the titles in any of them, and the chip names the first and how many more ("Comedy +1"). OK ticks or unticks, Done or Back closes. The list holds only the genres that have titles (in the chosen decade, or for kids).
+• Kids mode gets Genre and Decade too, on the kids film and show grids. What they open keeps to kids titles, and films are listed without collections.
+
 [B]0.7.0[/B]
 • Quick filters: Genre and Decade chips beside All and Unwatched on the Movies and TV Shows grids. Each opens a short list (Kodi's genres; 2020s back to 1950s and "Before 1950"); the chip then names the pick, the two combine, and Back still goes to Home. A pick with nothing in it says "Nothing matches these filters." Not in kids mode.
 • Age rating: the info line on the detail page, the library and Home shows the title's rating as a badge: US ratings without "Rated " (PG-13, R, TV-MA…), others as written (FSK 12); none for "NR" or no rating.
