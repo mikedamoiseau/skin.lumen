@@ -232,9 +232,13 @@ Live TV is off in kids mode, since nothing filters channels for children: the
 TV and radio windows send back to Home, and a channel, radio station or
 recording started while it's on (from a phone app, say) stops.
 
-Kids mode needs Kodi's "Show parent folder items" off (the default in the table
-above): a ".." item would lead from the kids lists into the whole library, so
-the kids button refuses with a message while it's on.
+Kids mode needs Kodi's "Show parent folder items" off (Kodi's own default is on;
+the table above turns it off): a ".." item would lead from the kids lists into
+the whole library, so the kids button refuses with a message while it's on.
+
+With Kodi's "Default select action" set to **Choose**, OK does nothing in the
+kids grids, because the menu it opens is closed in kids mode. Use **Show
+information** (the table above) or **Play**.
 
 Forgot the PIN? Read it from a computer on the same network over JSON-RPC:
 
@@ -259,6 +263,8 @@ kids mode. Other apps can tell whether a device is in kids mode by reading
   out. Anyone on the home network can read the PIN.
 - The kids PIN screen asks for 4 digits, but Kodi can't check a PIN's length, so
   any number is accepted.
+- Kids mode lists only titles tagged `Cinematheque Kids`. With none tagged, Home
+  says so and the kids grids and rows stay empty.
 - Search matches the start of a word ("man" finds "Iron Man", not "Spider-Man") and
   can't use "&", because Kodi splits its search URL there.
 - The actor page lists nothing for a name with "&" or "/" in it: Kodi splits its

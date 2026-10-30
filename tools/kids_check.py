@@ -352,8 +352,9 @@ def c_tabs_grouping(r):
         rpc("GUI.ActivateWindow", {"window": "videos", "parameters": [KIDS + "movies.xsp", "return"]})
         r.ok("kids films listed", wait_listing(KIDS + "movies.xsp"))
         items = list_items(None, ["DBID", "DBType"])
-        r.ok("grouping on: still single tagged films, no collections",
-             len(items) == len(movies) and not any(i["DBType"] == "set" for i in items), f"{len(items)} items vs {len(movies)}")
+        got = {int(i["DBID"]) for i in items if i["DBID"] and i["DBType"] == "movie"}
+        r.ok("grouping on: every tagged film, one by one, and nothing else",
+             got == movies and len(items) == len(movies) and not any(i["DBType"] == "set" for i in items), f"{len(items)} items vs {len(movies)}")
     finally:
         rpc("Settings.SetSettingValue", {"setting": "videolibrary.groupmoviesets", "value": old})
         kids(False)
@@ -379,6 +380,41 @@ def c_tabs_parentdir(r):
     finally:
         rpc("Settings.SetSettingValue", {"setting": "filelists.showparentdiritems", "value": old})
         set_skin("lumen.pin", "")
+
+
+@check("parentdir_key")
+def c_parentdir_key(r):
+    """A Harmony remote's Prev sends ParentDir (customcontroller.Harmony.xml). Kids grids open with "return", so Kodi
+    keeps no parent history (GUIMediaWindow): ParentDir lands on Home, never on the library above."""
+    kids(True)
+    xsp = {"rules": {"and": [{"field": "tag", "operator": "is", "value": [TAG]}]}, "type": "movies"}
+    genre_grid = "videodb://movies/videoversions/0/?xsp=" + urllib.parse.quote(json.dumps(xsp, separators=(",", ":")), safe="")
+    for label, params in (("kids films", [KIDS + "movies.xsp", "return"]), ("kids shows", [KIDS + "tvshows.xsp", "return"]),
+                          ("a kids Genre/Decade grid", [genre_grid, "return", "replace"])):
+        reset_home()
+        rpc("GUI.ActivateWindow", {"window": "videos", "parameters": params})
+        if not r.ok(f"{label} listed", wait_for(lambda: cond("Window.IsActive(videos)") and not cond("Container.IsUpdating")
+                                                 and int(lab("Container.NumItems") or 0) > 0, 30)):
+            continue
+        rpc("Input.ExecuteAction", {"action": "parentdir"})
+        r.ok(f"{label}: ParentDir goes Home", wait_for(lambda: lab("System.CurrentWindow") == "Home", 5),
+             f"{lab('System.CurrentWindow')} {lab('Container.FolderPath')[:60]}")
+    kids(False)
+    reset_home()
+
+
+@check("discover_random")
+def c_discover_random(r):
+    """Kids Discover shows 25 random kids films, in random order (a grouped smart playlist would come A to Z)."""
+    import re
+    key = lambda t: re.sub(r"^(the|a|an) ", "", t.lower())
+    kids(True)
+    reset_home()
+    r.ok("kids Discover loads", wait_for(lambda: int(lab("Container(5015).NumItems") or 0) >= 10 and not cond("Container(5015).IsUpdating"), 30))
+    labels = [i["Label"] for i in list_items(5015, ["Label"])]
+    r.ok("kids Discover isn't A to Z", labels != sorted(labels, key=key), labels[:5])
+    kids(False)
+    reset_home()
 
 
 def settings_button(bid):
@@ -561,29 +597,37 @@ def c_nav(r):
 
 @check("info")
 def c_info(r):
-    pool = rpc("VideoLibrary.GetMovies", {"filter": _tag_filter(TAG), "properties": ["trailer", "cast"]}, timeout=60)["result"]["movies"]
+    pool = rpc("VideoLibrary.GetMovies", {"filter": _tag_filter(TAG), "properties": ["trailer", "cast", "setid"]}, timeout=60)["result"]["movies"]
     cands = {m["movieid"] for m in pool if m["trailer"] and m["cast"]}
     if not cands:
         r.skip("no tagged film with both a trailer and cast")
         return
+    in_set = {m["movieid"] for m in pool if m.get("setid")} & cands
     kids(True)
     r.ok("kids films listed", open_listing(KIDS + "movies.xsp"))
     order = [int(i["DBID"]) for i in list_items(None, ["DBID"])]
-    dbid = min(cands, key=order.index)
+    dbid = min(in_set or cands, key=order.index)  # one in a collection shows the collection button too
     r.ok(f"focus film {dbid}", goto_dbid(dbid))
-    for on in (True, False):
+    hidden = {11: "trailer", 14: "versions", 15: "extras", 443: "collection", 10: "art", 6: "refresh", 6050: "cast"}
+    seen = {}
+    for on in (False, True):  # normal first: kids mode must hide what normal mode shows on this film
         kids(on)
         rpc("Input.Info")
         r.ok(f"kids={on}: detail page opens", wait_for(lambda: cond("Window.IsVisible(movieinformation)"), 8))
         time.sleep(2)
-        if on:
-            vis = conds([f"Control.IsVisible({c})" for c in (8, 11, 14, 15, 443, 10, 6, 6050)])
-            r.ok("kids: Play stays", vis["Control.IsVisible(8)"])
-            r.ok("kids: trailer, versions, extras, collection, art, refresh, cast hidden",
-                 not any(v for k, v in vis.items() if k != "Control.IsVisible(8)"), [k for k, v in vis.items() if v])
+        if not on:
+            wait_for(lambda: cond("Control.IsVisible(6050)"), 8)
+            vis = conds([f"Control.IsVisible({c})" for c in hidden])
+            seen = {c: name for c, name in hidden.items() if vis[f"Control.IsVisible({c})"]}
+            r.ok("normal: trailer and cast row shown", 11 in seen and 6050 in seen, sorted(seen.values()))
+            missing = sorted(set(hidden.values()) - set(seen.values()))
+            if missing:
+                r.skip(f"this film has no {', '.join(missing)} button even in normal mode: not checked in kids mode")
         else:
-            r.ok("normal: trailer shown", cond("Control.IsVisible(11)"))
-            r.ok("normal: cast row shown", wait_for(lambda: cond("Control.IsVisible(6050)"), 8))
+            vis = conds([f"Control.IsVisible({c})" for c in [8] + list(seen)])
+            r.ok("kids: Play stays", vis["Control.IsVisible(8)"])
+            r.ok(f"kids: {', '.join(seen.values())} hidden", not any(vis[f"Control.IsVisible({c})"] for c in seen),
+                 [seen[c] for c in seen if vis[f"Control.IsVisible({c})"]])
         rpc("Input.Back")
         wait_for(lambda: not cond("Window.IsVisible(movieinformation)"), 5)
     reset_home()
@@ -901,8 +945,19 @@ BLOCKED = ["settings", "systemsettings", "skinsettings", "addonbrowser", "filema
 
 @check("blocked")
 def c_blocked(r):
-    kids(True)
+    # each window must open in normal mode, or kids mode "sending it back" would prove nothing
+    kids(False)
+    opens = []
     for w in BLOCKED:
+        reset_home()
+        rpc("GUI.ActivateWindow", {"window": w})
+        if wait_for(lambda: cond(f"Window.IsActive({w})"), 4):
+            opens.append(w)
+        else:
+            r.skip(f"{w} doesn't open on this box in normal mode: nothing to block")
+    r.ok("most blocked windows open in normal mode", len(opens) >= len(BLOCKED) - 2, f"{len(opens)}/{len(BLOCKED)}")
+    kids(True)
+    for w in opens:
         reset_home()
         rpc("GUI.ActivateWindow", {"window": w})
         time.sleep(0.5)
