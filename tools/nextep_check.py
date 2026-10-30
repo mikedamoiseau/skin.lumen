@@ -121,6 +121,7 @@ def touch(*eids):
 
 
 def restore(r, *eids):
+    eids = list(eids) + [eid for eid, b in BEFORE.items() if eid not in eids and state(eid) != b]
     for eid in eids:
         b = BEFORE[eid]
         rpc("VideoLibrary.SetEpisodeDetails", {"episodeid": eid, "playcount": b["playcount"], "lastplayed": b["lastplayed"],
@@ -136,8 +137,11 @@ def remaining():
 
 
 def play_near_end(eid, secs_left):
-    """Start episode eid from the beginning (no resume) and jump to secs_left before its end; True once playing there."""
-    touch(eid)
+    """Start episode eid from the beginning (no resume) and jump to secs_left before its end; True once playing there.
+    Its next episode is recorded too, so one started by mistake is put back as well."""
+    e = rpc("VideoLibrary.GetEpisodeDetails", {"episodeid": eid, "properties": ["tvshowid", "season", "episode"]})["result"]["episodedetails"]
+    n = next_main(episodes(e["tvshowid"]), e)
+    touch(eid, *([n["episodeid"]] if n else []))
     t0 = time.time()
     rpc("Player.Open", {"item": {"episodeid": eid}, "options": {"resume": False}})
     if not event("Player.OnAVStart", t0, 40):
@@ -356,15 +360,72 @@ def c_seek_back(r):
     try:
         r.ok("episode plays 8 s before its end", play_near_end(e["episodeid"], 8))
         r.ok("card shows", wait_for(lambda: cond(f"Window.IsVisible({CARD})"), 3))
-        armed = wait_for(lambda: 0 < remaining() <= 2, 10, 0.1)
+        armed = wait_for(lambda: cond("Skin.TimerIsRunning(lumennextplay)"), 10, 0.1)
         rpc("Player.Seek", {"playerid": 1, "value": {"seconds": -30}})
-        if not r.ok("caught the last 2 seconds and seeked back", armed and wait_for(lambda: remaining() > 20, 5), remaining()):
+        if not r.ok("armed in the last seconds, then seeked back", armed and wait_for(lambda: remaining() > 20, 5), remaining()):
             return
         time.sleep(2)
         t = time.time()
         rpc("Input.ExecuteAction", {"action": "stop"})
         d = ended(t, 10)
         r.ok("stopped by hand (end = false)", d is not None and not d.get("end"), d)
+        nothing_plays(r, t)
+    finally:
+        stop_all()
+        restore(r, e["episodeid"])
+
+
+@check("kids_flip")
+def c_kids_flip(r):
+    """Kids mode switched on from outside (the phone app) while another show plays: its next episode never comes,
+    whether the card had found it before (lumen.next.* made in normal mode) or the episode was already in its last
+    seconds (armed)."""
+    e, n, _ = first_pair()
+    if not e:
+        return r.skip("no unstarted show with two episodes")
+    try:
+        r.ok("episode plays 45 s before its end", play_near_end(e["episodeid"], 45))
+        r.ok("its next episode found in normal mode", wait_for(lambda: lab("Window(home).Property(lumen.next.for)") == str(e["episodeid"]), 5))
+        set_skin("cinemathequekids", True)
+        r.ok("kids mode on: what was found goes", wait_for(lambda: lab("Window(home).Property(lumen.next.for)") == "", 4),
+             lab("Window(home).Property(lumen.next.for)"))
+        r.ok("no card in kids mode", not card_at(25))
+        t = time.time()
+        d = ended(t, 40)
+        r.ok("episode ends by itself", bool(d and d.get("end")), d)
+        nothing_plays(r, t)
+        set_skin("cinemathequekids", False)
+        r.ok("again 9 s before its end, kids mode off", play_near_end(e["episodeid"], 9))
+        armed = wait_for(lambda: cond("Skin.TimerIsRunning(lumennextplay)"), 12, 0.1)
+        set_skin("cinemathequekids", True)
+        r.ok("armed when kids mode came on", armed)
+        t = time.time()
+        d = ended(t, 15)
+        r.ok("episode ends by itself", bool(d and d.get("end")), d)
+        nothing_plays(r, t)
+    finally:
+        stop_all()
+        set_skin("cinemathequekids", False)
+        restore(r, e["episodeid"])
+
+
+@check("previous_menu")
+def c_previous_menu(r):
+    """Esc on a keyboard, or a remote's Back that sends it (Kodi's PreviousMenu, not Back): the card goes for good
+    and nothing starts, as with Back."""
+    e, n, _ = first_pair()
+    if not e:
+        return r.skip("no unstarted show with two episodes")
+    try:
+        r.ok("episode plays 30 s before its end", play_near_end(e["episodeid"], 30))
+        r.ok("card shows", card_at(29))
+        rpc("Input.ExecuteAction", {"action": "previousmenu"})
+        r.ok("PreviousMenu hides the card", wait_for(lambda: not cond(f"Window.IsVisible({CARD})"), 3))
+        time.sleep(3)
+        r.ok("card stays hidden", not cond(f"Window.IsVisible({CARD})"))
+        t = time.time()
+        d = ended(t, 40)
+        r.ok("episode ends by itself", bool(d and d.get("end")), d)
         nothing_plays(r, t)
     finally:
         stop_all()
@@ -465,9 +526,14 @@ def c_kids(r):
     e, _, _ = first_pair()
     if not k or not e:
         return r.skip("no unstarted kids show with two episodes, or no unstarted show")
+    was = (cond(f"Skin.HasSetting({HOLD})"), lab(f"Skin.String({HOLD_LABEL})"))
     try:
         set_skin("cinemathequekids", True)
-        r.ok("kids episode plays 35 s before its end", play_near_end(k["episodeid"], 35))
+        r.ok("kids episode plays 40 s before its end", play_near_end(k["episodeid"], 40))
+        time.sleep(5)  # the app sends its values on every OnPlay (in kids mode past bedtime: hold); ours go after it
+        if cond(f"Skin.HasSetting({HOLD})"):  # check "hold" covers what the hold does
+            print(f"INFO kids: the app holds the next step (bedtime); set off for this check, put back after", flush=True)
+            set_skin(HOLD, False)
         r.ok("card shows for a kids show", card_at(29))
         r.ok("card names its next episode", lab(f"Control.GetLabel({LINE})") == line(kn), (lab(f"Control.GetLabel({LINE})"), line(kn)))
         stop_all()
@@ -477,6 +543,8 @@ def c_kids(r):
     finally:
         stop_all()
         set_skin("cinemathequekids", False)
+        set_skin(HOLD, was[0])
+        set_skin(HOLD_LABEL, was[1])
         restore(r, k["episodeid"], e["episodeid"])
 
 

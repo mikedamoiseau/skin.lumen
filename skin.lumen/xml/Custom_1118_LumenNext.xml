@@ -9,6 +9,10 @@
 <window type="dialog" id="1118" modality="modal">
 	<visible>Window.IsActive(fullscreenvideo) + VideoPlayer.Content(episodes) + Integer.IsGreater(Player.Progress,50) + [[String.IsEmpty(Skin.String(lumen.nextcard)) + Integer.IsLessOrEqual(Player.TimeRemaining(secs),30)] | [String.IsEqual(Skin.String(lumen.nextcard),60) + Integer.IsLessOrEqual(Player.TimeRemaining(secs),60)] | [String.IsEqual(Skin.String(lumen.nextcard),90) + Integer.IsLessOrEqual(Player.TimeRemaining(secs),90)]] + !Skin.HasSetting(cinemathequeholdnext) + String.IsEqual(Window(home).Property(lumen.next.for),VideoPlayer.DBID) + String.IsEqual(Window(home).Property(lumen.next.show),VideoPlayer.TvShowDBID) + [[Skin.HasSetting(CinemathequeKids) + String.IsEqual(Window(home).Property(lumen.next.kids),1)] | [!Skin.HasSetting(CinemathequeKids) + String.IsEmpty(Window(home).Property(lumen.next.kids))]] + !String.IsEqual(Window(home).Property(lumen.next.cancel),VideoPlayer.DBID) + ![!String.IsEmpty(Playlist.Position(video)) + Integer.IsGreater(Playlist.Length(video),Playlist.Position(video))] + [!System.HasActiveModalDialog | Window.IsVisible(1118)]</visible>
 	<defaultcontrol always="true">110</defaultcontrol>
+	<!-- closed while it should still show: Esc on a keyboard, or a remote's Back sent as Esc (Kodi's PreviousMenu,
+	     which closes the dialog without reaching the buttons' onback): cancel, as Back does. The card has no closing
+	     animation on purpose: during one, its visible condition opens it again before it unloads (GUIDialog.cpp) -->
+	<onunload condition="Window.IsActive(fullscreenvideo) + VideoPlayer.Content(episodes) + Integer.IsGreater(Player.Progress,50) + [[String.IsEmpty(Skin.String(lumen.nextcard)) + Integer.IsLessOrEqual(Player.TimeRemaining(secs),30)] | [String.IsEqual(Skin.String(lumen.nextcard),60) + Integer.IsLessOrEqual(Player.TimeRemaining(secs),60)] | [String.IsEqual(Skin.String(lumen.nextcard),90) + Integer.IsLessOrEqual(Player.TimeRemaining(secs),90)]] + !Skin.HasSetting(cinemathequeholdnext) + String.IsEqual(Window(home).Property(lumen.next.for),VideoPlayer.DBID) + String.IsEqual(Window(home).Property(lumen.next.show),VideoPlayer.TvShowDBID) + [[Skin.HasSetting(CinemathequeKids) + String.IsEqual(Window(home).Property(lumen.next.kids),1)] | [!Skin.HasSetting(CinemathequeKids) + String.IsEmpty(Window(home).Property(lumen.next.kids))]] + !String.IsEqual(Window(home).Property(lumen.next.cancel),VideoPlayer.DBID) + ![!String.IsEmpty(Playlist.Position(video)) + Integer.IsGreater(Playlist.Length(video),Playlist.Position(video))]">SetProperty(lumen.next.cancel,$INFO[VideoPlayer.DBID],home)</onunload>
 	<depth>DepthOSD</depth>
 	<controls>
 		<control type="group">
@@ -18,7 +22,6 @@
 			<height>268</height>
 			<animation effect="slide" start="120,0" end="0,0" time="320" tween="cubic" easing="out">WindowOpen</animation>
 			<animation effect="fade" start="0" end="100" time="320">WindowOpen</animation>
-			<animation effect="fade" start="100" end="0" time="200">WindowClose</animation>
 			<control type="image">
 				<width>660</width>
 				<height>268</height>

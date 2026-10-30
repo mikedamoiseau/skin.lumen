@@ -116,6 +116,7 @@
         <onstart>SetProperty(lumen.next.episode,$INFO[Container(9300).ListItem.Episode],home)</onstart>
         <onstart>SetProperty(lumen.next.title,$ESCINFO[Container(9300).ListItem.Title],home)</onstart>
         <onstart>SetProperty(lumen.next.thumb,$ESCINFO[Container(9300).ListItem.Art(thumb)],home)</onstart>
+        <onstart>SetProperty(lumen.next.id,$INFO[Container(9300).ListItem.DBID],home)</onstart>
         <onstart condition="Skin.HasSetting(CinemathequeKids)">SetProperty(lumen.next.kids,1,home)</onstart>
         <onstart condition="!Skin.HasSetting(CinemathequeKids)">ClearProperty(lumen.next.kids,home)</onstart>
         <onstart>SetProperty(lumen.next.show,$INFO[VideoPlayer.TvShowDBID],home)</onstart>
@@ -123,11 +124,19 @@
         <stop>!Window.IsActive(fullscreenvideo) | [String.IsEqual(Window(home).Property(lumen.next.for),VideoPlayer.DBID) + String.IsEqual(Window(home).Property(lumen.next.show),VideoPlayer.TvShowDBID) + ![[Skin.HasSetting(CinemathequeKids) + String.IsEmpty(Window(home).Property(lumen.next.kids))] | [!Skin.HasSetting(CinemathequeKids) + !String.IsEmpty(Window(home).Property(lumen.next.kids))]]]</stop>
     </timer>
     <timer>
+        <name>lumennextcheck</name>
+        <description>The lookup list no longer holds what lumennextfind copied (kids mode switched on from outside: the list reloads to nothing; or it changed while a copy was being made): drop the copy, so the card goes and lumennextfind can copy again. Only with no modal dialog up, as Container(id) would then read the dialog</description>
+        <start reset="true">Window.IsActive(fullscreenvideo) + !System.HasActiveModalDialog + !Container(9300).IsUpdating + !String.IsEmpty(Window(home).Property(lumen.next.for)) + [Integer.IsEqual(Container(9300).NumItems,0) | !String.IsEqual(Container(9300).ListItem.DBID,Window(home).Property(lumen.next.id))]</start>
+        <onstart>ClearProperty(lumen.next.for,home)</onstart>
+        <onstart>ClearProperty(lumen.next.show,home)</onstart>
+        <stop>String.IsEmpty(Window(home).Property(lumen.next.for))</stop>
+    </timer>
+    <timer>
         <name>lumennextplay</name>
-        <description>The next episode card is up and the episode is in its last 2 seconds (or Play now, which jumps to the end, started this timer): once the player has stopped, have lumennextgo start the next episode. A stop before that, Cancel, seeking back, another video, or the Cinémathèque app holding the next step (cinemathequeholdnext) starts nothing</description>
+        <description>The next episode card is up and the episode is in its last 2 seconds (or Play now, which jumps to the end, started this timer): once the player has stopped, have lumennextgo start the next episode. A stop before that, Cancel, seeking back, another video, or the Cinémathèque app holding the next step (cinemathequeholdnext) starts nothing, nor kids mode switched on since the next episode was found</description>
         <start reset="true">Window.IsVisible(1118) + Player.Playing + Integer.IsLessOrEqual(Player.TimeRemaining(secs),2)</start>
         <stop>!Player.HasMedia | String.IsEqual(Window(home).Property(lumen.next.cancel),VideoPlayer.DBID) | [Integer.IsGreater(Player.TimeRemaining(secs),4) + !String.IsEqual(Window(home).Property(lumen.next.now),VideoPlayer.DBID)]</stop>
-        <onstop condition="!Player.HasMedia + !Skin.HasSetting(cinemathequeholdnext) + !String.IsEmpty(Window(home).Property(lumen.next.path))">SetProperty(lumen.next.go,1,home)</onstop>
+        <onstop condition="!Player.HasMedia + !Skin.HasSetting(cinemathequeholdnext) + !String.IsEmpty(Window(home).Property(lumen.next.path)) + [!Skin.HasSetting(CinemathequeKids) | String.IsEqual(Window(home).Property(lumen.next.kids),1)]">SetProperty(lumen.next.go,1,home)</onstop>
         <onstop>ClearProperty(lumen.next.now,home)</onstop>
     </timer>
     <timer>
@@ -135,7 +144,7 @@
         <description>The episode with the card ended by itself: a second later, start the next one, from Kodi's resume point if it has one. Not at once: Kodi announces the end (Player.OnStop with end = true, which the Cinémathèque app's chain rule needs) only once its GUI thread gets to it, and a new file started before that drops the announcement (Application.cpp, PlayFile). Nothing if something else has started meanwhile, or the app now holds the next step</description>
         <start reset="true">!String.IsEmpty(Window(home).Property(lumen.next.go))</start>
         <stop>Player.HasMedia | Integer.IsGreaterOrEqual(Skin.TimerElapsedSecs(lumennextgo),1)</stop>
-        <onstop condition="!Player.HasMedia + !Skin.HasSetting(cinemathequeholdnext)">PlayMedia($INFO[Window(home).Property(lumen.next.path)],resume)</onstop>
+        <onstop condition="!Player.HasMedia + !Skin.HasSetting(cinemathequeholdnext) + [!Skin.HasSetting(CinemathequeKids) | String.IsEqual(Window(home).Property(lumen.next.kids),1)]">PlayMedia($INFO[Window(home).Property(lumen.next.path)],resume)</onstop>
         <onstop>ClearProperty(lumen.next.go,home)</onstop>
     </timer>
     <timer>
