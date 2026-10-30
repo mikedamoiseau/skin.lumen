@@ -1,3 +1,8 @@
+[B]0.9.0[/B]
+• Search: every word you type must start a word of the title, in any order ("stitch lilo" finds Lilo & Stitch), also after - or ' ("man" finds Spider-Man). Text with "&", "+" or "%" works. While typing, results come after a one-second pause instead of at every key. Kids mode's search hint no longer mentions actors.
+• Kids mode: the Discover row is in random order again (it came A to Z).
+• Genre: a ticked genre that the picked decade has no titles in stays in the list, dimmed, so it can be unticked.
+
 [B]0.8.0[/B]
 • Genre: tick several genres at once; the grid lists the titles in any of them, and the chip names the first and how many more ("Comedy +1"). OK ticks or unticks, Done or Back closes. The list holds only the genres that have titles (in the chosen decade, or for kids).
 • Kids mode gets Genre and Decade too, on the kids film and show grids. What they open keeps to kids titles, and films are listed without collections.

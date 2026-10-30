@@ -36,8 +36,10 @@ hardware (see [Performance](#performance)).
   power icon at the end of the tab bar opens Kodi's power menu (Exit, Power off,
   Reboot, depending on the device).
 - **Search**: the Search tab opens the keyboard over a Lumen search page. Movies
-  and shows whose title matches appear while you type; confirming shows full
-  rows for movies, TV shows (also by cast) and a cast & crew row.
+  and shows whose title matches appear when you pause typing; confirming shows
+  full rows for movies, TV shows (also by cast) and a cast & crew row. Every word
+  you type must start a word of the title or original title, in any order
+  ("stitch lilo" finds Lilo & Stitch; "man" finds Spider-Man and Iron Man).
 - **Library views**: Posters (movies, shows, collections), Showcase (seasons,
   movies in a collection), Episodes (landscape thumbnails), Landscape grid and a
   List view with preview.
@@ -166,6 +168,7 @@ skin.lumen/                  the skin; this folder is what gets installed
                              film, the Genre / Decade picker
   playlists/lumen_*.xsp      smart playlists behind the Discover and Top Rated rows
   playlists/kids/            kids mode's lists: only titles tagged "Cinematheque Kids"
+  scripts/lumen_search.py    builds the search page's paths (Timers.xml runs it): the skin can't encode "&", "+" or "%"
 tools/
   gen_textures.py            draws every Lumen texture, the Estuary texture overrides, icon and fanart
   build_home.py              Home rows (the ROWS list), their settings switches and the row-docking animations
@@ -184,6 +187,8 @@ tools/
                              grid, kids mode
   rating_check.py NAME|all   age rating badge: every rating in the library has its badge; detail page screenshots
   homerows_check.py NAME|all Home rows checks on a box: switching rows off, adding, renaming and removing one
+  search_check.py NAME|all   search checks on a box: "&", word order, word starts, odd characters, the pause while
+                             typing, kids mode
   search_regress.py Q...     types each query into Search and prints the rows' counts
   shownext_regress.py        the show page's Play button against the next-episode rule
   mibox_install.sh           builds the working tree and installs it on an Android TV box
@@ -265,8 +270,10 @@ kids mode. Other apps can tell whether a device is in kids mode by reading
   any number is accepted.
 - Kids mode lists only titles tagged `Cinematheque Kids`. With none tagged, Home
   says so and the kids grids and rows stay empty.
-- Search matches the start of a word ("man" finds "Iron Man", not "Spider-Man") and
-  can't use "&", because Kodi splits its search URL there.
+- Search matches words from their start ("man" finds "Spider-Man", not "Batman").
+  It runs a small Python script inside the skin, as a skin can't build a search
+  path for text with "&", "+" or "%". Results wait for a one-second pause in
+  typing: Kodi's skin timers count whole seconds.
 - The actor page lists nothing for a name with "&" or "/" in it: Kodi splits its
   library paths there. Search's cast & crew row lists films, not people: Kodi 21
   can't look people up by name for a skin.
@@ -282,8 +289,9 @@ kids mode. Other apps can tell whether a device is in kids mode by reading
   and the other way round.
 - Genre knows TMDB's English genre names (what Kodi's scrapers write); a genre
   with another name is listed dimmed and can't be ticked. A decade picked after a
-  genre can give an empty grid ("Nothing matches these filters."). Each filtered
-  grid keeps its own sort.
+  genre can give an empty grid ("Nothing matches these filters."); a ticked genre
+  with no titles in that decade is then listed first, dimmed, so it can be
+  unticked. Each filtered grid keeps its own sort.
 - In kids mode, Genre and Decade open the films through Kodi's list for video
   versions, the one film list Kodi doesn't group into collections (kids grids
   never show collections). That list also holds a film's extra versions, so a
