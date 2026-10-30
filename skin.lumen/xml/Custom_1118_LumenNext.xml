@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Next episode card: in an episode's last 30 seconds (Configure skin: 60, 90 or off), the show's next episode,
+     which Timers.xml (lumennextplay) starts once this one has ended by itself. Play now jumps to the end, so Kodi
+     ends the episode itself (end = true for the phone app); Cancel or Back hides the card and nothing starts.
+     Not while the Cinémathèque app holds the next step (cinemathequeholdnext): Custom_1119_LumenNextInfo.xml shows
+     its next item instead. Not when Kodi's own playlist goes on to another item.
+     Modal, so the remote reaches Play now and Cancel (a dialog with a visible condition is modeless otherwise, and
+     modeless dialogs get no input). It reads only Home window properties (lumen.next.*, see lumennextfind). -->
+<window type="dialog" id="1118" modality="modal">
+	<visible>Window.IsActive(fullscreenvideo) + VideoPlayer.Content(episodes) + Integer.IsGreater(Player.Progress,50) + [[String.IsEmpty(Skin.String(lumen.nextcard)) + Integer.IsLessOrEqual(Player.TimeRemaining(secs),30)] | [String.IsEqual(Skin.String(lumen.nextcard),60) + Integer.IsLessOrEqual(Player.TimeRemaining(secs),60)] | [String.IsEqual(Skin.String(lumen.nextcard),90) + Integer.IsLessOrEqual(Player.TimeRemaining(secs),90)]] + !Skin.HasSetting(cinemathequeholdnext) + String.IsEqual(Window(home).Property(lumen.next.for),VideoPlayer.DBID) + String.IsEqual(Window(home).Property(lumen.next.show),VideoPlayer.TvShowDBID) + [[Skin.HasSetting(CinemathequeKids) + String.IsEqual(Window(home).Property(lumen.next.kids),1)] | [!Skin.HasSetting(CinemathequeKids) + String.IsEmpty(Window(home).Property(lumen.next.kids))]] + !String.IsEqual(Window(home).Property(lumen.next.cancel),VideoPlayer.DBID) + ![!String.IsEmpty(Playlist.Position(video)) + Integer.IsGreater(Playlist.Length(video),Playlist.Position(video))] + [!System.HasActiveModalDialog | Window.IsVisible(1118)]</visible>
+	<defaultcontrol always="true">110</defaultcontrol>
+	<depth>DepthOSD</depth>
+	<controls>
+		<control type="group">
+			<left>1180</left>
+			<top>732</top>
+			<width>660</width>
+			<height>268</height>
+			<animation effect="slide" start="120,0" end="0,0" time="320" tween="cubic" easing="out">WindowOpen</animation>
+			<animation effect="fade" start="0" end="100" time="320">WindowOpen</animation>
+			<animation effect="fade" start="100" end="0" time="200">WindowClose</animation>
+			<control type="image">
+				<width>660</width>
+				<height>268</height>
+				<texture border="28" colordiffuse="glass">lumen/rr28.png</texture>
+			</control>
+			<control type="image">
+				<width>660</width>
+				<height>268</height>
+				<texture border="28" colordiffuse="stroke">lumen/rr28_stroke1.png</texture>
+			</control>
+			<control type="image">
+				<left>24</left>
+				<top>24</top>
+				<width>256</width>
+				<height>144</height>
+				<texture colordiffuse="card_bg" diffuse="lumen/mask_landscape.png">lumen/white.png</texture>
+			</control>
+			<control type="image" id="102">
+				<left>24</left>
+				<top>24</top>
+				<width>256</width>
+				<height>144</height>
+				<aspectratio>scale</aspectratio>
+				<fadetime>200</fadetime>
+				<texture background="true" diffuse="lumen/mask_landscape.png">$INFO[Window(home).Property(lumen.next.thumb)]</texture>
+			</control>
+			<control type="label">
+				<left>304</left>
+				<top>22</top>
+				<width>332</width>
+				<height>36</height>
+				<font>lm_caption</font>
+				<textcolor>text_mute</textcolor>
+				<label>Up next</label>
+			</control>
+			<control type="textbox" id="103">
+				<left>304</left>
+				<top>56</top>
+				<width>332</width>
+				<height>76</height>
+				<font>lm_label_bold</font>
+				<textcolor>text</textcolor>
+				<label>S$INFO[Window(home).Property(lumen.next.season)] E$INFO[Window(home).Property(lumen.next.episode)]$INFO[Window(home).Property(lumen.next.title),  ·  ]</label>
+			</control>
+			<control type="label" id="104">
+				<left>304</left>
+				<top>132</top>
+				<width>332</width>
+				<height>36</height>
+				<font>lm_caption</font>
+				<textcolor>text_dim</textcolor>
+				<label>$INFO[Player.TimeRemaining(secs),Starts in , s]</label>
+			</control>
+			<control type="grouplist" id="9001">
+				<left>24</left>
+				<top>188</top>
+				<width>612</width>
+				<height>60</height>
+				<orientation>horizontal</orientation>
+				<itemgap>16</itemgap>
+			<control type="button" id="110">
+				<width>auto</width>
+				<height>60</height>
+				<label>Play now</label>
+				<font>lm_caption_bold</font>
+				<textoffsetx>28</textoffsetx>
+				<align>center</align>
+				<aligny>center</aligny>
+				<textcolor>text</textcolor>
+				<focusedcolor>focus_text</focusedcolor>
+				<texturefocus border="30" colordiffuse="FFFFFFFF">lumen/pill.png</texturefocus>
+				<texturenofocus border="30" colordiffuse="2EFFFFFF">lumen/pill.png</texturenofocus>
+				<onclick>SetProperty(lumen.next.now,$INFO[VideoPlayer.DBID],home)</onclick>
+				<onclick>Skin.TimerStart(lumennextplay)</onclick>
+				<onclick>Seek($INFO[Player.TimeRemaining(secs)])</onclick>
+				<onback>SetProperty(lumen.next.cancel,$INFO[VideoPlayer.DBID],home)</onback>
+				<onup>noop</onup>
+				<ondown>noop</ondown>
+			</control>
+			<control type="button" id="111">
+				<width>auto</width>
+				<height>60</height>
+				<label>$LOCALIZE[222]</label>
+				<font>lm_caption_bold</font>
+				<textoffsetx>28</textoffsetx>
+				<align>center</align>
+				<aligny>center</aligny>
+				<textcolor>text</textcolor>
+				<focusedcolor>focus_text</focusedcolor>
+				<texturefocus border="30" colordiffuse="FFFFFFFF">lumen/pill.png</texturefocus>
+				<texturenofocus border="30" colordiffuse="2EFFFFFF">lumen/pill.png</texturenofocus>
+				<onclick>SetProperty(lumen.next.cancel,$INFO[VideoPlayer.DBID],home)</onclick>
+				<onback>SetProperty(lumen.next.cancel,$INFO[VideoPlayer.DBID],home)</onback>
+				<onup>noop</onup>
+				<ondown>noop</ondown>
+			</control>
+			</control>
+		</control>
+	</controls>
+</window>

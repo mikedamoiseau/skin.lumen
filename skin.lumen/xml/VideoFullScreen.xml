@@ -2,6 +2,12 @@
 <window>
 	<defaultcontrol></defaultcontrol>
 	<controls>
+		<!-- Lumen: the next episode of the one playing (LumenNextEpPath); Timers.xml (lumennextfind) copies it into
+		     Home window properties for the card, Custom_1118_LumenNext.xml -->
+		<include content="LumenNextLookup">
+			<param name="id" value="9300" />
+			<param name="path" value="$VAR[LumenNextEpPath]" />
+		</include>
 		<control type="group" id="0">
 			<control type="label" id="10">
 				<left>45</left>

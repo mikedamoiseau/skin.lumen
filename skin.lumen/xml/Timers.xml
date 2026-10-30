@@ -107,4 +107,44 @@
         <onstart>ReplaceWindow(home)</onstart>
         <stop>!Window.IsActive(1111)</stop>
     </timer>
+    <timer>
+        <name>lumennextfind</name>
+        <description>An episode playing full screen whose next episode has loaded (VideoFullScreen.xml, list 9300): copy it into Home window properties for the card (Custom_1118_LumenNext.xml), which can't read the list (Kodi resolves Container(id) through the topmost modal dialog). The list keeps its old items while it reloads, so only an item after the playing episode, of its show, counts. lumen.next.for and .show say which episode the copy is for, .kids in which mode</description>
+        <start reset="true">Window.IsActive(fullscreenvideo) + !System.HasActiveModalDialog + VideoPlayer.Content(episodes) + !Container(9300).IsUpdating + Integer.IsGreater(Container(9300).NumItems,0) + String.IsEqual(Container(9300).ListItem.TvShowDBID,VideoPlayer.TvShowDBID) + [Integer.IsGreater(Container(9300).ListItem.Season,VideoPlayer.Season) | [String.IsEqual(Container(9300).ListItem.Season,VideoPlayer.Season) + Integer.IsGreater(Container(9300).ListItem.Episode,VideoPlayer.Episode)]] + ![String.IsEqual(Window(home).Property(lumen.next.for),VideoPlayer.DBID) + String.IsEqual(Window(home).Property(lumen.next.show),VideoPlayer.TvShowDBID) + ![[Skin.HasSetting(CinemathequeKids) + String.IsEmpty(Window(home).Property(lumen.next.kids))] | [!Skin.HasSetting(CinemathequeKids) + !String.IsEmpty(Window(home).Property(lumen.next.kids))]]]</start>
+        <onstart>SetProperty(lumen.next.path,videodb://tvshows/titles/$INFO[Container(9300).ListItem.TvShowDBID]/$INFO[Container(9300).ListItem.Season]/$INFO[Container(9300).ListItem.DBID],home)</onstart>
+        <onstart>SetProperty(lumen.next.season,$INFO[Container(9300).ListItem.Season],home)</onstart>
+        <onstart>SetProperty(lumen.next.episode,$INFO[Container(9300).ListItem.Episode],home)</onstart>
+        <onstart>SetProperty(lumen.next.title,$ESCINFO[Container(9300).ListItem.Title],home)</onstart>
+        <onstart>SetProperty(lumen.next.thumb,$ESCINFO[Container(9300).ListItem.Art(thumb)],home)</onstart>
+        <onstart condition="Skin.HasSetting(CinemathequeKids)">SetProperty(lumen.next.kids,1,home)</onstart>
+        <onstart condition="!Skin.HasSetting(CinemathequeKids)">ClearProperty(lumen.next.kids,home)</onstart>
+        <onstart>SetProperty(lumen.next.show,$INFO[VideoPlayer.TvShowDBID],home)</onstart>
+        <onstart>SetProperty(lumen.next.for,$INFO[VideoPlayer.DBID],home)</onstart>
+        <stop>!Window.IsActive(fullscreenvideo) | [String.IsEqual(Window(home).Property(lumen.next.for),VideoPlayer.DBID) + String.IsEqual(Window(home).Property(lumen.next.show),VideoPlayer.TvShowDBID) + ![[Skin.HasSetting(CinemathequeKids) + String.IsEmpty(Window(home).Property(lumen.next.kids))] | [!Skin.HasSetting(CinemathequeKids) + !String.IsEmpty(Window(home).Property(lumen.next.kids))]]]</stop>
+    </timer>
+    <timer>
+        <name>lumennextplay</name>
+        <description>The next episode card is up and the episode is in its last 2 seconds (or Play now, which jumps to the end, started this timer): once the player has stopped, have lumennextgo start the next episode. A stop before that, Cancel, seeking back, another video, or the Cinémathèque app holding the next step (cinemathequeholdnext) starts nothing</description>
+        <start reset="true">Window.IsVisible(1118) + Player.Playing + Integer.IsLessOrEqual(Player.TimeRemaining(secs),2)</start>
+        <stop>!Player.HasMedia | String.IsEqual(Window(home).Property(lumen.next.cancel),VideoPlayer.DBID) | [Integer.IsGreater(Player.TimeRemaining(secs),4) + !String.IsEqual(Window(home).Property(lumen.next.now),VideoPlayer.DBID)]</stop>
+        <onstop condition="!Player.HasMedia + !Skin.HasSetting(cinemathequeholdnext) + !String.IsEmpty(Window(home).Property(lumen.next.path))">SetProperty(lumen.next.go,1,home)</onstop>
+        <onstop>ClearProperty(lumen.next.now,home)</onstop>
+    </timer>
+    <timer>
+        <name>lumennextgo</name>
+        <description>The episode with the card ended by itself: a second later, start the next one, from Kodi's resume point if it has one. Not at once: Kodi announces the end (Player.OnStop with end = true, which the Cinémathèque app's chain rule needs) only once its GUI thread gets to it, and a new file started before that drops the announcement (Application.cpp, PlayFile). Nothing if something else has started meanwhile, or the app now holds the next step</description>
+        <start reset="true">!String.IsEmpty(Window(home).Property(lumen.next.go))</start>
+        <stop>Player.HasMedia | Integer.IsGreaterOrEqual(Skin.TimerElapsedSecs(lumennextgo),1)</stop>
+        <onstop condition="!Player.HasMedia + !Skin.HasSetting(cinemathequeholdnext)">PlayMedia($INFO[Window(home).Property(lumen.next.path)],resume)</onstop>
+        <onstop>ClearProperty(lumen.next.go,home)</onstop>
+    </timer>
+    <timer>
+        <name>lumennextreset</name>
+        <description>Playback over: the card's properties no longer match anything, so the next episode (or the same one again) gets a fresh lookup and the card again. lumen.next.path stays for lumennextplay, which may be starting it in the same frame</description>
+        <start reset="true">!Player.HasMedia + [!String.IsEmpty(Window(home).Property(lumen.next.for)) | !String.IsEmpty(Window(home).Property(lumen.next.cancel))]</start>
+        <onstart>ClearProperty(lumen.next.for,home)</onstart>
+        <onstart>ClearProperty(lumen.next.show,home)</onstart>
+        <onstart>ClearProperty(lumen.next.cancel,home)</onstart>
+        <stop>String.IsEmpty(Window(home).Property(lumen.next.for)) + String.IsEmpty(Window(home).Property(lumen.next.cancel))</stop>
+    </timer>
 </timers>

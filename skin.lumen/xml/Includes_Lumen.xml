@@ -1751,6 +1751,19 @@
 		<value condition="VideoPlayer.Content(livetv)">Sleep in $VAR[LumenSleepLeft]</value>
 		<value>$INFO[Player.FinishTime,Ends at ]$VAR[LumenSleepSuffix]</value>
 	</variable>
+	<!-- ============ Next episode card (Custom_1118_LumenNext.xml) ============ -->
+	<!-- the episode after the one playing: the next main one by number (specials left out, watched ones not skipped:
+	     the phone app's rule); in kids mode only a show with the kids tag has one. None while a special plays -->
+	<variable name="LumenNextEpPath">
+		<value condition="Integer.IsGreater(VideoPlayer.Season,0) + !String.IsEmpty(VideoPlayer.TvShowDBID) + !String.IsEqual(Skin.String(lumen.nextcard),off)">videodb://tvshows/titles/$INFO[VideoPlayer.TvShowDBID]/-1/?xsp=%7B%22type%22%3A%22episodes%22%2C%22rules%22%3A%7B%22and%22%3A%5B%7B%22field%22%3A%22season%22%2C%22operator%22%3A%22greaterthan%22%2C%22value%22%3A%5B%220%22%5D%7D$VAR[LumenMoreKids]%2C%7B%22or%22%3A%5B%7B%22field%22%3A%22season%22%2C%22operator%22%3A%22greaterthan%22%2C%22value%22%3A%5B%22$INFO[VideoPlayer.Season]%22%5D%7D%2C%7B%22and%22%3A%5B%7B%22field%22%3A%22season%22%2C%22operator%22%3A%22is%22%2C%22value%22%3A%5B%22$INFO[VideoPlayer.Season]%22%5D%7D%2C%7B%22field%22%3A%22episode%22%2C%22operator%22%3A%22greaterthan%22%2C%22value%22%3A%5B%22$INFO[VideoPlayer.Episode]%22%5D%7D%5D%7D%5D%7D%5D%7D%2C%22order%22%3A%7B%22method%22%3A%22episode%22%2C%22direction%22%3A%22ascending%22%7D%2C%22limit%22%3A1%7D</value>
+	</variable>
+	<!-- Configure skin › Next episode card: how long before an episode's end it shows (empty = 30 s) -->
+	<variable name="LumenNextCardSecs">
+		<value condition="String.IsEqual(Skin.String(lumen.nextcard),off)">Off</value>
+		<value condition="String.IsEqual(Skin.String(lumen.nextcard),60)">60 s</value>
+		<value condition="String.IsEqual(Skin.String(lumen.nextcard),90)">90 s</value>
+		<value>30 s</value>
+	</variable>
 	<variable name="LumenSkinSettingHelp">
 		<value condition="Control.HasFocus(902)">Kids mode shows only the titles chosen in the Cinémathèque app. Set a PIN to show the Kids button on Home; leaving kids mode asks for it.</value>
 		<value condition="Control.HasFocus(903)">Asks for the current PIN, then removes it and hides the Kids button.[CR][CR]To change the PIN, remove it and set a new one.</value>
@@ -1759,6 +1772,7 @@
 		<value condition="Control.HasFocus(931) | Control.HasFocus(932) | Control.HasFocus(933)">Changes the row's name on Home.</value>
 		<value condition="Control.HasFocus(941) | Control.HasFocus(942) | Control.HasFocus(943)">Takes the row off Home. The playlist itself stays.</value>
 		<value condition="Control.HasFocus(920)">Opens Kodi's video playlists. Choose "New smart playlist…", pick Movies or TV shows and the rules (for example Genre is Documentary), then save it and add it here.</value>
+		<value condition="Control.HasFocus(904)">In an episode's last seconds, a card shows the show's next episode, which starts once this one ends. Play now skips the rest; Back hides the card.[CR][CR]When the Cinémathèque app has the next step (its Up next, stop after this, bedtime), the card shows what the app will play and starts nothing.</value>
 		<value condition="Control.HasFocus(901)">Slowly zooms the backdrop on Home, library and detail pages.[CR][CR]Looks great, but the whole screen redraws every frame: on a Raspberry Pi menus drop to about half the frame rate. Off by default.</value>
 	</variable>
 </includes>

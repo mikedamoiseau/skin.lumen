@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The Cinémathèque app has the next step (its Up next, stop after this, bedtime: Skin.HasSetting(cinemathequeholdnext)):
+     in an episode's last seconds, what the app says comes next (Skin.String(cinemathequenextlabel), set by the app:
+     "Next: Show, S2 E6 · Title"),
+     instead of Lumen's card; nothing when the label is empty. Lumen starts nothing then. Just a label: modeless. -->
+<window type="dialog" id="1119">
+	<visible>Window.IsActive(fullscreenvideo) + VideoPlayer.Content(episodes) + Integer.IsGreater(Player.Progress,50) + [[String.IsEmpty(Skin.String(lumen.nextcard)) + Integer.IsLessOrEqual(Player.TimeRemaining(secs),30)] | [String.IsEqual(Skin.String(lumen.nextcard),60) + Integer.IsLessOrEqual(Player.TimeRemaining(secs),60)] | [String.IsEqual(Skin.String(lumen.nextcard),90) + Integer.IsLessOrEqual(Player.TimeRemaining(secs),90)]] + Skin.HasSetting(cinemathequeholdnext) + !String.IsEmpty(Skin.String(cinemathequenextlabel)) + !System.HasActiveModalDialog</visible>
+	<depth>DepthOSD</depth>
+	<controls>
+		<control type="group">
+			<left>1180</left>
+			<top>916</top>
+			<width>660</width>
+			<height>84</height>
+			<animation effect="slide" start="120,0" end="0,0" time="320" tween="cubic" easing="out">WindowOpen</animation>
+			<animation effect="fade" start="0" end="100" time="320">WindowOpen</animation>
+			<animation effect="fade" start="100" end="0" time="200">WindowClose</animation>
+			<control type="image">
+				<width>660</width>
+				<height>84</height>
+				<texture border="28" colordiffuse="glass">lumen/rr28.png</texture>
+			</control>
+			<control type="image">
+				<width>660</width>
+				<height>84</height>
+				<texture border="28" colordiffuse="stroke">lumen/rr28_stroke1.png</texture>
+			</control>
+			<control type="label" id="201">
+				<left>32</left>
+				<top>18</top>
+				<width>596</width>
+				<height>48</height>
+				<font>lm_label_bold</font>
+				<textcolor>text</textcolor>
+				<scroll>true</scroll>
+				<label>$INFO[Skin.String(cinemathequenextlabel)]</label>
+			</control>
+		</control>
+	</controls>
+</window>
