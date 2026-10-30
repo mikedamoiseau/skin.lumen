@@ -99,4 +99,12 @@
         <onstart>RunScript(special://skin/scripts/lumen_search.py,search)</onstart>
         <stop>!Window.IsActive(1111) | Window.IsVisible(virtualkeyboard) | [String.IsEqual(Skin.String(lumen.search),Window(home).Property(lumen.sq.text)) + ![[[Skin.HasSetting(CinemathequeKids) + String.IsEmpty(Window(home).Property(lumen.sq.kids))] | [!Skin.HasSetting(CinemathequeKids) + !String.IsEmpty(Window(home).Property(lumen.sq.kids))]]]] | Integer.IsGreaterOrEqual(Skin.TimerElapsedSecs(lumensearchrun),3)</stop>
     </timer>
+    <timer>
+        <name>lumensearchmode</name>
+        <description>Kids mode switched while the search page is open (only from outside, as the kids button is on Home): back to Home, as entering kids mode does, so the page never shows a search made in the other mode (its lists keep their items until new ones load)</description>
+        <start reset="true">Window.IsActive(1111) + [[Skin.HasSetting(CinemathequeKids) + String.IsEmpty(Window(home).Property(lumen.searchkids))] | [!Skin.HasSetting(CinemathequeKids) + !String.IsEmpty(Window(home).Property(lumen.searchkids))]]</start>
+        <onstart>Dialog.Close(all,true)</onstart>
+        <onstart>ReplaceWindow(home)</onstart>
+        <stop>!Window.IsActive(1111)</stop>
+    </timer>
 </timers>

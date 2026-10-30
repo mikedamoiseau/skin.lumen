@@ -1,5 +1,5 @@
 [B]0.9.0[/B]
-• Search: every word you type must start a word of the title, in any order ("stitch lilo" finds Lilo & Stitch), also after - or ' ("man" finds Spider-Man). Text with "&", "+" or "%" works. While typing, results come after a one-second pause instead of at every key. Kids mode's search hint no longer mentions actors.
+• Search: every word you type must start a word of the title, in any order ("stitch lilo" finds Lilo & Stitch), also after - or ' ("man" finds Spider-Man). Text with "&" or "+" works. While typing, results come after a one-second pause instead of at every key. Kids mode's search hint no longer mentions actors.
 • Kids mode: the Discover row is in random order again (it came A to Z).
 • Genre: a ticked genre that the picked decade has no titles in stays in the list, dimmed, so it can be unticked.
 

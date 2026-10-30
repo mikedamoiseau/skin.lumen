@@ -683,10 +683,10 @@
 				<top>300</top>
 				<visible>Window.IsVisible(1111) + !String.IsEmpty(Control.GetLabel(312).index(1))</visible>
 				<!-- the last search built (lumen.sq.text) until the next one is: Timers.xml waits for a pause in typing.
-				     Faded out while a row loads (a list keeps its old items until the new ones are in; hidden, it wouldn't load) -->
-				<control type="group">
-					<visible>$EXP[LumenSearchKidsMatch]</visible>
-					<animation effect="fade" start="100" end="0" time="0" condition="Container(9511).IsUpdating | Container(9512).IsUpdating">Conditional</animation>
+				     Kids mode has its own lists, fed only with kids paths: Kodi keeps this dialog, and its lists' items,
+				     between openings, so a list a parent typed into never shows in kids mode -->
+				<control type="group" id="9510">
+					<visible>!$EXP[LumenKids]</visible>
 					<include content="LumenTypingResults">
 						<param name="left" value="110" />
 						<param name="id" value="9511" />
@@ -700,6 +700,21 @@
 						<param name="path" value="$VAR[LumenTypingShowsPath]" />
 					</include>
 				</control>
+				<control type="group" id="9520">
+					<visible>$EXP[LumenKids]</visible>
+					<include content="LumenTypingResults">
+						<param name="left" value="110" />
+						<param name="id" value="9513" />
+						<param name="header" value="$LOCALIZE[342]" />
+						<param name="path" value="$VAR[LumenTypingKidsMoviesPath]" />
+					</include>
+					<include content="LumenTypingResults">
+						<param name="left" value="990" />
+						<param name="id" value="9514" />
+						<param name="header" value="$LOCALIZE[20343]" />
+						<param name="path" value="$VAR[LumenTypingKidsShowsPath]" />
+					</include>
+				</control>
 				<control type="label">
 					<left>110</left>
 					<top>0</top>
@@ -708,7 +723,7 @@
 					<font>lm_label_bold</font>
 					<textcolor>text_dim</textcolor>
 					<label>No matches yet</label>
-					<visible>$EXP[LumenTypingFresh] + !Container(9511).IsUpdating + !Container(9512).IsUpdating + !Integer.IsGreater(Container(9511).NumItems,0) + !Integer.IsGreater(Container(9512).NumItems,0)</visible>
+					<visible>$EXP[LumenTypingFresh] + [[!$EXP[LumenKids] + !Container(9511).IsUpdating + !Container(9512).IsUpdating + !Integer.IsGreater(Container(9511).NumItems,0) + !Integer.IsGreater(Container(9512).NumItems,0)] | [$EXP[LumenKids] + !Container(9513).IsUpdating + !Container(9514).IsUpdating + !Integer.IsGreater(Container(9513).NumItems,0) + !Integer.IsGreater(Container(9514).NumItems,0)]]</visible>
 				</control>
 			</control>
 		</control>

@@ -238,6 +238,8 @@
 						<onclick condition="!$EXP[LumenKids] + System.GetBool(filelists.showparentdiritems)">Notification(Kids mode,Turn off Show parent folder items (Settings › Media) first,6000)</onclick>
 						<onclick condition="!$EXP[LumenKids] + !System.GetBool(filelists.showparentdiritems)">Skin.SetBool(CinemathequeKids)</onclick>
 						<onclick condition="!$EXP[LumenKids] + !System.GetBool(filelists.showparentdiritems)">ClearProperty(lumen.row,home)</onclick>
+						<!-- nor the parent's last search: the search page and keyboard would open on it -->
+						<onclick condition="!$EXP[LumenKids] + !System.GetBool(filelists.showparentdiritems)">Skin.Reset(lumen.search)</onclick>
 						<!-- a parent's film, or the queue after it, must not carry on into kids mode (music playing is left alone) -->
 						<onclick condition="!$EXP[LumenKids] + !System.GetBool(filelists.showparentdiritems) + Player.HasVideo">PlayerControl(Stop)</onclick>
 						<onclick condition="!$EXP[LumenKids] + !System.GetBool(filelists.showparentdiritems) + !Player.HasAudio">Playlist.Clear</onclick>
@@ -1496,8 +1498,8 @@
 	<!-- ============ Search (Custom_1111_LumenSearch.xml, live preview in DialogKeyboard.xml) ============ -->
 	<!-- paths built by scripts/lumen_search.py (Timers.xml runs it) in Home properties lumen.sq.*, for the text in
 	     lumen.sq.text and the mode in lumen.sq.kids. The search page's rows take them only while both match what is on
-	     screen; the keyboard's live rows keep the last search built while typing goes on. Never across modes: no
-	     results from normal mode in kids mode (no path then, and the rows hidden) -->
+	     screen; the keyboard's live lists keep the last search built while typing goes on. Never across modes: the
+	     search page closes if kids mode changes while it's open (Timers.xml), and the keyboard has kids lists -->
 	<expression name="LumenSearchKidsMatch">[$EXP[LumenKids] + String.IsEqual(Window(home).Property(lumen.sq.kids),1)] | [!$EXP[LumenKids] + String.IsEmpty(Window(home).Property(lumen.sq.kids))]</expression>
 	<expression name="LumenSearchFresh">!String.IsEmpty(Skin.String(lumen.search)) + String.IsEqual(Window(home).Property(lumen.sq.text),Skin.String(lumen.search)) + $EXP[LumenSearchKidsMatch]</expression>
 	<expression name="LumenTypingFresh">!String.IsEmpty(Control.GetLabel(312).index(1)) + String.IsEqual(Window(home).Property(lumen.sq.text),Control.GetLabel(312).index(1)) + $EXP[LumenSearchKidsMatch]</expression>
@@ -1506,22 +1508,30 @@
 		<value condition="$EXP[LumenKids]">Search kids' films and shows by title.</value>
 		<value>Search your library by title, actor or director.</value>
 	</variable>
+	<!-- kids mode: also only a path that has the kids tag in it -->
 	<variable name="LumenSearchMoviesPath">
-		<value condition="$EXP[LumenSearchFresh]">$INFO[Window(home).Property(lumen.sq.movies)]</value>
+		<value condition="$EXP[LumenSearchFresh] + [!$EXP[LumenKids] | String.Contains(Window(home).Property(lumen.sq.movies),Cinematheque%20Kids)]">$INFO[Window(home).Property(lumen.sq.movies)]</value>
 	</variable>
 	<variable name="LumenSearchShowsPath">
-		<value condition="$EXP[LumenSearchFresh]">$INFO[Window(home).Property(lumen.sq.shows)]</value>
+		<value condition="$EXP[LumenSearchFresh] + [!$EXP[LumenKids] | String.Contains(Window(home).Property(lumen.sq.shows),Cinematheque%20Kids)]">$INFO[Window(home).Property(lumen.sq.shows)]</value>
 	</variable>
 	<!-- kids mode: no cast & crew row (a person's films aren't all tagged) -->
 	<variable name="LumenSearchPeoplePath">
 		<value condition="$EXP[LumenKids]"></value>
 		<value condition="$EXP[LumenSearchFresh]">$INFO[Window(home).Property(lumen.sq.people)]</value>
 	</variable>
+	<!-- the keyboard's live lists: normal mode's and kids mode's apart (DialogKeyboard.xml) -->
 	<variable name="LumenTypingMoviesPath">
-		<value condition="$EXP[LumenSearchKidsMatch] + !String.IsEmpty(Window(home).Property(lumen.sq.text))">$INFO[Window(home).Property(lumen.sq.movies)]</value>
+		<value condition="!$EXP[LumenKids] + String.IsEmpty(Window(home).Property(lumen.sq.kids)) + !String.IsEmpty(Window(home).Property(lumen.sq.text))">$INFO[Window(home).Property(lumen.sq.movies)]</value>
 	</variable>
 	<variable name="LumenTypingShowsPath">
-		<value condition="$EXP[LumenSearchKidsMatch] + !String.IsEmpty(Window(home).Property(lumen.sq.text))">$INFO[Window(home).Property(lumen.sq.shows)]</value>
+		<value condition="!$EXP[LumenKids] + String.IsEmpty(Window(home).Property(lumen.sq.kids)) + !String.IsEmpty(Window(home).Property(lumen.sq.text))">$INFO[Window(home).Property(lumen.sq.shows)]</value>
+	</variable>
+	<variable name="LumenTypingKidsMoviesPath">
+		<value condition="$EXP[LumenKids] + String.IsEqual(Window(home).Property(lumen.sq.kids),1) + !String.IsEmpty(Window(home).Property(lumen.sq.text)) + String.Contains(Window(home).Property(lumen.sq.movies),Cinematheque%20Kids)">$INFO[Window(home).Property(lumen.sq.movies)]</value>
+	</variable>
+	<variable name="LumenTypingKidsShowsPath">
+		<value condition="$EXP[LumenKids] + String.IsEqual(Window(home).Property(lumen.sq.kids),1) + !String.IsEmpty(Window(home).Property(lumen.sq.text)) + String.Contains(Window(home).Property(lumen.sq.shows),Cinematheque%20Kids)">$INFO[Window(home).Property(lumen.sq.shows)]</value>
 	</variable>
 	<include name="LumenTypingResults">
 		<definition>

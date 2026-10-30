@@ -716,11 +716,14 @@ def run_search(q):
     # the preview is built for q (scripts/lumen_search.py, about a second after typing stops) in the current mode;
     # until then it is hidden, though the list may still hold an older search's titles
     mode = "1" if cond("Skin.HasSetting(CinemathequeKids)") else ""
-    wait_for(lambda: labs(["Window(home).Property(lumen.sq.text)", "Window(home).Property(lumen.sq.kids)"])
-             == {"Window(home).Property(lumen.sq.text)": q, "Window(home).Property(lumen.sq.kids)": mode}, 10, 0.3)
+    films = 9513 if mode else 9511  # the keyboard's live films: kids mode has its own list
+    if not wait_for(lambda: labs(["Window(home).Property(lumen.sq.text)", "Window(home).Property(lumen.sq.kids)"])
+                    == {"Window(home).Property(lumen.sq.text)": q, "Window(home).Property(lumen.sq.kids)": mode}, 10, 0.3):
+        return None
     time.sleep(0.5)
-    wait_for(lambda: not cond("Container(9511).IsUpdating") and int(lab("Container(9511).NumItems") or 0) > 0, 15, 0.5)
-    preview = [int(i["DBID"]) for i in list_items(9511, ["DBID"]) if i["DBID"]]
+    if not wait_for(lambda: not cond(f"Container({films}).IsUpdating") and int(lab(f"Container({films}).NumItems") or 0) > 0, 15, 0.5):
+        return None
+    preview = [int(i["DBID"]) for i in list_items(films, ["DBID"]) if i["DBID"]]
     rpc("Input.SendText", {"text": q, "done": True})
     wait_for(lambda: not cond("Window.IsVisible(virtualkeyboard)"), 8)
     time.sleep(1.5)

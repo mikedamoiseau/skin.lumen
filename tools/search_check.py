@@ -110,11 +110,8 @@ def ids(cid):
 
 
 def shown(cid):
-    """The row's titles on screen: none while the results (group 9199) are hidden or faded out (a row loading),
-    whatever the lists still hold."""
-    if not cond("Control.IsVisible(9199)") or any(cond(f"Container({c}).IsUpdating") for c in (FILMS, SHOWS, PEOPLE)):
-        return set()
-    return ids(cid)
+    """The row's titles on screen: none while the results (group 9199) are hidden, whatever the lists still hold."""
+    return ids(cid) if cond("Control.IsVisible(9199)") else set()
 
 
 def pick_amp():
@@ -218,6 +215,9 @@ def c_typing(r):
 
 @check("kids_stale")
 def c_kids_stale(r):
+    """Kids mode switched on while the search page shows normal results (only from outside, JSON-RPC say: the kids
+    button is on Home): the page goes to Home, as entering kids mode does, and a shown results group never holds an
+    untagged title, whatever its lists are doing."""
     q = kids_check.search_query()
     if not q:
         r.skip("no word shared by tagged and untagged titles")
@@ -226,19 +226,74 @@ def c_kids_stale(r):
     r.ok(f"normal search '{q}'", search(q, kids=False))
     r.ok("normal: untagged films found, on screen", bool(shown(FILMS) - movies), f"{len(shown(FILMS))} shown")
     set_skin("cinemathequekids", True)
-    leak = set()
+    leak, left = set(), False
     t0 = time.time()
-    while time.time() - t0 < 6:
-        leak |= (shown(FILMS) - movies) | (shown(SHOWS) - shows)
-        time.sleep(0.2)
-    r.ok("kids on: never an untagged title, even for a moment", not leak, sorted(leak)[:5])
-    r.ok("kids on: the search is built again for kids", wait_for(lambda: sq() == (q, "1"), 10), sq())
-    rows_loaded()
-    got = ids(FILMS)
-    r.ok("kids: tagged films only, and some", got and got <= movies, f"{len(got)} films")
-    r.ok("kids: no cast & crew row", not cond("Control.IsVisible(5203)"))
+    while time.time() - t0 < 5:
+        if not cond("Window.IsActive(1111)"):
+            left = True
+            break
+        if cond("Control.IsVisible(9199)"):
+            leak |= (ids(FILMS) - movies) | (ids(SHOWS) - shows)
+        time.sleep(0.05)
+    r.ok("kids on: the search page goes", left)
+    r.ok("kids on: Home", wait_for(lambda: lab("System.CurrentWindow") == "Home", 5), lab("System.CurrentWindow"))
+    r.ok("never an untagged title in a shown results group", not leak, sorted(leak)[:5])
     set_skin("cinemathequekids", False)
     reset_home()
+
+
+@check("kb_kids")
+def c_kb_kids(r):
+    """Kids mode entered with the kids button after a parent's search: the search text stays behind, and the keyboard's
+    live results (Kodi keeps the keyboard and its lists between openings) only ever show kids titles."""
+    q = kids_check.search_query()
+    if not q:
+        r.skip("no word shared by tagged and untagged titles")
+        return
+    if not lab("Skin.String(lumen.pin)"):
+        r.skip("no kids PIN on this box: no kids button")
+        return
+    movies = tagged_movies()
+    set_skin("cinemathequekids", False)
+    r.ok("keyboard over the search page", open_keyboard())
+    rpc("Input.SendText", {"text": q, "done": False})
+    r.ok("normal: live results built", wait_for(lambda: sq() == (q, ""), 10) and rows_loaded((9511,)))
+    r.ok("normal: live results hold untagged films", bool(ids(9511) - movies), f"{len(ids(9511))} films")
+    rpc("Input.SendText", {"text": q, "done": True})
+    wait_for(lambda: not cond("Window.IsVisible(virtualkeyboard)"), 8)
+    r.ok("kids button pressed", kids_check.kids_button())
+    try:
+        r.ok("kids mode on", wait_for(lambda: cond("Skin.HasSetting(CinemathequeKids)"), 5))
+        r.ok("the parent's search text stays behind", lab("Skin.String(lumen.search)") == "", lab("Skin.String(lumen.search)"))
+        r.ok("kids: keyboard over the search page", open_keyboard())
+        r.ok("kids: the keyboard opens empty", lab("Control.GetLabel(312).index(1)") == "", lab("Control.GetLabel(312).index(1)"))
+        rpc("Input.SendText", {"text": q, "done": False})
+        leak = set()
+        t0 = time.time()
+        while time.time() - t0 < 6:
+            for group, lists in ((9510, (9511, 9512)), (9520, (9513, 9514))):
+                if cond(f"Control.IsVisible({group})"):
+                    leak |= set().union(*(ids(c) for c in lists)) - movies - tagged_shows_cache(r)
+            time.sleep(0.05)
+        r.ok("kids: a shown live results group never holds an untagged title", not leak, sorted(leak)[:5])
+        r.ok("kids: the normal live results are hidden", not cond("Control.IsVisible(9510)"))
+        rows_loaded((9513, 9514))
+        got = ids(9513)
+        r.ok("kids: live results are kids films, and some", got and got <= movies, f"{len(got)} films")
+    finally:
+        reset_home()
+        set_skin("cinemathequekids", False)
+        set_skin("lumen.search", "")
+        reset_home()
+
+
+_SHOWS = {}
+
+
+def tagged_shows_cache(r):
+    if "s" not in _SHOWS:
+        _SHOWS["s"] = tagged_shows()
+    return _SHOWS["s"]
 
 
 @check("fail_closed")

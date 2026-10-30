@@ -3,6 +3,9 @@
      working; DialogKeyboard.xml shows live results while typing. scripts/lumen_search.py builds the rows' paths
      (Timers.xml runs it; Includes_Lumen.xml: LumenSearchFresh). -->
 <window type="window" id="1111">
+	<!-- the mode the page opened in: Timers.xml (lumensearchmode) sends it Home if kids mode changes while it's open -->
+	<onload condition="$EXP[LumenKids]">SetProperty(lumen.searchkids,1,home)</onload>
+	<onload condition="!$EXP[LumenKids]">ClearProperty(lumen.searchkids,home)</onload>
 	<defaultcontrol>100</defaultcontrol>
 	<backgroundcolor>background</backgroundcolor>
 	<controls>
@@ -82,12 +85,10 @@
 
 		<!-- lists sit straight in the grouplist: a list in a hidden group never reloads. Up/down follow the
 		     grouplist order; the header and gap ids let Kodi step past an empty row. -->
-		<!-- hidden while the paths are for another text or mode; faded out (not hidden: a hidden list stops loading) and
-		     deaf to OK while a row loads, as a list keeps its old items until the new ones are in -->
+		<!-- hidden while the paths are for another text or mode -->
 		<control type="group" id="9199">
 			<top>170</top>
 			<visible>$EXP[LumenSearchFresh] + !Window.IsVisible(virtualkeyboard)</visible>
-			<animation effect="fade" start="100" end="0" time="0" condition="Container(5201).IsUpdating | Container(5202).IsUpdating | Container(5203).IsUpdating">Conditional</animation>
 			<control type="grouplist" id="9200">
 				<left>0</left>
 				<top>0</top>
@@ -108,7 +109,6 @@
 				</control>
 				<include content="LumenPosterList">
 					<param name="id" value="5201" />
-					<param name="onclick_condition" value="Container(5201).IsUpdating" />
 					<param name="top" value="0" />
 					<param name="visible" value="Integer.IsGreater(Container(5201).NumItems,0) | Container(5201).IsUpdating" />
 					<param name="path" value="$VAR[LumenSearchMoviesPath]" />
@@ -129,7 +129,6 @@
 				</control>
 				<include content="LumenLandscapeList">
 					<param name="id" value="5202" />
-					<param name="onclick_condition" value="Container(5202).IsUpdating" />
 					<param name="top" value="0" />
 					<param name="visible" value="Integer.IsGreater(Container(5202).NumItems,0) | Container(5202).IsUpdating" />
 					<param name="path" value="$VAR[LumenSearchShowsPath]" />
@@ -150,7 +149,6 @@
 				</control>
 				<include content="LumenPosterList">
 					<param name="id" value="5203" />
-					<param name="onclick_condition" value="Container(5203).IsUpdating" />
 					<param name="top" value="0" />
 					<param name="visible" value="!$EXP[LumenKids] + [Integer.IsGreater(Container(5203).NumItems,0) | Container(5203).IsUpdating]" />
 					<param name="path" value="$VAR[LumenSearchPeoplePath]" />
