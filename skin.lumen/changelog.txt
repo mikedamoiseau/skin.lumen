@@ -1,3 +1,6 @@
+[B]0.10.0[/B]
+• Next episode card: in an episode's last 30 seconds a card shows the show's next episode (the next one by number, watched or not). It starts by itself a moment after the episode ends, from where you left it if you started it before. Play now skips the rest; Cancel or Back hides the card. Configure skin sets it to 30, 60 or 90 seconds, or off. When the Cinémathèque app has the next step (its Up next, "stop after this", bedtime), the card shows what the app will play instead and starts nothing. In kids mode only kids shows get one.
+
 [B]0.9.0[/B]
 • Search: every word you type must start a word of the title, in any order ("stitch lilo" finds Lilo & Stitch), also after - or ' ("man" finds Spider-Man). Text with "&" or "+" works. While typing, results come after a one-second pause instead of at every key. Kids mode's search hint no longer mentions actors.
 • Kids mode: the Discover row is in random order again (it came A to Z).
