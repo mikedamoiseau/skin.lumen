@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Lumen search (Search tab): Kodi's own keyboard sets Skin.String(lumen.search), so phone remotes keep
-     working; DialogKeyboard.xml shows live results while typing. -->
+     working; DialogKeyboard.xml shows live results while typing. scripts/lumen_search.py builds the rows' paths
+     (Timers.xml runs it; Includes_Lumen.xml: LumenSearchFresh). -->
 <window type="window" id="1111">
 	<defaultcontrol>100</defaultcontrol>
 	<backgroundcolor>background</backgroundcolor>
@@ -81,9 +82,12 @@
 
 		<!-- lists sit straight in the grouplist: a list in a hidden group never reloads. Up/down follow the
 		     grouplist order; the header and gap ids let Kodi step past an empty row. -->
-		<control type="group">
+		<!-- hidden while the paths are for another text or mode; faded out (not hidden: a hidden list stops loading) and
+		     deaf to OK while a row loads, as a list keeps its old items until the new ones are in -->
+		<control type="group" id="9199">
 			<top>170</top>
-			<visible>!String.IsEmpty(Skin.String(lumen.search)) + !String.Contains(Skin.String(lumen.search),&amp;) + !Window.IsVisible(virtualkeyboard)</visible>
+			<visible>$EXP[LumenSearchFresh] + !Window.IsVisible(virtualkeyboard)</visible>
+			<animation effect="fade" start="100" end="0" time="0" condition="Container(5201).IsUpdating | Container(5202).IsUpdating | Container(5203).IsUpdating">Conditional</animation>
 			<control type="grouplist" id="9200">
 				<left>0</left>
 				<top>0</top>
@@ -104,6 +108,7 @@
 				</control>
 				<include content="LumenPosterList">
 					<param name="id" value="5201" />
+					<param name="onclick_condition" value="Container(5201).IsUpdating" />
 					<param name="top" value="0" />
 					<param name="visible" value="Integer.IsGreater(Container(5201).NumItems,0) | Container(5201).IsUpdating" />
 					<param name="path" value="$VAR[LumenSearchMoviesPath]" />
@@ -124,6 +129,7 @@
 				</control>
 				<include content="LumenLandscapeList">
 					<param name="id" value="5202" />
+					<param name="onclick_condition" value="Container(5202).IsUpdating" />
 					<param name="top" value="0" />
 					<param name="visible" value="Integer.IsGreater(Container(5202).NumItems,0) | Container(5202).IsUpdating" />
 					<param name="path" value="$VAR[LumenSearchShowsPath]" />
@@ -144,6 +150,7 @@
 				</control>
 				<include content="LumenPosterList">
 					<param name="id" value="5203" />
+					<param name="onclick_condition" value="Container(5203).IsUpdating" />
 					<param name="top" value="0" />
 					<param name="visible" value="!$EXP[LumenKids] + [Integer.IsGreater(Container(5203).NumItems,0) | Container(5203).IsUpdating]" />
 					<param name="path" value="$VAR[LumenSearchPeoplePath]" />
@@ -169,25 +176,15 @@
 			</control>
 		</control>
 
-		<control type="label">
-			<left>lm_margin</left>
-			<top>210</top>
-			<width>1700</width>
-			<height>44</height>
-			<font>lm_headline</font>
-			<textcolor>text_dim</textcolor>
-			<label>Search can't use “&amp;”: try the words around it.</label>
-			<visible>String.Contains(Skin.String(lumen.search),&amp;) + !Window.IsVisible(virtualkeyboard)</visible>
-		</control>
 		<!-- nothing typed yet -->
-		<control type="label">
+		<control type="label" id="1190">
 			<left>lm_margin</left>
 			<top>210</top>
 			<width>1700</width>
 			<height>44</height>
 			<font>lm_headline</font>
 			<textcolor>text_dim</textcolor>
-			<label>Search your library by title, actor or director.</label>
+			<label>$VAR[LumenSearchHint]</label>
 			<visible>String.IsEmpty(Skin.String(lumen.search)) + !Window.IsVisible(virtualkeyboard)</visible>
 		</control>
 		<include>LumenClock</include>

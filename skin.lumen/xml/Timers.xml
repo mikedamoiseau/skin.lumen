@@ -84,4 +84,19 @@
         <onstart>ClearProperty(lumen.rowask,home)</onstart>
         <stop>String.IsEmpty(Window(home).Property(lumen.rowask))</stop>
     </timer>
+    <timer>
+        <name>lumensearchtype</name>
+        <description>Typing on the search page (Kodi's keyboard over it): once the text has stayed the same for a second, build its search (scripts/lumen_search.py), not at every key. lumen.sq.snap holds the text when the wait began; a key stops the wait and the next frame starts another</description>
+        <start reset="true">Window.IsVisible(1111) + Window.IsVisible(virtualkeyboard) + !String.IsEmpty(Control.GetLabel(312).index(1)) + [!String.IsEqual(Control.GetLabel(312).index(1),Window(home).Property(lumen.sq.text)) | [[Skin.HasSetting(CinemathequeKids) + String.IsEmpty(Window(home).Property(lumen.sq.kids))] | [!Skin.HasSetting(CinemathequeKids) + !String.IsEmpty(Window(home).Property(lumen.sq.kids))]]]</start>
+        <onstart>SetProperty(lumen.sq.snap,$ESCINFO[Control.GetLabel(312).index(1)],home)</onstart>
+        <stop>!Window.IsVisible(virtualkeyboard) | !String.IsEqual(Control.GetLabel(312).index(1),Window(home).Property(lumen.sq.snap)) | Integer.IsGreaterOrEqual(Skin.TimerElapsedSecs(lumensearchtype),1)</stop>
+        <onstop condition="Window.IsVisible(virtualkeyboard) + String.IsEqual(Control.GetLabel(312).index(1),Window(home).Property(lumen.sq.snap)) + [!String.IsEqual(Control.GetLabel(312).index(1),Window(home).Property(lumen.sq.text)) | [[Skin.HasSetting(CinemathequeKids) + String.IsEmpty(Window(home).Property(lumen.sq.kids))] | [!Skin.HasSetting(CinemathequeKids) + !String.IsEmpty(Window(home).Property(lumen.sq.kids))]]]">RunScript(special://skin/scripts/lumen_search.py,typed)</onstop>
+    </timer>
+    <timer>
+        <name>lumensearchrun</name>
+        <description>The search page with its search confirmed (keyboard closed), or kids mode switched over it: build the search if what was last built is for another text or mode. Again every 3 seconds if the script didn't answer</description>
+        <start reset="true">Window.IsActive(1111) + !Window.IsVisible(virtualkeyboard) + !String.IsEmpty(Skin.String(lumen.search)) + [!String.IsEqual(Skin.String(lumen.search),Window(home).Property(lumen.sq.text)) | [[Skin.HasSetting(CinemathequeKids) + String.IsEmpty(Window(home).Property(lumen.sq.kids))] | [!Skin.HasSetting(CinemathequeKids) + !String.IsEmpty(Window(home).Property(lumen.sq.kids))]]]</start>
+        <onstart>RunScript(special://skin/scripts/lumen_search.py,search)</onstart>
+        <stop>!Window.IsActive(1111) | Window.IsVisible(virtualkeyboard) | [String.IsEqual(Skin.String(lumen.search),Window(home).Property(lumen.sq.text)) + ![[[Skin.HasSetting(CinemathequeKids) + String.IsEmpty(Window(home).Property(lumen.sq.kids))] | [!Skin.HasSetting(CinemathequeKids) + !String.IsEmpty(Window(home).Property(lumen.sq.kids))]]]] | Integer.IsGreaterOrEqual(Skin.TimerElapsedSecs(lumensearchrun),3)</stop>
+    </timer>
 </timers>

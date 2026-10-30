@@ -682,17 +682,11 @@
 			<control type="group">
 				<top>300</top>
 				<visible>Window.IsVisible(1111) + !String.IsEmpty(Control.GetLabel(312).index(1))</visible>
-				<control type="label">
-					<left>110</left>
-					<width>1700</width>
-					<height>40</height>
-					<font>lm_label_bold</font>
-					<textcolor>text_dim</textcolor>
-					<label>Search can't use “&amp;”: try the words around it.</label>
-					<visible>String.Contains(Control.GetLabel(312).index(1),&amp;)</visible>
-				</control>
+				<!-- the last search built (lumen.sq.text) until the next one is: Timers.xml waits for a pause in typing.
+				     Faded out while a row loads (a list keeps its old items until the new ones are in; hidden, it wouldn't load) -->
 				<control type="group">
-					<visible>!String.Contains(Control.GetLabel(312).index(1),&amp;)</visible>
+					<visible>$EXP[LumenSearchKidsMatch]</visible>
+					<animation effect="fade" start="100" end="0" time="0" condition="Container(9511).IsUpdating | Container(9512).IsUpdating">Conditional</animation>
 					<include content="LumenTypingResults">
 						<param name="left" value="110" />
 						<param name="id" value="9511" />
@@ -714,7 +708,7 @@
 					<font>lm_label_bold</font>
 					<textcolor>text_dim</textcolor>
 					<label>No matches yet</label>
-					<visible>!String.Contains(Control.GetLabel(312).index(1),&amp;) + !Container(9511).IsUpdating + !Container(9512).IsUpdating + !Integer.IsGreater(Container(9511).NumItems,0) + !Integer.IsGreater(Container(9512).NumItems,0)</visible>
+					<visible>$EXP[LumenTypingFresh] + !Container(9511).IsUpdating + !Container(9512).IsUpdating + !Integer.IsGreater(Container(9511).NumItems,0) + !Integer.IsGreater(Container(9512).NumItems,0)</visible>
 				</control>
 			</control>
 		</control>

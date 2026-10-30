@@ -669,7 +669,12 @@ def run_search(q):
     if not wait_for(lambda: cond("Window.IsVisible(virtualkeyboard)"), 8):
         return None
     rpc("Input.SendText", {"text": q, "done": False})
-    time.sleep(1)
+    # the preview is built for q (scripts/lumen_search.py, about a second after typing stops) in the current mode;
+    # until then it is hidden, though the list may still hold an older search's titles
+    mode = "1" if cond("Skin.HasSetting(CinemathequeKids)") else ""
+    wait_for(lambda: labs(["Window(home).Property(lumen.sq.text)", "Window(home).Property(lumen.sq.kids)"])
+             == {"Window(home).Property(lumen.sq.text)": q, "Window(home).Property(lumen.sq.kids)": mode}, 10, 0.3)
+    time.sleep(0.5)
     wait_for(lambda: not cond("Container(9511).IsUpdating") and int(lab("Container(9511).NumItems") or 0) > 0, 15, 0.5)
     preview = [int(i["DBID"]) for i in list_items(9511, ["DBID"]) if i["DBID"]]
     rpc("Input.SendText", {"text": q, "done": True})
@@ -688,7 +693,7 @@ def c_search(r):
     movies, shows = tagged_movies(), tagged_shows()
     kids(True)
     preview = run_search(q)
-    r.ok(f"kids: live preview for '{q}' shows tagged films only", preview is not None and set(preview) <= movies, preview)
+    r.ok(f"kids: live preview for '{q}' shows tagged films, and only them", bool(preview) and set(preview) <= movies, preview)
     got = [int(i["DBID"]) for i in list_items(5201, ["DBID"]) if i["DBID"]]
     r.ok("kids: films row finds tagged films only", got and set(got) <= movies, f"{len(got)} films")
     got = [int(i["DBID"]) for i in list_items(5202, ["DBID"]) if i["DBID"]]
