@@ -425,8 +425,9 @@ def c_list_chips(r):
         r.ok(f"chips: {want}", [label for _, label in shown] == want, shown)
         for i, label in shown:
             first = group_channels(label)[0]["channel"] if label in want else ""
-            rpc("Input.Left")
-            if not r.ok(f"← then → to the {label} chip", focus_id(i, ["Right"], len(CHIPS)), lab("System.CurrentControlId")):
+            rpc("Input.Left")  # lands on the chip focused last (the dialog keeps it), so the way on is either side
+            if not r.ok(f"← then ←/→ to the {label} chip", focus_id(i, ["Right"], len(CHIPS)) or focus_id(i, ["Left"], len(CHIPS) + 2),
+                        lab("System.CurrentControlId")):
                 return
             rpc("Input.Select")
             r.ok(f"{label}: OK focuses {first}", focused_row(first), row())
