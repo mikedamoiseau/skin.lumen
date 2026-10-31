@@ -11,6 +11,7 @@ import os
 import subprocess
 import sys
 import time
+import urllib.parse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kids_check  # noqa: E402
@@ -62,6 +63,63 @@ def live_channel(keep=False):
     return None
 
 
+def client():
+    return rpc("PVR.GetClients")["result"]["clients"][0]
+
+
+def all_label():
+    """Kodi's name for its all-channels group, in the box's language ("All channels" in English)."""
+    return rpc("PVR.GetChannelGroupDetails", {"channelgroupid": "alltv"})["result"]["channelgroupdetails"]["label"]
+
+
+def group_id(label):
+    for g in rpc("PVR.GetChannelGroups", {"channeltype": "tv"})["result"]["channelgroups"]:
+        if g["label"] == label:
+            return g["channelgroupid"]
+    return None
+
+
+def group_channels(label):
+    """The group's channels in number order, with their programme now and next (nothing for an unknown group)."""
+    gid = "alltv" if label == all_label() else group_id(label)
+    if gid is None:
+        return []
+    r = rpc("PVR.GetChannels", {"channelgroupid": gid,
+                                "properties": ["channel", "channelnumber", "uniqueid", "broadcastnow", "broadcastnext"]})
+    return sorted(r.get("result", {}).get("channels", []), key=lambda c: c["channelnumber"])
+
+
+def group_path(label):
+    """A channel group's path: Kodi's own all-channels group is local (-1), the others come from the PVR add-on."""
+    owner = -1 if label == all_label() else client()["clientid"]
+    return "pvr://channels/tv/%s@%d/" % (urllib.parse.quote(label), owner)
+
+
+def channel_path(label, c):
+    """Playing this path plays the channel through that group, so the remote's channel keys then stay in it."""
+    cl = client()
+    return group_path(label) + "%d@%s_%d.pvr" % (cl["instanceid"], cl["addonid"], c["uniqueid"])
+
+
+def play_in(label, c):
+    rpc("Player.Open", {"item": {"file": channel_path(label, c)}})
+    return playing(c["channel"])
+
+
+def guide_channel():
+    """A channel with a programme on now (none when the guide hasn't loaded)."""
+    return next((c for c in group_channels(all_label()) if c.get("broadcastnow")), None)
+
+
+def noguide_channel():
+    """A channel the guide has nothing for."""
+    return next((c for c in group_channels(all_label()) if not c.get("broadcastnow")), None)
+
+
+def kids_channel():
+    return next(iter(group_channels("Kids")), None)
+
+
 def free(r):
     if rpc("Player.GetActivePlayers")["result"]:
         r.skip("something is playing on the box; not touching it")
@@ -70,6 +128,26 @@ def free(r):
         r.skip("no live TV channels on this box")
         return False
     return True
+
+
+@check("groups")
+def c_groups(r):
+    """Home keeps the paths of the all-channels group and of the Kids group (empty while there is none) in its window
+    properties: every Lumen entry point opens live TV through them, which keeps the remote's channel keys on that list."""
+    reset_home()
+    want_all = group_path(all_label())
+    want_kids = group_path("Kids") if group_channels("Kids") else ""
+
+    def props():
+        return labs(["Window(home).Property(lumen.tv.all)", "Window(home).Property(lumen.tv.kids)"])
+    ok = wait_for(lambda: props()["Window(home).Property(lumen.tv.all)"] == want_all, 10)
+    p = props()
+    r.ok("all channels: " + want_all, ok, p)
+    kids = p["Window(home).Property(lumen.tv.kids)"]
+    if want_kids:
+        r.ok("kids: " + want_kids, kids == want_kids, p)
+    else:  # no kids channels yet: an empty Kids group may or may not be listed; either way no channel plays through it
+        r.ok("no kids channels: empty, or the empty Kids group's path", kids in ("", group_path("Kids")), p)
 
 
 @check("normal_channel")

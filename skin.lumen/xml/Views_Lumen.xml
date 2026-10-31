@@ -458,8 +458,10 @@
 	<include name="LumenNextLookup">
 		<!-- limit 0: everything; a limited lookup gets no "more" item (browse never) -->
 		<param name="limit">0</param>
+		<param name="visible">true</param>
 		<definition>
 			<control type="list" id="$PARAM[id]">
+				<visible>$PARAM[visible]</visible>
 				<left>-20</left>
 				<top>-20</top>
 				<width>1</width>

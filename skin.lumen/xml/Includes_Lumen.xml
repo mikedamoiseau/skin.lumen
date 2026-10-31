@@ -1754,6 +1754,52 @@
 	<!-- ============ Next episode card (Custom_1118_LumenNext.xml) ============ -->
 	<!-- the episode after the one playing: the next main one by number (specials left out, watched ones not skipped:
 	     the phone app's rule); in kids mode only a show with the kids tag has one. None while a special plays -->
+	<!-- live TV: the path of Kodi's all-channels group (its name is translated) in Home's group list 9310 -->
+	<variable name="LumenTvAllFound">
+		<value condition="String.IsEqual(Container(9310).ListItem(0).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(0).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(1).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(1).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(2).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(2).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(3).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(3).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(4).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(4).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(5).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(5).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(6).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(6).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(7).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(7).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(8).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(8).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(9).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(9).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(10).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(10).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(11).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(11).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(12).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(12).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(13).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(13).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(14).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(14).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(15).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(15).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(16).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(16).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(17).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(17).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(18).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(18).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(19).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(19).FolderPath]</value>
+	</variable>
+	<!-- live TV: the path of the Kids group kodi-app writes (group-title "…;Kids"), empty while there is none -->
+	<variable name="LumenTvKidsFound">
+		<value condition="String.IsEqual(Container(9310).ListItem(0).Label,Kids)">$INFO[Container(9310).ListItem(0).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(1).Label,Kids)">$INFO[Container(9310).ListItem(1).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(2).Label,Kids)">$INFO[Container(9310).ListItem(2).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(3).Label,Kids)">$INFO[Container(9310).ListItem(3).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(4).Label,Kids)">$INFO[Container(9310).ListItem(4).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(5).Label,Kids)">$INFO[Container(9310).ListItem(5).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(6).Label,Kids)">$INFO[Container(9310).ListItem(6).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(7).Label,Kids)">$INFO[Container(9310).ListItem(7).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(8).Label,Kids)">$INFO[Container(9310).ListItem(8).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(9).Label,Kids)">$INFO[Container(9310).ListItem(9).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(10).Label,Kids)">$INFO[Container(9310).ListItem(10).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(11).Label,Kids)">$INFO[Container(9310).ListItem(11).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(12).Label,Kids)">$INFO[Container(9310).ListItem(12).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(13).Label,Kids)">$INFO[Container(9310).ListItem(13).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(14).Label,Kids)">$INFO[Container(9310).ListItem(14).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(15).Label,Kids)">$INFO[Container(9310).ListItem(15).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(16).Label,Kids)">$INFO[Container(9310).ListItem(16).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(17).Label,Kids)">$INFO[Container(9310).ListItem(17).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(18).Label,Kids)">$INFO[Container(9310).ListItem(18).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItem(19).Label,Kids)">$INFO[Container(9310).ListItem(19).FolderPath]</value>
+	</variable>
 	<variable name="LumenNextEpPath">
 		<value condition="Integer.IsGreater(VideoPlayer.Season,0) + !String.IsEmpty(VideoPlayer.TvShowDBID) + !String.IsEqual(Skin.String(lumen.nextcard),off)">videodb://tvshows/titles/$INFO[VideoPlayer.TvShowDBID]/-1/?xsp=%7B%22type%22%3A%22episodes%22%2C%22rules%22%3A%7B%22and%22%3A%5B%7B%22field%22%3A%22season%22%2C%22operator%22%3A%22greaterthan%22%2C%22value%22%3A%5B%220%22%5D%7D$VAR[LumenMoreKids]%2C%7B%22or%22%3A%5B%7B%22field%22%3A%22season%22%2C%22operator%22%3A%22greaterthan%22%2C%22value%22%3A%5B%22$INFO[VideoPlayer.Season]%22%5D%7D%2C%7B%22and%22%3A%5B%7B%22field%22%3A%22season%22%2C%22operator%22%3A%22is%22%2C%22value%22%3A%5B%22$INFO[VideoPlayer.Season]%22%5D%7D%2C%7B%22field%22%3A%22episode%22%2C%22operator%22%3A%22greaterthan%22%2C%22value%22%3A%5B%22$INFO[VideoPlayer.Episode]%22%5D%7D%5D%7D%5D%7D%5D%7D%2C%22order%22%3A%7B%22method%22%3A%22episode%22%2C%22direction%22%3A%22ascending%22%7D%2C%22limit%22%3A1%7D</value>
 	</variable>

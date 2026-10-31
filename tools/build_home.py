@@ -137,6 +137,13 @@ def build():
     # no row to focus: the tab bar takes it, or the remote would have nothing to move
     w("\t<onload condition=\"$EXP[LumenNoHomeRows]\">SetFocus(9000)</onload>")
     w("\t<controls>")
+    # live TV groups (Kodi lists them under pvr://channels/tv/): Timers.xml (lumentvgroups) keeps the all-channels and
+    # Kids groups' paths in Home properties, for every place that opens live TV
+    w('\t\t<include content="LumenNextLookup">')
+    w('\t\t\t<param name="id" value="9310" />')
+    w('\t\t\t<param name="path" value="pvr://channels/tv/" />')
+    w('\t\t\t<param name="visible" value="PVR.HasTVChannels" />')
+    w("\t\t</include>")
     # shown when no row is: Timers.xml (lumenhomeempty) reads it, as Kodi doesn't expand $EXP in Timers.xml
     w('\t\t<control type="image" id="6017">')
     w("\t\t\t<width>1</width>")

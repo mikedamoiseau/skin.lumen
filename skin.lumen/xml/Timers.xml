@@ -156,4 +156,12 @@
         <onstart>ClearProperty(lumen.next.cancel,home)</onstart>
         <stop>String.IsEmpty(Window(home).Property(lumen.next.for)) + String.IsEmpty(Window(home).Property(lumen.next.cancel))</stop>
     </timer>
+    <timer>
+        <name>lumentvgroups</name>
+        <description>Home's live TV group list (9310) has loaded: keep the all-channels and Kids groups' paths in Home properties (lumen.tv.all, lumen.tv.kids), so everything that opens live TV opens it on that list and the remote's channel keys stay on it. Not with a modal dialog up (Container(id) would read the dialog). Again on every visit to Home, so a Kids group added later shows up</description>
+        <start reset="true">Window.IsActive(home) + !System.HasActiveModalDialog + !Container(9310).IsUpdating + Integer.IsGreater(Container(9310).NumItems,0)</start>
+        <onstart>SetProperty(lumen.tv.all,$VAR[LumenTvAllFound],home)</onstart>
+        <onstart>SetProperty(lumen.tv.kids,$VAR[LumenTvKidsFound],home)</onstart>
+        <stop>!Window.IsActive(home) | Container(9310).IsUpdating</stop>
+    </timer>
 </timers>
