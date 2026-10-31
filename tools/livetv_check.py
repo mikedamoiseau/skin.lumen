@@ -41,7 +41,7 @@ def playing(name):
         l = labs(["VideoPlayer.VideoCodec", "VideoPlayer.ChannelName"])
         return (l["VideoPlayer.VideoCodec"] != "" and l["VideoPlayer.ChannelName"] == name and cond("Window.IsActive(fullscreenvideo)")
                 and not cond("System.HasActiveModalDialog") and cond("Player.Playing"))
-    return wait_for(on, 25, 0.5)
+    return wait_for(on, 45, 0.5)  # a stream can take 20–30 s to open (the relays are slow at times)
 
 
 def stop():
