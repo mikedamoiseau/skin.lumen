@@ -78,7 +78,7 @@
 					<width>116</width>
 					<height>116</height>
 					<aspectratio>keep</aspectratio>
-					<texture background="true">$INFO[Player.Icon]</texture>
+					<texture background="true" fallback="lumen/icons/tv_tile.png">$INFO[Player.Icon]</texture>
 				</control>
 			</control>
 			<!-- number, name, LIVE; then the programme -->

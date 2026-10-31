@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Lumen OSD: round glass transport buttons over the seek bar (DialogSeekBar draws bar/times/title). -->
 <window>
+	<!-- live TV: OK (the keymap's OSD action) opens the channel list instead, unless its "Player controls" asked for
+	     this (lumen.liveosd, cleared on close) -->
+	<onload condition="VideoPlayer.Content(livetv) + String.IsEmpty(Window(home).Property(lumen.liveosd))">Dialog.Close(videoosd,true)</onload>
+	<onload condition="VideoPlayer.Content(livetv) + String.IsEmpty(Window(home).Property(lumen.liveosd))">ActivateWindow(pvrosdchannels)</onload>
 	<onload condition="!Player.PauseEnabled">SetFocus(603)</onload>
+	<onunload>ClearProperty(lumen.liveosd,home)</onunload>
 	<defaultcontrol always="true">602</defaultcontrol>
 	<depth>DepthOSD</depth>
 	<controls>

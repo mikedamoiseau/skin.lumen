@@ -265,6 +265,22 @@ def audio_icon(size=64, stroke=5):
 
 
 
+def tv_icon(size=64, stroke=5, ink=WHITE + (255,), pad=0.0):
+    """A screen on a stand (a live TV channel whose logo is missing or doesn't load). With ink and pad it is the
+    logo tile's fallback: an image's fallback takes no colour of its own, and it fills the logo's box."""
+    big = size * S
+    img = Image.new("RGBA", (big, big), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+
+    def at(v):
+        return (pad + v * (1 - 2 * pad)) * big
+    w = round(stroke * S * (1 - 2 * pad))
+    d.rounded_rectangle([at(0.12), at(0.2), at(0.88), at(0.7)], radius=0.07 * big * (1 - 2 * pad), outline=ink, width=w)
+    d.line([(at(0.5), at(0.7)), (at(0.5), at(0.82))], fill=ink, width=w)
+    d.line([(at(0.32), at(0.84)), (at(0.68), at(0.84))], fill=ink, width=w)
+    return down(img, size, size)
+
+
 def person_icon(size=256, stroke=11):
     """Head and shoulders outline (actor page without a photo); drawn large, it shows at 200 px."""
     big = size * S
@@ -421,6 +437,7 @@ def main():
     out(f"{L}icons/kids.png", kids_icon())
     out(f"{L}icons/person.png", person_icon())
     out(f"{L}icons/audio.png", audio_icon())
+    out(f"{L}icons/tv_tile.png", tv_icon(128, 9, ink=(11, 12, 16, 128), pad=0.16))
 
     # --- Estuary overrides: restyle every legacy window through shared textures ---
     out("buttons/button-fo.png", rr(80, 80, 16, fill=(255, 255, 255, 62), stroke=(255, 255, 255, 150), stroke_w=2, inset=2))

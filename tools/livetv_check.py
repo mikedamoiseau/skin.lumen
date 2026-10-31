@@ -15,7 +15,7 @@ import urllib.parse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kids_check  # noqa: E402
-from kodi_gui import SSH, cond, lab, labs, reset_home, rpc, shot, wait_for  # noqa: E402
+from kodi_gui import SSH, cond, focus_id, lab, labs, reset_home, rpc, shot, wait_for  # noqa: E402
 
 CHECKS = {}
 # the Live TV windows (each serves TV and radio)
@@ -45,6 +45,8 @@ def playing(name):
 
 
 def stop():
+    if rpc("Player.GetActivePlayers")["result"]:
+        played(lab("VideoPlayer.ChannelName"), "stop")
     for p in rpc("Player.GetActivePlayers")["result"]:
         rpc("Player.Stop", {"playerid": p["playerid"]})
     return wait_for(lambda: rpc("Player.GetActivePlayers")["result"] == [], 10)
@@ -54,6 +56,7 @@ def live_channel(keep=False):
     """The first channel that plays in normal mode, or None. With keep it's left playing: opening a stream again
     right away can take longer than playing() waits (the relays are slow at times)."""
     for c in channels()[:5]:
+        played(c["channel"], "channelid")
         rpc("Player.Open", {"item": {"channelid": c["channelid"]}})
         ok = playing(c["channel"])
         if not (ok and keep):
@@ -101,7 +104,13 @@ def channel_path(label, c):
     return group_path(label) + "%d@%s_%d.pvr" % (cl["instanceid"], cl["addonid"], c["uniqueid"])
 
 
+def played(name, how):
+    """Every test play goes to kodi-app (box, time, channel): one line each, on stderr."""
+    print(f"PLAY {time.strftime('%H:%M:%S')} {name} ({how})", file=sys.stderr, flush=True)
+
+
 def play_in(label, c):
+    played(c["channel"], label)
     rpc("Player.Open", {"item": {"file": channel_path(label, c)}})
     return playing(c["channel"])
 
@@ -155,6 +164,7 @@ BANNER = 1120  # Custom_1120_LumenLiveBanner.xml
 
 def zap_to(action, name, timeout=5):
     """Channel up/down (Kodi's own action, what the remote's keys send); True once that channel is the one shown."""
+    played(name, action)
     rpc("Input.ExecuteAction", {"action": action})
     return wait_for(lambda: lab("VideoPlayer.ChannelName") == name, timeout, 0.2)
 
@@ -258,6 +268,7 @@ def c_updown_switch(r):
         if not r.ok(f"{c['channel']} plays", play_in(all_label(), c)):
             return
         time.sleep(6)
+        played("(next)", "up")
         rpc("Input.Up")
         r.ok("↑ shows another channel", wait_for(lambda: lab("VideoPlayer.ChannelName") != c["channel"], 3))
         other = lab("VideoPlayer.ChannelName")
@@ -265,6 +276,218 @@ def c_updown_switch(r):
         l = labs(["VideoPlayer.ChannelName"])
         r.ok(f"and stays on it without OK ({other})", l["VideoPlayer.ChannelName"] == other and not cond("Player.ChannelPreviewActive")
              and cond("Player.Playing"), l)
+    finally:
+        stop()
+        reset_home()
+
+
+# DialogPVRChannelsOSD.xml: the channel list (Kodi's id), the chip slots (one per group of pvr://channels/tv/, in
+# Kodi's order; the empty ones, All channels and Kids hidden), the "Player controls" button, the card's programme lines
+LIST = 11
+CHIPS = range(71, 87)
+PLAYER_CONTROLS = 90
+CARD_PROGRAMME = 301
+
+
+def open_list():
+    """The remote's OK while a channel plays (the keymap's "OSD" action) opens the channel list, loaded."""
+    rpc("Input.ExecuteAction", {"action": "osd"})
+    return wait_for(lambda: cond("Window.IsActive(pvrosdchannels)") and not cond("Window.IsActive(videoosd)")
+                    and cond(f"Integer.IsGreater(Container({LIST}).NumItems,0)"), 5)
+
+
+def row():
+    return labs([f"Container({LIST}).ListItem.Label", f"Container({LIST}).ListItem.ChannelNumberLabel",
+                 f"Container({LIST}).ListItem.Title"])
+
+
+def focused_row(name, timeout=3):
+    return wait_for(lambda: cond(f"Control.HasFocus({LIST})") and lab(f"Container({LIST}).ListItem.Label") == name, timeout)
+
+
+def chip_groups():
+    """The groups the chips stand for: Kodi's order, the non-empty ones other than All channels and Kids."""
+    labels = [g["label"] for g in rpc("PVR.GetChannelGroups", {"channeltype": "tv"})["result"]["channelgroups"]]
+    return [g for g in labels if g not in (all_label(), "Kids") and group_channels(g)]
+
+
+def shown_chips():
+    return [(i, lab(f"Control.GetLabel({i})")) for i in CHIPS if cond(f"Control.IsVisible({i})")]
+
+
+def to_player_controls():
+    """From the list: ← to the chip row, then → to its end, "Player controls"; OK there."""
+    rpc("Input.Left")
+    if not focus_id(PLAYER_CONTROLS, ["Right"], len(CHIPS) + 2):
+        return False
+    rpc("Input.Select")
+    return wait_for(lambda: cond("Window.IsActive(videoosd)") and not cond("Window.IsActive(pvrosdchannels)"), 5)
+
+
+@check("osd_list")
+def c_osd_list(r):
+    """OK while a channel plays opens the channel list (not the player controls): every channel, the playing one
+    focused and marked, the header "Channels"."""
+    if not free(r):
+        return
+    c = guide_channel() or group_channels(all_label())[0]
+    kids_check.kids(False)
+    reset_home()
+    try:
+        if not r.ok(f"{c['channel']} plays", play_in(all_label(), c)):
+            return
+        r.ok("OK opens the channel list", open_list(), lab("System.CurrentWindow"))
+        n = len(group_channels(all_label()))
+        l = labs([f"Container({LIST}).NumItems", "Control.GetLabel(2)"])
+        r.ok(f"every channel ({n})", l[f"Container({LIST}).NumItems"] == str(n), l)
+        r.ok("header: Channels", l["Control.GetLabel(2)"] == "Channels", l)
+        r.ok("the playing channel focused and marked", focused_row(c["channel"]) and cond(f"Container({LIST}).ListItem.IsPlaying"), row())
+        r.ok("its programme on the card", cond(f"Control.IsVisible({CARD_PROGRAMME})"))
+        time.sleep(1)
+        shot("live-list")
+        rpc("Input.Back")
+        r.ok("Back: the picture again", wait_for(lambda: cond("Window.IsActive(fullscreenvideo)") and not cond("Window.IsActive(pvrosdchannels)")
+                                                 and lab("VideoPlayer.ChannelName") == c["channel"], 3))
+    finally:
+        stop()
+        reset_home()
+
+
+@check("list_play")
+def c_list_play(r):
+    """↓ then OK in the list plays the next channel, through All channels, and the list closes."""
+    if not free(r):
+        return
+    every = group_channels(all_label())
+    a, b = every[0], every[1]
+    kids_check.kids(False)
+    reset_home()
+    try:
+        if not r.ok(f"{a['channel']} plays", play_in(all_label(), a)):
+            return
+        if not r.ok("the list opens", open_list()):
+            return
+        rpc("Input.Down")
+        if not r.ok(f"↓ → {b['channel']}", focused_row(b["channel"]), row()):
+            return
+        played(b["channel"], "list OK")
+        rpc("Input.Select")
+        r.ok(f"OK plays {b['channel']}", playing(b["channel"]), lab("VideoPlayer.ChannelName"))
+        r.ok("through All channels", lab("VideoPlayer.ChannelGroup") == all_label(), lab("VideoPlayer.ChannelGroup"))
+    finally:
+        stop()
+        reset_home()
+
+
+@check("list_noguide")
+def c_list_noguide(r):
+    """A channel without guide data: its row and the card show no programme (no title, no progress)."""
+    if not free(r):
+        return
+    c = noguide_channel()
+    if not c:
+        r.skip("every channel has guide data")
+        return
+    kids_check.kids(False)
+    reset_home()
+    try:
+        if not r.ok(f"{c['channel']} plays", play_in(all_label(), c)):
+            return
+        if not r.ok("the list opens", open_list()):
+            return
+        r.ok(f"focused on {c['channel']}", focused_row(c["channel"]), row())
+        r.ok("no programme in the row", row()[f"Container({LIST}).ListItem.Title"] == "" and not cond(f"Container({LIST}).ListItem.HasEpg"), row())
+        r.ok("no programme lines on the card", not cond(f"Control.IsVisible({CARD_PROGRAMME})"))
+        time.sleep(1)
+        shot("live-list-noguide")
+    finally:
+        stop()
+        reset_home()
+
+
+@check("list_chips")
+def c_list_chips(r):
+    """The chips are the non-empty groups other than All channels and Kids, in Kodi's order; OK on one focuses its
+    group's first channel in the list."""
+    if not free(r):
+        return
+    want = chip_groups()
+    c = group_channels(all_label())[0]
+    kids_check.kids(False)
+    reset_home()
+    try:
+        if not r.ok(f"{c['channel']} plays", play_in(all_label(), c)):
+            return
+        if not r.ok("the list opens", open_list()):
+            return
+        time.sleep(1)  # the groups' own lists load after the dialog
+        shown = shown_chips()
+        r.ok(f"chips: {want}", [label for _, label in shown] == want, shown)
+        for i, label in shown:
+            first = group_channels(label)[0]["channel"] if label in want else ""
+            rpc("Input.Left")
+            if not r.ok(f"← then → to the {label} chip", focus_id(i, ["Right"], len(CHIPS)), lab("System.CurrentControlId")):
+                return
+            rpc("Input.Select")
+            r.ok(f"{label}: OK focuses {first}", focused_row(first), row())
+    finally:
+        stop()
+        reset_home()
+
+
+@check("list_info")
+def c_list_info(r):
+    """→ on a row opens programme info for that row's channel; Back returns to the list."""
+    if not free(r):
+        return
+    every = group_channels(all_label())
+    pair = next(((a, b) for a, b in zip(every, every[1:]) if a.get("broadcastnow") and b.get("broadcastnow")), None)
+    if not pair:
+        r.skip("no two neighbouring channels with guide data")
+        return
+    a, b = pair
+    kids_check.kids(False)
+    reset_home()
+    try:
+        if not r.ok(f"{a['channel']} plays", play_in(all_label(), a)):
+            return
+        if not r.ok("the list opens", open_list()):
+            return
+        rpc("Input.Down")
+        if not r.ok(f"↓ → {b['channel']}", focused_row(b["channel"]), row()):
+            return
+        rpc("Input.Right")
+        r.ok("→ opens programme info", wait_for(lambda: cond("Window.IsActive(pvrguideinfo)"), 4), lab("System.CurrentWindow"))
+        l = labs(["ListItem.ChannelName", "ListItem.Title"])
+        r.ok(f"for {b['channel']}: {now_next(b)[0]}", l["ListItem.ChannelName"] == b["channel"] and l["ListItem.Title"] == now_next(b)[0], l)
+        rpc("Input.Back")
+        r.ok("Back: the list again", wait_for(lambda: cond("Window.IsActive(pvrosdchannels)") and not cond("Window.IsActive(pvrguideinfo)"), 3))
+    finally:
+        stop()
+        reset_home()
+
+
+@check("player_controls")
+def c_player_controls(r):
+    """"Player controls" in the list opens Kodi's player controls (sleep timer etc.); Back returns to the picture, and
+    OK opens the list again."""
+    if not free(r):
+        return
+    c = guide_channel() or group_channels(all_label())[0]
+    kids_check.kids(False)
+    reset_home()
+    try:
+        if not r.ok(f"{c['channel']} plays", play_in(all_label(), c)):
+            return
+        if not r.ok("the list opens", open_list()):
+            return
+        r.ok("Player controls opens them", to_player_controls(), lab("System.CurrentWindow"))
+        rpc("Input.Back")
+        # Kodi's OK toggles the OSD: while it fades out, OK would close it, not open the list
+        r.ok("Back: the picture", wait_for(lambda: cond("Window.IsActive(fullscreenvideo)") and not cond("Window.IsVisible(videoosd)")
+                                           and not cond("Window.IsActive(pvrosdchannels)") and cond("Player.Playing"), 4),
+             lab("System.CurrentWindow"))
+        r.ok("OK: the list again", open_list(), lab("System.CurrentWindow"))
     finally:
         stop()
         reset_home()
@@ -301,8 +524,8 @@ def c_live_overlay(r):
     if not r.ok("a channel that plays", c is not None):
         return
     try:
-        rpc("Input.ShowOSD")
-        r.ok("player controls open", wait_for(lambda: cond("Window.IsActive(videoosd)") and cond("Window.IsVisible(seekbar)"), 4))
+        r.ok("player controls open (OK, then Player controls in the list)", open_list() and to_player_controls()
+             and wait_for(lambda: cond("Window.IsVisible(seekbar)"), 4))
         time.sleep(1)
         l = labs(["VideoPlayer.ChannelName", "VideoPlayer.ChannelNumberLabel"])
         r.ok("live TV, with its channel's name and number", cond("VideoPlayer.Content(livetv)") and l["VideoPlayer.ChannelName"] == c["channel"]
@@ -331,6 +554,7 @@ def c_kids_channel(r):
     try:
         kids_check.kids(True)
         reset_home()
+        played(c["channel"], "channelid, kids")
         rpc("Player.Open", {"item": {"channelid": c["channelid"]}})
         t0 = time.time()
         # right after Player.Open the player may not exist yet: what counts is that it's gone a while later

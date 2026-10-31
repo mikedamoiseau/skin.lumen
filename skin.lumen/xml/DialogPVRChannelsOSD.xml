@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Live TV channel list: OK while a channel plays (VideoOSD.xml sends OK here). One list, the playing group (All
+     channels; Kids in kids mode), over the still-playing picture. OK plays the focused channel, → opens its programme
+     info, ← goes up to the chips: one per group, jumping to its first channel, and "Player controls" (Kodi's OSD with
+     the sleep timer). Kids get the list alone. A card at the bottom right shows the focused channel's now and next. -->
 <window>
 	<defaultcontrol always="true">11</defaultcontrol>
 	<controls>
@@ -7,65 +11,215 @@
 			<control type="group">
 				<depth>DepthOSD</depth>
 				<include>OpenClose_Left</include>
-				<include content="ContentPanel">
-					<param name="width" value="1042" />
-				</include>
-				<control type="fixedlist" id="11">
-					<left>0</left>
-					<top>list_top_offset</top>
-					<width>970</width>
-					<bottom>list_bottom</bottom>
-					<onleft>PreviousChannelGroup</onleft>
-					<onright>60</onright>
-					<onup>11</onup>
-					<ondown>11</ondown>
-					<movement>4</movement>
-					<focusposition>4</focusposition>
-					<pagecontrol>60</pagecontrol>
-					<scrolltime tween="cubic" easing="out">500</scrolltime>
-					<include content="PVRListItemLayouts">
-						<param name="list_id" value="11" />
-						<param name="label1" value="$INFO[ListItem.Label]" />
-						<param name="has_status_icon" value="true" />
-						<param name="info_update" value="5000" />
-					</include>
-				</control>
-				<control type="scrollbar" id="60">
-					<left>970</left>
-					<top>list_top_offset</top>
-					<width>12</width>
-					<bottom>list_bottom</bottom>
-					<onleft>11</onleft>
-					<onright>NextChannelGroup</onright>
-					<texturesliderbackground />
-					<animation effect="zoom" start="100,100" end="50,100" center="982,0" time="300" tween="sine" easing="inout" condition="!Control.HasFocus(60)">conditional</animation>
+				<control type="image">
+					<width>820</width>
+					<height>1080</height>
+					<texture colordiffuse="glass_strong">lumen/white.png</texture>
 				</control>
 				<control type="image">
-					<left>0</left>
-					<bottom>0</bottom>
-					<width>970</width>
-					<height>115</height>
-					<texture flipy="true">frame/InfoBar.png</texture>
-				</control>
-			</control>
-			<control type="group">
-				<depth>DepthOSD</depth>
-				<include>Animation_TopSlide</include>
-				<control type="image">
-					<left>0</left>
-					<width>970</width>
-					<height>110</height>
-					<texture>frame/InfoBar.png</texture>
+					<left>819</left>
+					<width>1</width>
+					<height>1080</height>
+					<texture colordiffuse="stroke">lumen/white.png</texture>
 				</control>
 				<control type="label" id="2">
-					<description>header label</description>
-					<textoffsetx>40</textoffsetx>
-					<width>970</width>
-					<height>70</height>
-					<font>font45</font>
+					<left>64</left>
+					<top>56</top>
+					<width>716</width>
+					<height>62</height>
 					<aligny>center</aligny>
-					<label>$VAR[BreadcrumbsPVRChannelsOSDVar]</label>
-					<shadowcolor>black</shadowcolor>
+					<font>lm_title</font>
+					<textcolor>text</textcolor>
+					<label>$VAR[LumenTvListTitle]</label>
+				</control>
+				<!-- the groups' own lists, for the chips (not in kids mode) -->
+				<control type="group">
+					<visible>!$EXP[LumenKids]</visible>
+					<include content="LumenNextLookup">
+						<param name="id" value="9311" />
+						<param name="path" value="pvr://channels/tv/" />
+					</include>
+					<include content="LumenTvGroupLookup"><param name="group" value="0" /><param name="lookup" value="9321" /></include>
+					<include content="LumenTvGroupLookup"><param name="group" value="1" /><param name="lookup" value="9322" /></include>
+					<include content="LumenTvGroupLookup"><param name="group" value="2" /><param name="lookup" value="9323" /></include>
+					<include content="LumenTvGroupLookup"><param name="group" value="3" /><param name="lookup" value="9324" /></include>
+					<include content="LumenTvGroupLookup"><param name="group" value="4" /><param name="lookup" value="9325" /></include>
+					<include content="LumenTvGroupLookup"><param name="group" value="5" /><param name="lookup" value="9326" /></include>
+					<include content="LumenTvGroupLookup"><param name="group" value="6" /><param name="lookup" value="9327" /></include>
+					<include content="LumenTvGroupLookup"><param name="group" value="7" /><param name="lookup" value="9328" /></include>
+					<include content="LumenTvGroupLookup"><param name="group" value="8" /><param name="lookup" value="9329" /></include>
+					<include content="LumenTvGroupLookup"><param name="group" value="9" /><param name="lookup" value="9330" /></include>
+					<include content="LumenTvGroupLookup"><param name="group" value="10" /><param name="lookup" value="9331" /></include>
+					<include content="LumenTvGroupLookup"><param name="group" value="11" /><param name="lookup" value="9332" /></include>
+					<include content="LumenTvGroupLookup"><param name="group" value="12" /><param name="lookup" value="9333" /></include>
+					<include content="LumenTvGroupLookup"><param name="group" value="13" /><param name="lookup" value="9334" /></include>
+					<include content="LumenTvGroupLookup"><param name="group" value="14" /><param name="lookup" value="9335" /></include>
+					<include content="LumenTvGroupLookup"><param name="group" value="15" /><param name="lookup" value="9336" /></include>
+				</control>
+				<control type="grouplist" id="70">
+					<left>64</left>
+					<top>143</top>
+					<width>474</width>
+					<height>48</height>
+					<orientation>horizontal</orientation>
+					<itemgap>12</itemgap>
+					<onright>90</onright>
+					<ondown>11</ondown>
+					<visible>!$EXP[LumenKids]</visible>
+					<include content="LumenTvChip"><param name="id" value="71" /><param name="group" value="0" /><param name="lookup" value="9321" /></include>
+					<include content="LumenTvChip"><param name="id" value="72" /><param name="group" value="1" /><param name="lookup" value="9322" /></include>
+					<include content="LumenTvChip"><param name="id" value="73" /><param name="group" value="2" /><param name="lookup" value="9323" /></include>
+					<include content="LumenTvChip"><param name="id" value="74" /><param name="group" value="3" /><param name="lookup" value="9324" /></include>
+					<include content="LumenTvChip"><param name="id" value="75" /><param name="group" value="4" /><param name="lookup" value="9325" /></include>
+					<include content="LumenTvChip"><param name="id" value="76" /><param name="group" value="5" /><param name="lookup" value="9326" /></include>
+					<include content="LumenTvChip"><param name="id" value="77" /><param name="group" value="6" /><param name="lookup" value="9327" /></include>
+					<include content="LumenTvChip"><param name="id" value="78" /><param name="group" value="7" /><param name="lookup" value="9328" /></include>
+					<include content="LumenTvChip"><param name="id" value="79" /><param name="group" value="8" /><param name="lookup" value="9329" /></include>
+					<include content="LumenTvChip"><param name="id" value="80" /><param name="group" value="9" /><param name="lookup" value="9330" /></include>
+					<include content="LumenTvChip"><param name="id" value="81" /><param name="group" value="10" /><param name="lookup" value="9331" /></include>
+					<include content="LumenTvChip"><param name="id" value="82" /><param name="group" value="11" /><param name="lookup" value="9332" /></include>
+					<include content="LumenTvChip"><param name="id" value="83" /><param name="group" value="12" /><param name="lookup" value="9333" /></include>
+					<include content="LumenTvChip"><param name="id" value="84" /><param name="group" value="13" /><param name="lookup" value="9334" /></include>
+					<include content="LumenTvChip"><param name="id" value="85" /><param name="group" value="14" /><param name="lookup" value="9335" /></include>
+					<include content="LumenTvChip"><param name="id" value="86" /><param name="group" value="15" /><param name="lookup" value="9336" /></include>
+				</control>
+				<!-- Kodi's player controls (sleep timer, audio, subtitles); VideoOSD.xml opens them while lumen.liveosd is set -->
+				<control type="button" id="90">
+					<left>550</left>
+					<top>143</top>
+					<width>230</width>
+					<height>48</height>
+					<font>lm_caption_bold</font>
+					<align>center</align>
+					<aligny>center</aligny>
+					<textcolor>text</textcolor>
+					<focusedcolor>focus_text</focusedcolor>
+					<label>Player controls</label>
+					<texturefocus border="24" colordiffuse="FFFFFFFF">lumen/pill.png</texturefocus>
+					<texturenofocus border="24" colordiffuse="14FFFFFF">lumen/pill.png</texturenofocus>
+					<onleft>70</onleft>
+					<ondown>11</ondown>
+					<onclick>SetProperty(lumen.liveosd,1,home)</onclick>
+					<onclick>Dialog.Close(pvrosdchannels,true)</onclick>
+					<onclick>ActivateWindow(videoosd)</onclick>
+					<visible>!$EXP[LumenKids]</visible>
+				</control>
+				<control type="fixedlist" id="11">
+					<left>64</left>
+					<top>215</top>
+					<width>716</width>
+					<height>810</height>
+					<onup>11</onup>
+					<ondown>11</ondown>
+					<onleft condition="!$EXP[LumenKids]">70</onleft>
+					<onright>Action(Info)</onright>
+					<movement>4</movement>
+					<focusposition>4</focusposition>
+					<scrolltime tween="cubic" easing="out">240</scrolltime>
+					<animation effect="slide" start="0,0" end="0,-72" time="0" condition="$EXP[LumenKids]">Conditional</animation>
+					<itemlayout height="90" infoupdate="5000">
+						<include>LumenTvRowLogo</include>
+						<include content="LumenTvRowText">
+							<param name="number" value="text_mute" />
+							<param name="text" value="text" />
+							<param name="dim" value="text_dim" />
+							<param name="track" value="2EFFFFFF" />
+							<param name="fill" value="accent" />
+						</include>
+					</itemlayout>
+					<focusedlayout height="90" infoupdate="5000">
+						<control type="image">
+							<width>716</width>
+							<height>84</height>
+							<texture border="20" colordiffuse="FFFFFFFF">lumen/rr20.png</texture>
+							<visible>Control.HasFocus(11)</visible>
+						</control>
+						<control type="image">
+							<width>716</width>
+							<height>84</height>
+							<texture border="20" colordiffuse="glass_light">lumen/rr20.png</texture>
+							<visible>!Control.HasFocus(11)</visible>
+						</control>
+						<include>LumenTvRowLogo</include>
+						<control type="group">
+							<visible>Control.HasFocus(11)</visible>
+							<include content="LumenTvRowText">
+								<param name="number" value="focus_text" />
+								<param name="text" value="focus_text" />
+								<param name="dim" value="B30B0C10" />
+								<param name="track" value="260B0C10" />
+								<param name="fill" value="focus_text" />
+							</include>
+						</control>
+						<control type="group">
+							<visible>!Control.HasFocus(11)</visible>
+							<include content="LumenTvRowText">
+								<param name="number" value="text_mute" />
+								<param name="text" value="text" />
+								<param name="dim" value="text_dim" />
+								<param name="track" value="2EFFFFFF" />
+								<param name="fill" value="accent" />
+							</include>
+						</control>
+					</focusedlayout>
+				</control>
+			</control>
+			<!-- the focused channel's now and next -->
+			<control type="group" id="301">
+				<right>80</right>
+				<bottom>72</bottom>
+				<width>760</width>
+				<height>220</height>
+				<depth>DepthOSD</depth>
+				<visible>Container(11).ListItem.HasEpg</visible>
+				<animation effect="fade" start="0" end="100" time="240" tween="sine" easing="out">WindowOpen</animation>
+				<animation effect="fade" start="100" end="0" time="200" tween="sine" easing="in">WindowClose</animation>
+				<control type="image">
+					<texture border="28" colordiffuse="DB0F1218">lumen/rr28.png</texture>
+				</control>
+				<control type="image">
+					<texture border="28" colordiffuse="stroke">lumen/rr28_stroke1.png</texture>
+				</control>
+				<control type="grouplist">
+					<left>32</left>
+					<top>28</top>
+					<width>696</width>
+					<height>164</height>
+					<orientation>vertical</orientation>
+					<itemgap>10</itemgap>
+					<control type="label">
+						<width>696</width>
+						<height>28</height>
+						<aligny>center</aligny>
+						<font>lm_caption</font>
+						<textcolor>text_dim</textcolor>
+						<label>$INFO[Container(11).ListItem.ChannelNumberLabel]$INFO[Container(11).ListItem.Label, · ]</label>
+					</control>
+					<control type="label">
+						<width>696</width>
+						<height>42</height>
+						<aligny>center</aligny>
+						<font>lm_headline</font>
+						<textcolor>text</textcolor>
+						<label>$INFO[Container(11).ListItem.Title]</label>
+					</control>
+					<control type="label">
+						<width>696</width>
+						<height>32</height>
+						<aligny>center</aligny>
+						<font>lm_body_s</font>
+						<textcolor>text_dim</textcolor>
+						<label>$INFO[Container(11).ListItem.StartTime]$INFO[Container(11).ListItem.EndTime, – ]</label>
+					</control>
+					<control type="label">
+						<width>696</width>
+						<height>32</height>
+						<aligny>center</aligny>
+						<font>lm_body_s</font>
+						<textcolor>text_dim</textcolor>
+						<label>Next · $INFO[Container(11).ListItem.NextStartTime]$INFO[Container(11).ListItem.NextTitle,  ]</label>
+						<visible>!String.IsEmpty(Container(11).ListItem.NextTitle)</visible>
+					</control>
 				</control>
 			</control>
 		</control>
