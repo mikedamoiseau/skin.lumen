@@ -15,7 +15,7 @@ import urllib.parse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kids_check  # noqa: E402
-from kodi_gui import HOST, SSH, cond, focus_id, lab, labs, reset_home, rpc, shot, wait_for  # noqa: E402
+from kodi_gui import HOST, SSH, cond, focus_id, lab, labs, reset_home, restart_kodi, rpc, shot, wait_for  # noqa: E402
 
 CHECKS = {}
 # the Live TV windows (each serves TV and radio)
@@ -658,8 +658,8 @@ LIVE_TAB = 19
 GUIDE, GUIDE_TITLE, GUIDE_NOW = 50, 1301, 87
 
 
-def open_guide_from_home():
-    """Home, up to the tab bar, along to Live TV, OK: the guide on every channel, loaded."""
+def live_tab():
+    """Home, up to the tab bar, along to Live TV, OK."""
     reset_home()
     for _ in range(5):
         if lab("System.CurrentControlId") in [str(i) for i in range(10, 21)]:
@@ -669,6 +669,13 @@ def open_guide_from_home():
     if not focus_id(LIVE_TAB, ["Right"], 12):
         return False
     rpc("Input.Select")
+    return True
+
+
+def open_guide_from_home():
+    """Home's Live TV tab: the guide on every channel, loaded."""
+    if not live_tab():
+        return False
     n = str(len(group_channels(all_label())))
     return wait_for(lambda: cond("Window.IsActive(tvguide)") and lab("Container.NumItems") == n and lab("ListItem.ChannelName") != "", 10)
 
@@ -928,23 +935,308 @@ def c_kids_switch(r):
 
 @check("kids_windows")
 def c_kids_windows(r):
-    """Kids mode: the Live TV windows send back to Home; normal mode opens them."""
+    """Kids mode: the Live TV windows send back to Home, TV channels too unless it shows the Kids group (Home's Live TV
+    tab opens it so); normal mode opens them."""
     if not free(r):
         return
     try:
         kids_check.kids(True)
         for w in WINDOWS:
             reset_home()
-            rpc("GUI.ActivateWindow", {"window": w})
+            # TV channels on every channel: Kodi would otherwise open the group it showed last, maybe Kids
+            rpc("GUI.ActivateWindow", {"window": w, "parameters": [group_path(all_label())]} if w == "tvchannels" else {"window": w})
             time.sleep(0.5)
             r.ok(f"kids: {w} sends back to Home",
                  wait_for(lambda: cond("Window.IsActive(home)") and not cond(f"Window.IsActive({w})"), 3),
                  lab("System.CurrentWindow"))
+        if group_channels("Kids"):
+            reset_home()
+            rpc("GUI.ActivateWindow", {"window": "tvchannels", "parameters": [group_path("Kids")]})
+            time.sleep(1.5)
+            r.ok("kids: TV channels on the Kids group stays", cond("Window.IsActive(tvchannels)"), lab("System.CurrentWindow"))
         kids_check.kids(False)
         reset_home()
         rpc("GUI.ActivateWindow", {"window": "tvchannels"})
         r.ok("normal: TV channels open", wait_for(lambda: cond("Window.IsActive(tvchannels)"), 5), lab("System.CurrentWindow"))
     finally:
+        kids_check.kids(False)
+        reset_home()
+
+
+def kids_playing(label):
+    """Kids mode on, a kids channel playing through that group: the first of up to three whose stream opens, or None."""
+    for c in group_channels("Kids")[:3]:
+        if play_in(label, c):
+            return c
+        stop()
+    return None
+
+
+def stops_soon(name, how, path):
+    """Opens the path and watches: True when playback ends within 3 s of Kodi counting it as live TV (or before), and
+    stays ended 6 s more. A stream that never opens doesn't count: the caller checks it opens in normal mode first."""
+    played(name, how)
+    rpc("Player.Open", {"item": {"file": path}})
+    t0, seen = time.time(), None
+    time.sleep(1)  # right after Player.Open the player may not exist yet
+    while time.time() - t0 < 45:
+        if cond("PVR.IsPlayingTV") and seen is None:
+            seen = time.time()
+        if not rpc("Player.GetActivePlayers")["result"] and not cond("Player.HasMedia"):
+            break
+        time.sleep(0.25)
+    else:
+        return False, "still playing after 45 s"
+    took = time.time() - seen if seen else 0.0
+    time.sleep(6)
+    stayed = not rpc("Player.GetActivePlayers")["result"]
+    how = f"{took:.1f} s after it counted as live TV" if seen else "before it counted as live TV"
+    return took <= 3 and stayed, f"{how}, stayed stopped: {stayed}"
+
+
+@check("kids_group_plays")
+def c_kids_group_plays(r):
+    """Kids mode: a kids channel played through the Kids group plays, and is still playing 10 s later."""
+    if not free(r):
+        return
+    try:
+        kids_check.kids(True)
+        reset_home()
+        c = kids_playing("Kids")
+        if not r.ok(f"kids: {c and c['channel']} plays through Kids", c is not None):
+            return
+        time.sleep(10)
+        l = labs(["VideoPlayer.ChannelName", "VideoPlayer.ChannelGroup"])
+        r.ok("and still plays 10 s later, in Kids", cond("Player.Playing") and l == {"VideoPlayer.ChannelName": c["channel"], "VideoPlayer.ChannelGroup": "Kids"}, l)
+    finally:
+        stop()
+        kids_check.kids(False)
+        reset_home()
+
+
+@check("kids_other_stops")
+def c_kids_other_stops(r):
+    """Kids mode: a channel that isn't a kids one, through All channels, stops within 3 s and stays stopped."""
+    if not free(r):
+        return
+    kids = {c["channelid"] for c in group_channels("Kids")}
+    c = live_channel()  # one whose stream opens, in normal mode
+    if not r.ok("a channel that plays in normal mode", c is not None and c["channelid"] not in kids):
+        return
+    c = next(x for x in group_channels(all_label()) if x["channelid"] == c["channelid"])
+    try:
+        kids_check.kids(True)
+        reset_home()
+        ok, how = stops_soon(c["channel"], "All channels, kids", channel_path(all_label(), c))
+        r.ok(f"kids: {c['channel']} stops", ok, how)
+    finally:
+        stop()
+        kids_check.kids(False)
+        reset_home()
+
+
+@check("kids_kidschannel_via_all")
+def c_kids_kidschannel_via_all(r):
+    """Kids mode: a kids channel played through All channels stops too (only the Kids group keeps the channel keys on
+    kids channels)."""
+    if not free(r):
+        return
+    kids_check.kids(False)
+    reset_home()
+    c = None
+    for x in group_channels("Kids")[:3]:  # one whose stream opens
+        ok = play_in(all_label(), x)
+        stop()
+        if ok:
+            c = x
+            break
+    if not r.ok(f"a kids channel that plays in normal mode ({c and c['channel']})", c is not None):
+        return
+    try:
+        kids_check.kids(True)
+        reset_home()
+        ok, how = stops_soon(c["channel"], "All channels, kids", channel_path(all_label(), c))
+        r.ok(f"kids: {c['channel']} through All stops", ok, how)
+    finally:
+        stop()
+        kids_check.kids(False)
+        reset_home()
+
+
+@check("kids_zap_wrap")
+def c_kids_zap_wrap(r):
+    """Kids mode: the channel keys go round the Kids group (CH+ on its last channel gives its first, CH− back gives
+    the last) and never leave it."""
+    if not free(r):
+        return
+    kids = group_channels("Kids")
+    if not r.ok("a Kids group with two channels or more", len(kids) > 1, len(kids)):
+        return
+    first, last = kids[0], kids[-1]
+    try:
+        kids_check.kids(True)
+        reset_home()
+        if not r.ok(f"{last['channel']} (last kids channel) plays", play_in("Kids", last)):
+            return
+        r.ok(f"CH+ → {first['channel']} (first)", zap_to("channelup", first["channel"]))
+        r.ok("still Kids", lab("VideoPlayer.ChannelGroup") == "Kids", lab("VideoPlayer.ChannelGroup"))
+        r.ok(f"CH− → {last['channel']} (last)", zap_to("channeldown", last["channel"]))
+        time.sleep(4)
+        r.ok("still playing, in Kids", rpc("Player.GetActivePlayers")["result"] != [] and lab("VideoPlayer.ChannelGroup") == "Kids",
+             lab("VideoPlayer.ChannelGroup"))
+    finally:
+        stop()
+        kids_check.kids(False)
+        reset_home()
+
+
+@check("kids_list")
+def c_kids_list(r):
+    """Kids mode: Home's Live TV tab opens TV channels on the Kids group (no chips); OK on a channel plays it through
+    Kids; OK while it plays opens the channel list: "Kids channels", the Kids group, no chips, no Player controls."""
+    if not free(r):
+        return
+    kids = group_channels("Kids")
+    try:
+        kids_check.kids(True)
+        reset_home()
+        r.ok("the Live TV tab shows", cond(f"Control.IsVisible({LIVE_TAB})"))
+        c = None
+        for k in range(3):  # down to the first channel whose stream opens
+            if not r.ok("to the Live TV tab", live_tab(), lab("System.CurrentControlId")):
+                return
+            opened = wait_for(lambda: cond("Window.IsActive(tvchannels)") and lab("Container.NumItems") == str(len(kids)), 10)
+            if k == 0:
+                l = labs(["System.CurrentWindow", "Container.FolderPath", "Container.NumItems", "Window(home).Property(lumen.tv.kids)"])
+                r.ok(f"TV channels on Kids ({len(kids)})", opened and l["Container.FolderPath"] == l["Window(home).Property(lumen.tv.kids)"], l)
+                r.ok("no chips", not any(cond(f"Control.IsVisible({i})") for i in list(CHIPS) + [GUIDE_NOW]))
+                shot("live-kids-channels")
+            for _ in range(k):
+                rpc("Input.Down")
+                time.sleep(0.4)
+            name = lab("ListItem.ChannelName")
+            played(name, "kids list OK")
+            rpc("Input.Select")
+            if playing(name):
+                c = name
+                break
+            stop()
+        if not r.ok(f"OK plays it through Kids ({c})", c is not None and lab("VideoPlayer.ChannelGroup") == "Kids", lab("VideoPlayer.ChannelGroup")):
+            return
+        time.sleep(4)
+        r.ok("and keeps playing", cond("Player.Playing") and lab("VideoPlayer.ChannelName") == c)
+        if not r.ok("OK: the channel list", open_list()):
+            return
+        time.sleep(1)
+        l = labs(["Control.GetLabel(2)", f"Container({LIST}).NumItems"])
+        r.ok("Kids channels, the Kids group", l == {"Control.GetLabel(2)": "Kids channels", f"Container({LIST}).NumItems": str(len(kids))}, l)
+        r.ok("no chips, no Player controls", not any(cond(f"Control.IsVisible({i})") for i in list(CHIPS) + [PLAYER_CONTROLS]))
+        shot("live-kids-list")
+        back_to_picture()
+    finally:
+        stop()
+        kids_check.kids(False)
+        reset_home()
+
+
+@check("kids_no_guide")
+def c_kids_no_guide(r):
+    """Kids mode: the guide sends back to Home, on every channel and on Kids alike."""
+    if not free(r):
+        return
+    try:
+        kids_check.kids(True)
+        for label in (all_label(), "Kids"):
+            reset_home()
+            rpc("GUI.ActivateWindow", {"window": "tvguide", "parameters": [group_path(label)]})
+            time.sleep(0.5)
+            r.ok(f"kids: the guide on {label} sends back to Home",
+                 wait_for(lambda: cond("Window.IsActive(home)") and not cond("Window.IsActive(tvguide)"), 3), lab("System.CurrentWindow"))
+    finally:
+        kids_check.kids(False)
+        reset_home()
+
+
+@check("kids_info")
+def c_kids_info(r):
+    """Kids mode: Info on a kids channel opens its programme info with Channels only (no TV guide, no Player controls)."""
+    if not free(r):
+        return
+    try:
+        kids_check.kids(True)
+        reset_home()
+        c = kids_playing("Kids")
+        if not r.ok(f"kids: {c and c['channel']} plays", c is not None):
+            return
+        time.sleep(2)
+        if not r.ok("Info opens programme info", open_info()):
+            return
+        time.sleep(1)
+        shown = {i: cond(f"Control.IsVisible({i})") for i in (INFO_CHANNELS, INFO_GUIDE, INFO_CONTROLS)}
+        r.ok("Channels only", shown == {INFO_CHANNELS: True, INFO_GUIDE: False, INFO_CONTROLS: False}, shown)
+        shot("live-kids-info")
+        back_to_picture()
+    finally:
+        stop()
+        kids_check.kids(False)
+        reset_home()
+
+
+@check("guide_after_kids")
+def c_guide_after_kids(r):
+    """After a kids session (Kodi then keeps Kids as its TV group), an adult gets every channel again: the guide from
+    Home's tab, and the channel keys after a start from it. The same after a Kodi restart."""
+    if not free(r):
+        return
+    every = group_channels(all_label())
+    try:
+        for when in ("after kids", "after kids and a restart"):
+            kids_check.kids(True)
+            reset_home()
+            c = kids_playing("Kids")
+            if not r.ok(f"a kids session: {c and c['channel']} through Kids", c is not None):
+                return
+            stop()
+            kids_check.kids(False)
+            if when.endswith("restart"):
+                if not r.ok("Kodi restarts", restart_kodi()):
+                    return
+                # the tab shows once live TV has started (seconds after Home), never before every channel's path is known
+                early, t0 = [], time.time()
+                while time.time() - t0 < 60 and not cond(f"Control.IsVisible({LIVE_TAB})"):
+                    time.sleep(0.1)
+                shown = time.time() - t0
+                if cond(f"Control.IsVisible({LIVE_TAB})") and lab("Window(home).Property(lumen.tv.all)") == "":
+                    early.append(f"{shown:.1f} s")
+                r.ok(f"the Live TV tab shows ({shown:.1f} s after Home), with the path it opens", shown < 60 and not early, early)
+            if not r.ok(f"{when}: the guide on all {len(every)} channels", open_guide_from_home(),
+                        labs(["System.CurrentWindow", "Container.NumItems"])):
+                return
+            # a start from the guide (the first channel whose stream opens), then CH+: the next of every channel
+            name = None
+            for k in range(3):
+                if k and not open_guide_from_home():
+                    break
+                for _ in range(k):
+                    rpc("Input.Down")
+                    time.sleep(0.4)
+                name = lab("ListItem.ChannelName")
+                played(name, f"guide OK, {when}")
+                rpc("Input.Select")
+                if playing(name):
+                    break
+                stop()
+                name = None
+            if not r.ok(f"{when}: OK plays {name} through All channels", name is not None and lab("VideoPlayer.ChannelGroup") == all_label(),
+                        lab("VideoPlayer.ChannelGroup")):
+                return
+            i = next(k for k, x in enumerate(every) if x["channel"] == name)
+            nxt = every[(i + 1) % len(every)]["channel"]
+            r.ok(f"{when}: CH+ → {nxt}, still every channel", zap_to("channelup", nxt) and lab("VideoPlayer.ChannelGroup") == all_label(),
+                 labs(["VideoPlayer.ChannelName", "VideoPlayer.ChannelGroup"]))
+            stop()
+    finally:
+        stop()
         kids_check.kids(False)
         reset_home()
 

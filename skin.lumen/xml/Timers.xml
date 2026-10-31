@@ -37,10 +37,10 @@
     </timer>
     <timer>
         <name>lumenkidslivetv</name>
-        <description>No live TV in kids mode (nothing filters channels for children): a channel, radio station or recording started while it's on (from a phone app, say), or playing when it comes on, stops</description>
-        <start reset="true">Skin.HasSetting(CinemathequeKids) + [PVR.IsPlayingTV | PVR.IsPlayingRadio | PVR.IsPlayingRecording | PVR.IsPlayingEpgTag]</start>
+        <description>Kids mode plays the Kids group's channels only, through that group (so the channel keys stay in it): another channel, a kids channel played through another group, a radio station or a recording, started while it's on (from a phone app, say) or playing when it comes on, stops. Kodi updates the playing channel and its group together, so there is no moment where a kids channel looks like another</description>
+        <start reset="true">Skin.HasSetting(CinemathequeKids) + [[PVR.IsPlayingTV + !String.IsEqual(VideoPlayer.ChannelGroup,Kids)] | PVR.IsPlayingRadio | PVR.IsPlayingRecording | PVR.IsPlayingEpgTag]</start>
         <onstart>PlayerControl(Stop)</onstart>
-        <stop>!PVR.IsPlayingTV + !PVR.IsPlayingRadio + !PVR.IsPlayingRecording + !PVR.IsPlayingEpgTag</stop>
+        <stop>!Skin.HasSetting(CinemathequeKids) | [!PVR.IsPlayingRadio + !PVR.IsPlayingRecording + !PVR.IsPlayingEpgTag + [!PVR.IsPlayingTV | String.IsEqual(VideoPlayer.ChannelGroup,Kids)]]</stop>
     </timer>
     <timer>
         <name>lumenmoreopen</name>

@@ -84,9 +84,10 @@ hardware (see [Performance](#performance)).
   Continue Watching, New Episodes, Recently Added, TV Shows and Discover rows,
   Movies and TV Shows grids and a search limited to those titles. Anyone can
   switch it on with the smiling-face button next to power; leaving it with the
-  lock button asks for a parent's PIN. Settings, add-ons, live TV, the long-press
-  menu, the cast row, trailers and the player's settings are out of reach, and
-  kids mode stays on after a restart. See [Kids mode](#kids-mode).
+  lock button asks for a parent's PIN. Live TV plays the kids channels only.
+  Settings, add-ons, the TV guide, the long-press menu, the cast row, trailers
+  and the player's settings are out of reach, and kids mode stays on after a
+  restart. See [Kids mode](#kids-mode).
 - **Everything else**: settings, select/confirm/progress/keyboard dialogs,
   notifications, a background-task pill for library scans, Favourites and the
   skin settings page all share the same glass look.
@@ -243,9 +244,13 @@ point.
 3. To change the PIN, choose **Remove kids PIN** (it asks for the current one),
    then set a new one. Each device keeps its own PIN.
 
-Live TV is off in kids mode, since nothing filters channels for children: the
-TV and radio windows send back to Home, and a channel, radio station or
-recording started while it's on (from a phone app, say) stops.
+In kids mode, live TV plays the kids channels only: the channel group named
+"Kids" (from the playlist's `group-title`). Home's Live TV tab lists them, and
+the channel keys go round them. The TV guide and the other TV and radio windows
+send back to Home. Anything else started while kids mode is on (from a phone
+app, say) stops: another channel, a kids channel started outside the Kids group,
+a radio station or a recording. Without a Kids group, kids mode has no Live TV
+tab.
 
 Kids mode needs Kodi's "Show parent folder items" off (Kodi's own default is on;
 the table above turns it off): a ".." item would lead from the kids lists into

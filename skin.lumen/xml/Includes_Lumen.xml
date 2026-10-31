@@ -157,13 +157,14 @@
 						<param name="onclick" value="ActivateWindow(Videos,$VAR[LumenShowsTabPath],return)" />
 						<param name="visible" value="Library.HasContent(tvshows)" />
 					</include>
-					<!-- 19: 18 is the power button. Kids get it once the Kids group has channels (Home's list 9312) -->
+					<!-- 19: 18 is the power button. It waits for the path it opens: every channel's (else Kodi would open the
+					     group it showed last, maybe Kids), or for kids the Kids group with channels (Home's list 9312) -->
 					<include content="LumenTabButton">
 						<param name="id" value="19" />
 						<param name="nofocustex" value="$PARAM[tex19]" />
 						<param name="label" value="Live TV" />
 						<param name="onclick" value="$VAR[LumenLiveTabAction]" />
-						<param name="visible" value="PVR.HasTVChannels + [!$EXP[LumenKids] | Integer.IsGreater(Container(9312).NumItems,0)]" />
+						<param name="visible" value="PVR.HasTVChannels + [[!$EXP[LumenKids] + !String.IsEmpty(Window(home).Property(lumen.tv.all))] | [$EXP[LumenKids] + Integer.IsGreater(Container(9312).NumItems,0)]]" />
 					</include>
 					<include content="LumenTabButton">
 						<param name="id" value="13" />

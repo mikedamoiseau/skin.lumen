@@ -102,7 +102,7 @@
 				<usecontrolcoords>true</usecontrolcoords>
 				<control type="group">
 					<width>640</width>
-					<height>374</height>
+					<height>360</height>
 					<control type="group">
 						<visible>!String.IsEmpty(ListItem.EpgEventIcon)</visible>
 						<control type="image">
@@ -120,9 +120,19 @@
 					</control>
 					<control type="group">
 						<visible>String.IsEmpty(ListItem.EpgEventIcon)</visible>
-						<include content="LumenLiveLogoBox">
-							<param name="logo" value="ListItem.Icon" />
-						</include>
+						<control type="image">
+							<width>640</width>
+							<height>360</height>
+							<texture border="20" colordiffuse="logo_tile">lumen/rr20.png</texture>
+						</control>
+						<control type="image">
+							<left>200</left>
+							<top>60</top>
+							<width>240</width>
+							<height>240</height>
+							<aspectratio>keep</aspectratio>
+							<texture background="true" fallback="lumen/icons/tv_tile.png">$INFO[ListItem.Icon]</texture>
+						</control>
 					</control>
 				</control>
 				<control type="label">
@@ -173,7 +183,7 @@
 				</control>
 				<control type="textbox">
 					<width>976</width>
-					<height>156</height>
+					<height max="156">auto</height>
 					<font>lm_body</font>
 					<textcolor>text_dim</textcolor>
 					<label>$INFO[ListItem.Plot]</label>
