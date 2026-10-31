@@ -73,6 +73,14 @@ hardware (see [Performance](#performance)).
   A sleep timer (moon button) stops playback after 15, 30, 60 or 90 minutes.
   On a live TV channel it shows the channel's name and number and "Live" instead
   of the times.
+- **Live TV** (with a PVR add-on such as IPTV Simple): a Live TV tab on Home
+  opens the guide on every channel, with the selected programme on top, chips
+  (Now, then one per channel group, jumping to its first channel) and an orange
+  line at the current time. While a channel plays, changing channel shows a
+  banner with the channel's logo and the programme now and next; OK opens the
+  channel list over the picture (→ on a channel shows its programme, ← the group
+  chips and the player controls); Info shows the programme on now in full. In
+  kids mode the tab lists the kids channels instead (see [Kids mode](#kids-mode)).
 - **Next episode card**: in an episode's last 30 seconds, a card with the show's
   next episode and a countdown. Lumen starts it a moment after the episode ends
   by itself, from Kodi's resume point if it has one; **Play now** skips the rest,
@@ -121,13 +129,15 @@ git archive --format=zip -o skin.lumen.zip HEAD skin.lumen
 
 ### Recommended Kodi settings
 
-Lumen is designed around these three settings. Kodi's defaults work, but feel less like Infuse.
+Lumen is designed around these settings. Kodi's defaults work, but feel less like Infuse.
 
 | Setting | Value | Effect |
 |---|---|---|
 | Media → Videos → Default select action | **Show information** | Selecting a movie opens its detail page instead of starting playback |
 | Media → Videos → Select first unwatched TV show season/episode | **On first entry** | Opening a show lands on the next episode to watch |
 | Media → General → Show "parent folder" items | **Off** | No ".." tile in front of every grid |
+| PVR & Live TV → Playback → Confirm channel switches by pressing "OK" | **Off** | ↑/↓ change channel at once, for remotes without channel keys |
+| PVR & Live TV → Guide → Default select action | **Smart select** | OK on a programme on now plays it; on a later one asks: switch or set a reminder |
 
 ### Skin settings
 
@@ -155,6 +165,7 @@ Measured on a Raspberry Pi 4 (LibreELEC 12.2, Kodi 21.3, 1080p50):
 | Home, idle | no GPU work at all (nothing redraws) | – |
 | Home, scrolling a row | ~39 fps | – |
 | Movie grid, scrolling | ~29–35 fps | ~27–29 fps (InfoWall) |
+| TV guide, scrolling down (52 channels) | ~42–44 fps | ~31 fps |
 
 Kodi redraws the whole screen whenever anything on it moves, so on a Pi the GPU
 is the limit. Lumen keeps it light in three ways:
@@ -191,7 +202,8 @@ tools/
   kids_check.py NAME|all     kids-mode checks on a box: rows, grids, search, PIN, blocked windows, player
   actor_check.py NAME|all    actor-page checks on a box: entry, titles, directors, Back, Play, kids mode
   morelike_check.py NAME|all detail page checks on a box: logo, More like this rows, walking and opening them, kids mode
-  livetv_check.py NAME|all   live TV checks on a box: a channel plays, the player shows it, kids mode stops it
+  livetv_check.py NAME|all   live TV checks on a box: the zap banner, the channel list, programme info, the guide and
+                             Home's tab, kids channels
   filters_check.py NAME|all  quick-filter checks on a box: the chip row, sorts, Unwatched, genre, decade, an emptied
                              grid, kids mode
   rating_check.py NAME|all   age rating badge: every rating in the library has its badge; detail page screenshots
@@ -273,7 +285,10 @@ kids mode. Other apps can tell whether a device is in kids mode by reading
 
 ## Known limitations
 
-- Music, Pictures, Live TV/PVR and Games keep Estuary's layouts with Lumen's styling.
+- Music, Pictures, Games and Live TV's recordings, timers and search keep Estuary's layouts with Lumen's styling.
+- Live TV is built for IPTV playlists: no record or timeshift buttons. Group chips
+  cover up to 16 groups and jump within the first 200 channels. Remotes without channel or Info keys
+  change channel with ↑/↓, and → on a channel in the list shows its programme.
 - Labels added by Lumen ("Collections", "Up Next", "Back", …) are English only.
 - Kodi doesn't expose Dolby Atmos, so TrueHD and DD+ are shown instead.
 - Add-on folders show no backdrop on purpose, because add-on fanart is usually a promo screenshot.
