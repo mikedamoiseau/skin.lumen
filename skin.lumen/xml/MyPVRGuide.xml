@@ -8,7 +8,7 @@
 	<onload condition="!PVR.IsPlayingTV">PVR.EpgGridControl(firstchannel)</onload>
 	<defaultcontrol always="true">50</defaultcontrol>
 	<!-- a plain dark backdrop: the usual fanart backdrop reloads with every move (slow on the Pi) -->
-	<backgroundcolor>FF0A0D13</backgroundcolor>
+	<backgroundcolor>primary_background</backgroundcolor>
 	<views>50</views>
 	<controls>
 		<!-- Kodi's channel group selector. Lumen has none, but Kodi keeps a pointer to the one it found last: after a skin
@@ -51,13 +51,13 @@
 					<textcolor>text</textcolor>
 					<label>$INFO[ListItem.Title]</label>
 				</control>
-				<control type="label">
+				<control type="label" id="1302">
 					<width>1240</width>
 					<height>30</height>
 					<aligny>center</aligny>
 					<font>lm_body_s</font>
 					<textcolor>text_dim</textcolor>
-					<label>$INFO[ListItem.ChannelNumberLabel,,  ·  ]$INFO[ListItem.ChannelName,,  ·  ]$VAR[LumenTvWhen]$INFO[ListItem.StartTime]$INFO[ListItem.EndTime, – ]$INFO[ListItem.Genre,  ·  ]</label>
+					<label>$INFO[ListItem.ChannelNumberLabel]$INFO[ListItem.ChannelName,  ·  ]$VAR[LumenTvGuideWhen]</label>
 				</control>
 				<control type="textbox">
 					<width>1240</width>
@@ -209,10 +209,12 @@
 				<!-- 39 wide, under a one-block cell (40): Kodi stretches a cell's layout only when the widths differ, and that also
 				     hides the labels (id 1) of cells too narrow for text -->
 				<itemlayout height="76" width="39">
+					<!-- none on the guide's gaps (Kodi's untitled filler, all a channel without guide data has) -->
 					<control type="image" id="2">
 						<width>33</width>
 						<height>70</height>
 						<texture border="14" colordiffuse="17FFFFFF">lumen/rr14.png</texture>
+						<visible>!String.IsEmpty(ListItem.Label)</visible>
 					</control>
 					<control type="label" id="1">
 						<left>16</left>
@@ -234,6 +236,7 @@
 						<font>lm_micro</font>
 						<textcolor>text_dim</textcolor>
 						<label>$INFO[ListItem.StartTime]$INFO[ListItem.EndTime, – ]</label>
+						<visible>!String.IsEmpty(ListItem.Label)</visible>
 					</control>
 				</itemlayout>
 				<focusedlayout height="76" width="39">
@@ -268,6 +271,7 @@
 						<font>lm_micro</font>
 						<textcolor>$VAR[LumenTvGuideCellDim]</textcolor>
 						<label>$INFO[ListItem.StartTime]$INFO[ListItem.EndTime, – ]</label>
+						<visible>!String.IsEmpty(ListItem.Label)</visible>
 					</control>
 				</focusedlayout>
 			</control>

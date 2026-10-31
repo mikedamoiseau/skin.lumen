@@ -626,8 +626,11 @@ def c_info_buttons(r):
             if target == "tvguide":
                 n = str(len(group_channels(all_label())))
                 r.ok(f"the guide on every channel ({n})", wait_for(lambda: lab("Container.NumItems") == n, 5), lab("Container.NumItems"))
+                rpc("Input.Back")  # from the grid: the chips first (MyPVRGuide.xml), then out
+                r.ok("Back: the chips", wait_for(lambda: lab("System.CurrentControlId") in [str(i) for i in list(CHIPS) + [GUIDE_NOW]], 3),
+                     lab("System.CurrentControlId"))
                 rpc("Input.Back")
-                r.ok("Back: the picture again", wait_for(lambda: cond("Window.IsActive(fullscreenvideo)"), 5), lab("System.CurrentWindow"))
+                r.ok("Back again: the picture", wait_for(lambda: cond("Window.IsActive(fullscreenvideo)"), 5), lab("System.CurrentWindow"))
                 time.sleep(1)
             else:
                 r.ok("Back: the picture", back_to_picture(), lab("System.CurrentWindow"))
@@ -655,7 +658,7 @@ def c_info_buttons(r):
 # Home's Live TV tab (Includes_Lumen.xml LumenTabBar) and the guide (MyPVRGuide.xml): its grid, the selected programme's
 # title in the header, the Now chip (the group chips are the list's ids, CHIPS)
 LIVE_TAB = 19
-GUIDE, GUIDE_TITLE, GUIDE_NOW = 50, 1301, 87
+GUIDE, GUIDE_TITLE, GUIDE_SUB, GUIDE_NOW = 50, 1301, 1302, 87
 
 
 def live_tab():
@@ -822,9 +825,39 @@ def c_guide_focus(r):
         reset_home()
 
 
+@check("guide_noguide")
+def c_guide_noguide(r):
+    """The guide on a channel without guide data: the header gives its number and name only (no title, no times),
+    its logo stands in for the picture, and its row has no empty boxes (screenshot)."""
+    if not free(r):
+        return
+    c = noguide_channel()
+    if not c:
+        r.skip("every channel has guide data")
+        return
+    every = group_channels(all_label())
+    i = next(k for k, x in enumerate(every) if x["channelid"] == c["channelid"])
+    kids_check.kids(False)
+    try:
+        if not r.ok("the guide opens", open_guide_from_home()):
+            return
+        for _ in range(i):
+            rpc("Input.Down")
+            time.sleep(0.15)
+        if not r.ok(f"on {c['channel']}", wait_for(lambda: lab("ListItem.ChannelName") == c["channel"], 5), selected()):
+            return
+        time.sleep(1)
+        l = labs([f"Control.GetLabel({GUIDE_TITLE})", f"Control.GetLabel({GUIDE_SUB})"])
+        want = {f"Control.GetLabel({GUIDE_TITLE})": "", f"Control.GetLabel({GUIDE_SUB})": f"{c['channelnumber']}  ·  {c['channel']}"}
+        r.ok("header: number and name only", l == want, l)
+        shot("live-guide-noguide")
+    finally:
+        reset_home()
+
+
 @check("guide_fps")
 def c_guide_fps(r):
-    """Scrolling down the guide on this box: an average of at least 28 fps (Task 1's baseline, 31.3, less 10 %)."""
+    """Scrolling down the guide on this box: an average of at least 28 fps (31.3 with the old Estuary layout, less 10 %)."""
     if not free(r):
         return
     kids_check.kids(False)
@@ -973,8 +1006,8 @@ def kids_playing(label):
 
 
 def stops_soon(name, how, path):
-    """Opens the path and watches: True when playback ends within 3 s of Kodi counting it as live TV (or before), and
-    stays ended 6 s more. A stream that never opens doesn't count: the caller checks it opens in normal mode first."""
+    """Opens the path and watches: True when Kodi counted it as live TV and playback then ended within 3 s, and stayed
+    ended 6 s more. A stream that never opened proves nothing (the relays fail at times): False, saying so."""
     played(name, how)
     rpc("Player.Open", {"item": {"file": path}})
     t0, seen = time.time(), None
@@ -984,14 +1017,15 @@ def stops_soon(name, how, path):
             seen = time.time()
         if not rpc("Player.GetActivePlayers")["result"] and not cond("Player.HasMedia"):
             break
-        time.sleep(0.25)
+        time.sleep(0.1)
     else:
         return False, "still playing after 45 s"
-    took = time.time() - seen if seen else 0.0
+    if seen is None:
+        return False, "it never counted as live TV: the stream didn't open, so nothing was stopped (run again)"
+    took = time.time() - seen
     time.sleep(6)
     stayed = not rpc("Player.GetActivePlayers")["result"]
-    how = f"{took:.1f} s after it counted as live TV" if seen else "before it counted as live TV"
-    return took <= 3 and stayed, f"{how}, stayed stopped: {stayed}"
+    return took <= 3 and stayed, f"{took:.1f} s after it counted as live TV, stayed stopped: {stayed}"
 
 
 @check("kids_group_plays")

@@ -1761,54 +1761,212 @@
 		<value condition="VideoPlayer.Content(livetv)">Sleep in $VAR[LumenSleepLeft]</value>
 		<value>$INFO[Player.FinishTime,Ends at ]$VAR[LumenSleepSuffix]</value>
 	</variable>
-	<!-- ============ Next episode card (Custom_1118_LumenNext.xml) ============ -->
-	<!-- the episode after the one playing: the next main one by number (specials left out, watched ones not skipped:
-	     the phone app's rule); in kids mode only a show with the kids tag has one. None while a special plays -->
+	<!-- ============ Live TV (banner, channel list, programme info, guide; kids channels) ============ -->
 	<!-- live TV: the path of Kodi's all-channels group (its name is translated) in Home's group list 9310 -->
 	<variable name="LumenTvAllFound">
-		<value condition="String.IsEqual(Container(9310).ListItem(0).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(0).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(1).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(1).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(2).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(2).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(3).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(3).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(4).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(4).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(5).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(5).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(6).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(6).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(7).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(7).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(8).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(8).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(9).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(9).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(10).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(10).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(11).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(11).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(12).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(12).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(13).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(13).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(14).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(14).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(15).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(15).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(16).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(16).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(17).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(17).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(18).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(18).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(19).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItem(19).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(0).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(0).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(1).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(1).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(2).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(2).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(3).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(3).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(4).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(4).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(5).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(5).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(6).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(6).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(7).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(7).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(8).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(8).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(9).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(9).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(10).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(10).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(11).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(11).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(12).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(12).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(13).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(13).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(14).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(14).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(15).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(15).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(16).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(16).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(17).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(17).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(18).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(18).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(19).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(19).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(20).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(20).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(21).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(21).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(22).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(22).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(23).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(23).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(24).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(24).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(25).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(25).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(26).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(26).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(27).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(27).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(28).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(28).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(29).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(29).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(30).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(30).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(31).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(31).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(32).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(32).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(33).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(33).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(34).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(34).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(35).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(35).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(36).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(36).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(37).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(37).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(38).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(38).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(39).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(39).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(40).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(40).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(41).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(41).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(42).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(42).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(43).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(43).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(44).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(44).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(45).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(45).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(46).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(46).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(47).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(47).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(48).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(48).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(49).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(49).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(50).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(50).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(51).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(51).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(52).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(52).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(53).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(53).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(54).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(54).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(55).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(55).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(56).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(56).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(57).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(57).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(58).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(58).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(59).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(59).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(60).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(60).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(61).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(61).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(62).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(62).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(63).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(63).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(64).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(64).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(65).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(65).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(66).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(66).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(67).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(67).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(68).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(68).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(69).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(69).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(70).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(70).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(71).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(71).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(72).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(72).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(73).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(73).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(74).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(74).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(75).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(75).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(76).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(76).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(77).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(77).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(78).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(78).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(79).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(79).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(80).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(80).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(81).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(81).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(82).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(82).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(83).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(83).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(84).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(84).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(85).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(85).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(86).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(86).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(87).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(87).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(88).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(88).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(89).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(89).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(90).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(90).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(91).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(91).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(92).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(92).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(93).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(93).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(94).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(94).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(95).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(95).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(96).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(96).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(97).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(97).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(98).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(98).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(99).Label,$LOCALIZE[19287])">$INFO[Container(9310).ListItemAbsolute(99).FolderPath]</value>
 	</variable>
 	<!-- live TV: the path of the Kids group kodi-app writes (group-title "…;Kids"), empty while there is none -->
 	<variable name="LumenTvKidsFound">
-		<value condition="String.IsEqual(Container(9310).ListItem(0).Label,Kids)">$INFO[Container(9310).ListItem(0).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(1).Label,Kids)">$INFO[Container(9310).ListItem(1).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(2).Label,Kids)">$INFO[Container(9310).ListItem(2).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(3).Label,Kids)">$INFO[Container(9310).ListItem(3).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(4).Label,Kids)">$INFO[Container(9310).ListItem(4).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(5).Label,Kids)">$INFO[Container(9310).ListItem(5).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(6).Label,Kids)">$INFO[Container(9310).ListItem(6).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(7).Label,Kids)">$INFO[Container(9310).ListItem(7).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(8).Label,Kids)">$INFO[Container(9310).ListItem(8).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(9).Label,Kids)">$INFO[Container(9310).ListItem(9).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(10).Label,Kids)">$INFO[Container(9310).ListItem(10).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(11).Label,Kids)">$INFO[Container(9310).ListItem(11).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(12).Label,Kids)">$INFO[Container(9310).ListItem(12).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(13).Label,Kids)">$INFO[Container(9310).ListItem(13).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(14).Label,Kids)">$INFO[Container(9310).ListItem(14).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(15).Label,Kids)">$INFO[Container(9310).ListItem(15).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(16).Label,Kids)">$INFO[Container(9310).ListItem(16).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(17).Label,Kids)">$INFO[Container(9310).ListItem(17).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(18).Label,Kids)">$INFO[Container(9310).ListItem(18).FolderPath]</value>
-		<value condition="String.IsEqual(Container(9310).ListItem(19).Label,Kids)">$INFO[Container(9310).ListItem(19).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(0).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(0).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(1).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(1).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(2).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(2).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(3).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(3).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(4).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(4).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(5).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(5).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(6).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(6).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(7).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(7).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(8).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(8).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(9).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(9).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(10).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(10).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(11).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(11).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(12).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(12).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(13).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(13).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(14).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(14).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(15).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(15).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(16).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(16).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(17).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(17).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(18).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(18).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(19).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(19).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(20).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(20).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(21).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(21).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(22).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(22).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(23).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(23).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(24).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(24).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(25).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(25).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(26).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(26).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(27).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(27).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(28).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(28).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(29).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(29).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(30).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(30).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(31).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(31).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(32).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(32).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(33).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(33).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(34).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(34).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(35).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(35).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(36).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(36).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(37).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(37).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(38).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(38).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(39).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(39).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(40).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(40).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(41).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(41).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(42).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(42).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(43).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(43).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(44).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(44).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(45).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(45).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(46).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(46).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(47).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(47).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(48).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(48).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(49).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(49).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(50).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(50).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(51).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(51).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(52).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(52).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(53).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(53).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(54).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(54).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(55).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(55).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(56).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(56).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(57).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(57).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(58).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(58).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(59).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(59).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(60).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(60).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(61).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(61).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(62).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(62).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(63).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(63).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(64).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(64).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(65).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(65).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(66).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(66).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(67).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(67).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(68).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(68).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(69).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(69).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(70).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(70).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(71).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(71).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(72).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(72).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(73).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(73).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(74).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(74).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(75).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(75).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(76).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(76).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(77).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(77).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(78).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(78).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(79).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(79).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(80).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(80).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(81).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(81).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(82).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(82).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(83).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(83).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(84).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(84).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(85).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(85).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(86).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(86).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(87).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(87).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(88).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(88).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(89).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(89).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(90).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(90).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(91).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(91).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(92).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(92).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(93).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(93).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(94).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(94).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(95).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(95).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(96).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(96).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(97).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(97).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(98).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(98).FolderPath]</value>
+		<value condition="String.IsEqual(Container(9310).ListItemAbsolute(99).Label,Kids)">$INFO[Container(9310).ListItemAbsolute(99).FolderPath]</value>
 	</variable>
 	<!-- live TV channel list (DialogPVRChannelsOSD.xml): its title, and the jump chips. Each chip stands for a group of
 	     pvr://channels/tv/ (list 9311, Kodi's order) and loads that group into its own list (9321 on); it shows when that
@@ -1930,8 +2088,8 @@
 	     guide data gets a lower card: logo, number and name only. The dialog puts its buttons at y 916 (x 676).
 	     src: VideoPlayer or ListItem; the rest are what differs between the two. -->
 	<include name="LumenLiveProgramme">
-		<param name="remaining" value="" />
-		<param name="when" value="" />
+		<param name="remaining"></param>
+		<param name="when"></param>
 		<definition>
 			<control type="group" id="1201">
 				<visible>$PARAM[hasepg]</visible>
@@ -2645,6 +2803,10 @@
 			</control>
 		</definition>
 	</include>
+	<!-- the guide's header: when, what kind; nothing on a gap (no programme) -->
+	<variable name="LumenTvGuideWhen">
+		<value condition="!String.IsEmpty(ListItem.Title)">  ·  $VAR[LumenTvWhen]$INFO[ListItem.StartTime]$INFO[ListItem.EndTime, – ]$INFO[ListItem.Genre,  ·  ]</value>
+	</variable>
 	<!-- the guide's channel column: number, logo on a light tile, name, an orange mark on the playing channel (Kodi
 	     marks it selected, hence the selectedcolor); the selected row a shade lighter -->
 	<include name="LumenTvGuideChannel">
@@ -2938,6 +3100,9 @@
 			</include>
 		</definition>
 	</include>
+	<!-- ============ Next episode card (Custom_1118_LumenNext.xml) ============ -->
+	<!-- the episode after the one playing: the next main one by number (specials left out, watched ones not skipped:
+	     the phone app's rule); in kids mode only a show with the kids tag has one. None while a special plays -->
 	<variable name="LumenNextEpPath">
 		<value condition="Integer.IsGreater(VideoPlayer.Season,0) + !String.IsEmpty(VideoPlayer.TvShowDBID) + !String.IsEqual(Skin.String(lumen.nextcard),off)">videodb://tvshows/titles/$INFO[VideoPlayer.TvShowDBID]/-1/?xsp=%7B%22type%22%3A%22episodes%22%2C%22rules%22%3A%7B%22and%22%3A%5B%7B%22field%22%3A%22season%22%2C%22operator%22%3A%22greaterthan%22%2C%22value%22%3A%5B%220%22%5D%7D$VAR[LumenMoreKids]%2C%7B%22or%22%3A%5B%7B%22field%22%3A%22season%22%2C%22operator%22%3A%22greaterthan%22%2C%22value%22%3A%5B%22$INFO[VideoPlayer.Season]%22%5D%7D%2C%7B%22and%22%3A%5B%7B%22field%22%3A%22season%22%2C%22operator%22%3A%22is%22%2C%22value%22%3A%5B%22$INFO[VideoPlayer.Season]%22%5D%7D%2C%7B%22field%22%3A%22episode%22%2C%22operator%22%3A%22greaterthan%22%2C%22value%22%3A%5B%22$INFO[VideoPlayer.Episode]%22%5D%7D%5D%7D%5D%7D%5D%7D%2C%22order%22%3A%7B%22method%22%3A%22episode%22%2C%22direction%22%3A%22ascending%22%7D%2C%22limit%22%3A1%7D</value>
 	</variable>
