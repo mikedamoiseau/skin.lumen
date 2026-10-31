@@ -4,8 +4,9 @@
 	<visible>Window.IsActive(fullscreenvideo) | Window.IsActive(visualisation)</visible>
 	<visible>![Window.IsActive(sliderdialog) | Window.IsActive(pvrosdchannels) | Window.IsActive(pvrchannelguide) | Window.IsActive(pvrguideinfo) | Window.IsActive(1110) | Window.IsActive(osdsubtitlesettings) | Window.IsActive(osdaudiosettings) | Window.IsActive(osdvideosettings) | Window.IsActive(1101) | Window.IsActive(videobookmarks) | Window.IsActive(playerprocessinfo)]</visible>
 	<visible>Player.Seeking | Player.HasPerformedSeek(3) | [Player.Paused + !Player.Caching] | Player.Forwarding | Player.Rewinding | Player.ShowInfo | Window.IsActive(fullscreeninfo) | Player.ShowTime | Window.IsActive(videoosd) | Window.IsActive(musicosd) | !String.IsEmpty(Player.SeekNumeric) | !String.IsEmpty(PVR.ChannelNumberInput)</visible>
-	<!-- live TV: the zap banner (Custom_1120_LumenLiveBanner.xml) takes the screen while it shows -->
-	<visible>!Window.IsVisible(1120)</visible>
+	<!-- live TV: the zap banner (Custom_1120_LumenLiveBanner.xml) and programme info (DialogFullScreenInfo.xml) take the
+	     screen while they show -->
+	<visible>!Window.IsVisible(1120) + ![VideoPlayer.Content(livetv) + Window.IsVisible(fullscreeninfo)]</visible>
 	<depth>DepthOSD</depth>
 	<zorder>0</zorder>
 	<animation effect="fade" start="0" end="100" time="260" tween="sine" easing="out">WindowOpen</animation>

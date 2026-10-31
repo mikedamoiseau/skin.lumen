@@ -494,6 +494,143 @@ def c_player_controls(r):
         reset_home()
 
 
+# programme info (DialogFullScreenInfo.xml live, DialogPVRInfo.xml; include LumenLiveProgramme): the programme part,
+# the part for a channel without guide data, title, description, next, times; the live dialog's buttons
+INFO_PROGRAMME, INFO_NOGUIDE = 1201, 1202
+INFO_TITLE, INFO_PLOT, INFO_NEXT, INFO_TIMES, INFO_PROGRESS = 1211, 1212, 1213, 1214, 1215
+INFO_CHANNELS, INFO_GUIDE, INFO_CONTROLS = 1231, 1232, 1233
+
+
+def open_info():
+    """The remote's Info while a channel plays: programme info for it."""
+    rpc("Input.Info")
+    return wait_for(lambda: cond("Window.IsActive(fullscreeninfo)"), 4)
+
+
+def back_to_picture():
+    rpc("Input.Back")
+    return wait_for(lambda: cond("Window.IsActive(fullscreenvideo)") and not cond("System.HasActiveModalDialog")
+                    and not cond("Window.IsVisible(fullscreeninfo)") and not cond("Window.IsVisible(videoosd)"), 4)
+
+
+@check("info")
+def c_info(r):
+    """Info while a channel plays: its programme now (title, times, description) and next, and the buttons."""
+    if not free(r):
+        return
+    kids_check.kids(False)
+    reset_home()
+    try:
+        # the first of three channels with a description on now whose stream opens (one can be down)
+        c = None
+        for x in [x for x in group_channels(all_label()) if (x.get("broadcastnow") or {}).get("plot")][:3]:
+            if play_in(all_label(), x):
+                c = x
+                break
+            stop()
+        if not r.ok(f"a channel with a description on now plays ({c and c['channel']})", c is not None):
+            return
+        r.ok("Info opens programme info", open_info(), lab("System.CurrentWindow"))
+        now = next(x for x in group_channels(all_label()) if x["channelid"] == c["channelid"])["broadcastnow"]
+        nxt = now_next(c)[1]
+        l = labs([f"Control.GetLabel({i})" for i in (INFO_TITLE, INFO_PLOT, INFO_NEXT, INFO_TIMES)])
+        r.ok("the programme part shows", cond(f"Control.IsVisible({INFO_PROGRAMME})") and not cond(f"Control.IsVisible({INFO_NOGUIDE})"))
+        r.ok(f"title: {now['title']}", l[f"Control.GetLabel({INFO_TITLE})"] == now["title"], l)
+        r.ok("description", now["plot"][:40] in l[f"Control.GetLabel({INFO_PLOT})"], l)
+        r.ok(f"next: {nxt}", nxt and nxt in l[f"Control.GetLabel({INFO_NEXT})"], l)
+        r.ok("times, progress", l[f"Control.GetLabel({INFO_TIMES})"].count(":") >= 2 and cond(f"Control.IsVisible({INFO_PROGRESS})"), l)
+        r.ok("Kodi's seek bar stays hidden", not cond("Window.IsVisible(seekbar)"))
+        r.ok("buttons Channels, TV guide, Player controls; Channels focused",
+             all(cond(f"Control.IsVisible({i})") for i in (INFO_CHANNELS, INFO_GUIDE, INFO_CONTROLS))
+             and lab("System.CurrentControlId") == str(INFO_CHANNELS), lab("System.CurrentControlId"))
+        time.sleep(1)
+        shot("live-info")
+        r.ok("Back: the picture", back_to_picture(), lab("System.CurrentWindow"))
+    finally:
+        stop()
+        reset_home()
+
+
+@check("info_noguide")
+def c_info_noguide(r):
+    """Info on a channel the guide has nothing for: number, name and logo, no programme lines."""
+    if not free(r):
+        return
+    c = noguide_channel()
+    if not c:
+        r.skip("every channel has guide data")
+        return
+    kids_check.kids(False)
+    reset_home()
+    try:
+        if not r.ok(f"{c['channel']} plays", play_in(all_label(), c)):
+            return
+        r.ok("Info opens programme info", open_info(), lab("System.CurrentWindow"))
+        r.ok("no programme part, the channel's part instead", not cond(f"Control.IsVisible({INFO_PROGRAMME})")
+             and cond(f"Control.IsVisible({INFO_NOGUIDE})"))
+        time.sleep(1)
+        shot("live-info-noguide")
+        back_to_picture()
+    finally:
+        stop()
+        reset_home()
+
+
+@check("info_buttons")
+def c_info_buttons(r):
+    """The live info's buttons open their targets: Channels the channel list, TV guide the guide on every channel,
+    Player controls Kodi's OSD. From the list, → then Switch on another channel plays it."""
+    if not free(r):
+        return
+    every = group_channels(all_label())
+    pair = next(((a, b) for a, b in zip(every, every[1:]) if a.get("broadcastnow") and b.get("broadcastnow")), None)
+    if not pair:
+        r.skip("no two neighbouring channels with guide data")
+        return
+    a, b = pair
+    kids_check.kids(False)
+    reset_home()
+    try:
+        if not r.ok(f"{a['channel']} plays", play_in(all_label(), a)):
+            return
+        for button, name, target in ((INFO_CHANNELS, "Channels", "pvrosdchannels"), (INFO_GUIDE, "TV guide", "tvguide"),
+                                     (INFO_CONTROLS, "Player controls", "videoosd")):
+            if not r.ok("Info opens programme info", open_info(), labs(["System.CurrentWindow", "System.CurrentControl", "System.HasActiveModalDialog"])):
+                return
+            if not r.ok(f"focus {name}", focus_id(button, ["Right"], 4), lab("System.CurrentControlId")):
+                return
+            rpc("Input.Select")
+            r.ok(f"{name} opens {target}", wait_for(lambda: cond(f"Window.IsActive({target})") and not cond("Window.IsVisible(fullscreeninfo)"), 5),
+                 lab("System.CurrentWindow"))
+            if target == "tvguide":
+                n = str(len(every))
+                r.ok(f"the guide on every channel ({n})", wait_for(lambda: lab("Container.NumItems") == n, 5), lab("Container.NumItems"))
+                rpc("Input.Back")
+                r.ok("Back: the picture again", wait_for(lambda: cond("Window.IsActive(fullscreenvideo)"), 5), lab("System.CurrentWindow"))
+                time.sleep(1)
+            else:
+                r.ok("Back: the picture", back_to_picture(), lab("System.CurrentWindow"))
+        if not r.ok("the list opens", open_list()):
+            return
+        rpc("Input.Down")
+        if not r.ok(f"↓ → {b['channel']}", focused_row(b["channel"]), row()):
+            return
+        rpc("Input.Right")
+        if not r.ok("→ opens programme info", wait_for(lambda: cond("Window.IsActive(pvrguideinfo)"), 4)):
+            return
+        r.ok("Switch and Close there", cond("Control.IsVisible(5)") and cond("Control.IsVisible(7)") and cond(f"Control.IsVisible({INFO_PROGRAMME})"))
+        r.ok("on now: LIVE and progress", cond(f"Control.IsVisible({INFO_PROGRESS})"))
+        time.sleep(1)
+        shot("live-guideinfo")
+        if r.ok("Switch focused", lab("System.CurrentControlId") == "5", lab("System.CurrentControlId")):
+            played(b["channel"], "guide info Switch")
+            rpc("Input.Select")
+            r.ok(f"Switch plays {b['channel']}", playing(b["channel"]), lab("VideoPlayer.ChannelName"))
+    finally:
+        stop()
+        reset_home()
+
+
 @check("normal_channel")
 def c_normal_channel(r):
     """Normal mode: a channel plays full screen as live TV."""

@@ -1914,6 +1914,298 @@
 			</control>
 		</definition>
 	</include>
+	<!-- live TV programme info (DialogFullScreenInfo.xml for the playing channel, DialogPVRInfo.xml for a guide entry):
+	     a card at the bottom with the programme picture (the channel logo when there is none), number, name, LIVE, title,
+	     episode and category, times with progress and time left, three lines of description, next. A channel without
+	     guide data gets a lower card: logo, number and name only. The dialog puts its buttons at y 916 (x 676).
+	     src: VideoPlayer or ListItem; the rest are what differs between the two. -->
+	<include name="LumenLiveProgramme">
+		<param name="remaining" value="" />
+		<param name="when" value="" />
+		<definition>
+			<control type="group" id="1201">
+				<visible>$PARAM[hasepg]</visible>
+				<animation effect="slide" start="0,60" end="0,0" time="340" tween="cubic" easing="out">WindowOpen</animation>
+				<control type="image">
+					<left>80</left>
+					<top>481</top>
+					<width>1760</width>
+					<height>535</height>
+					<texture border="28" colordiffuse="glass_strong">lumen/rr28.png</texture>
+				</control>
+				<control type="image">
+					<left>80</left>
+					<top>481</top>
+					<width>1760</width>
+					<height>535</height>
+					<texture border="28" colordiffuse="stroke">lumen/rr28_stroke1.png</texture>
+				</control>
+				<control type="group">
+					<left>120</left>
+					<top>521</top>
+					<visible>!String.IsEmpty($PARAM[pic])</visible>
+					<control type="image">
+						<width>512</width>
+						<height>288</height>
+						<texture colordiffuse="card_bg" diffuse="lumen/mask_landscape.png">lumen/white.png</texture>
+					</control>
+					<control type="image">
+						<width>512</width>
+						<height>288</height>
+						<aspectratio>scale</aspectratio>
+						<fadetime>200</fadetime>
+						<texture background="true" diffuse="lumen/mask_landscape.png">$INFO[$PARAM[pic]]</texture>
+					</control>
+				</control>
+				<control type="group">
+					<left>120</left>
+					<top>521</top>
+					<visible>String.IsEmpty($PARAM[pic])</visible>
+					<include content="LumenLiveLogoBox">
+						<param name="logo" value="$PARAM[logo]" />
+					</include>
+				</control>
+				<control type="grouplist">
+					<left>676</left>
+					<top>521</top>
+					<width>1124</width>
+					<height>380</height>
+					<orientation>vertical</orientation>
+					<itemgap>14</itemgap>
+					<usecontrolcoords>true</usecontrolcoords>
+					<include content="LumenLiveChannelLine">
+						<param name="src" value="$PARAM[src]" />
+						<param name="live" value="$PARAM[live]" />
+						<param name="name" value="true" />
+					</include>
+					<control type="label" id="1211">
+						<width>1124</width>
+						<height>62</height>
+						<aligny>center</aligny>
+						<font>lm_title</font>
+						<textcolor>text</textcolor>
+						<label>$INFO[$PARAM[src].Title]</label>
+					</control>
+					<control type="label">
+						<width>1124</width>
+						<height>30</height>
+						<aligny>center</aligny>
+						<font>lm_body_s</font>
+						<textcolor>text_dim</textcolor>
+						<label>$INFO[$PARAM[src].EpisodeName]$INFO[$PARAM[src].Genre,[COLOR text_mute]  ·  [/COLOR]]</label>
+						<visible>!String.IsEmpty($PARAM[src].EpisodeName)</visible>
+					</control>
+					<control type="label">
+						<width>1124</width>
+						<height>30</height>
+						<aligny>center</aligny>
+						<font>lm_body_s</font>
+						<textcolor>text_dim</textcolor>
+						<label>$INFO[$PARAM[src].Genre]</label>
+						<visible>String.IsEmpty($PARAM[src].EpisodeName) + !String.IsEmpty($PARAM[src].Genre)</visible>
+					</control>
+					<control type="group">
+						<width>1124</width>
+						<height>30</height>
+						<control type="label" id="1214">
+							<width>520</width>
+							<height>30</height>
+							<aligny>center</aligny>
+							<font>lm_body_s</font>
+							<textcolor>text_dim</textcolor>
+							<label>$PARAM[when]$INFO[$PARAM[src].StartTime]$INFO[$PARAM[src].EndTime, – ]</label>
+						</control>
+						<control type="group" id="1215">
+							<visible>$PARAM[live]</visible>
+							<control type="image">
+								<left>250</left>
+								<top>12</top>
+								<width>620</width>
+								<height>6</height>
+								<texture colordiffuse="2EFFFFFF">lumen/white.png</texture>
+							</control>
+							<control type="progress">
+								<left>250</left>
+								<top>12</top>
+								<width>620</width>
+								<height>6</height>
+								<texturebg colordiffuse="00FFFFFF">lumen/white.png</texturebg>
+								<midtexture colordiffuse="accent">lumen/white.png</midtexture>
+								<info>$PARAM[progress]</info>
+							</control>
+							<control type="label">
+								<right>0</right>
+								<width>230</width>
+								<height>30</height>
+								<align>right</align>
+								<aligny>center</aligny>
+								<font>lm_body_s</font>
+								<textcolor>text_dim</textcolor>
+								<label>$PARAM[remaining]</label>
+							</control>
+						</control>
+					</control>
+					<control type="textbox" id="1212">
+						<width>1124</width>
+						<height>112</height>
+						<font>lm_body</font>
+						<textcolor>text_dim</textcolor>
+						<label>$INFO[$PARAM[src].Plot]</label>
+						<visible>!String.IsEmpty($PARAM[src].Plot)</visible>
+					</control>
+					<control type="label" id="1213">
+						<width>1124</width>
+						<height>30</height>
+						<aligny>center</aligny>
+						<font>lm_body_s</font>
+						<textcolor>text_dim</textcolor>
+						<label>[COLOR text]Next[/COLOR]  ·  $INFO[$PARAM[src].NextStartTime]$INFO[$PARAM[src].NextTitle,  ]</label>
+						<visible>!String.IsEmpty($PARAM[src].NextTitle)</visible>
+					</control>
+				</control>
+			</control>
+			<control type="group" id="1202">
+				<visible>!$PARAM[hasepg]</visible>
+				<animation effect="slide" start="0,60" end="0,0" time="340" tween="cubic" easing="out">WindowOpen</animation>
+				<control type="image">
+					<left>80</left>
+					<top>648</top>
+					<width>1760</width>
+					<height>368</height>
+					<texture border="28" colordiffuse="glass_strong">lumen/rr28.png</texture>
+				</control>
+				<control type="image">
+					<left>80</left>
+					<top>648</top>
+					<width>1760</width>
+					<height>368</height>
+					<texture border="28" colordiffuse="stroke">lumen/rr28_stroke1.png</texture>
+				</control>
+				<control type="group">
+					<left>120</left>
+					<top>688</top>
+					<include content="LumenLiveLogoBox">
+						<param name="logo" value="$PARAM[logo]" />
+					</include>
+				</control>
+				<control type="grouplist">
+					<left>676</left>
+					<top>688</top>
+					<width>1124</width>
+					<height>112</height>
+					<orientation>vertical</orientation>
+					<itemgap>14</itemgap>
+					<usecontrolcoords>true</usecontrolcoords>
+					<include content="LumenLiveChannelLine">
+						<param name="src" value="$PARAM[src]" />
+						<param name="live" value="$PARAM[live]" />
+						<param name="name" value="false" />
+					</include>
+					<control type="label">
+						<width>1124</width>
+						<height>62</height>
+						<aligny>center</aligny>
+						<font>lm_title</font>
+						<textcolor>text</textcolor>
+						<label>$INFO[$PARAM[src].ChannelName]</label>
+					</control>
+				</control>
+			</control>
+		</definition>
+	</include>
+	<!-- a guide entry on now (ListItem.IsLive is the guide's "live broadcast" flag, not this); one that isn't gets its
+	     day before the times -->
+	<expression name="LumenTvOnNow">Integer.IsGreater(ListItem.Progress,0) + Integer.IsLess(ListItem.Progress,100)</expression>
+	<variable name="LumenTvWhen">
+		<value condition="!$EXP[LumenTvOnNow] + !String.IsEmpty(ListItem.StartDate)">$INFO[ListItem.StartDate,,  ·  ]</value>
+	</variable>
+	<include name="LumenLiveLogoBox">
+		<definition>
+			<control type="image">
+				<width>512</width>
+				<height>288</height>
+				<texture border="20" colordiffuse="logo_tile">lumen/rr20.png</texture>
+			</control>
+			<control type="image">
+				<left>156</left>
+				<top>44</top>
+				<width>200</width>
+				<height>200</height>
+				<aspectratio>keep</aspectratio>
+				<texture background="true" fallback="lumen/icons/tv_tile.png">$INFO[$PARAM[logo]]</texture>
+			</control>
+		</definition>
+	</include>
+	<!-- number, name (when asked), LIVE while the programme is on -->
+	<include name="LumenLiveChannelLine">
+		<definition>
+			<control type="grouplist">
+				<width>1124</width>
+				<height>36</height>
+				<orientation>horizontal</orientation>
+				<itemgap>14</itemgap>
+				<usecontrolcoords>true</usecontrolcoords>
+				<control type="label">
+					<width>auto</width>
+					<height>36</height>
+					<aligny>center</aligny>
+					<font>lm_label_bold</font>
+					<textcolor>accent</textcolor>
+					<label>$INFO[$PARAM[src].ChannelNumberLabel]</label>
+				</control>
+				<control type="label">
+					<width>auto</width>
+					<height>36</height>
+					<aligny>center</aligny>
+					<font>lm_body_s</font>
+					<textcolor>text_dim</textcolor>
+					<label>$INFO[$PARAM[src].ChannelName]</label>
+					<visible>$PARAM[name]</visible>
+				</control>
+				<control type="button">
+					<top>4</top>
+					<width>auto</width>
+					<height>28</height>
+					<label>LIVE</label>
+					<font>lm_micro</font>
+					<textoffsetx>10</textoffsetx>
+					<align>center</align>
+					<aligny>center</aligny>
+					<textcolor>focus_text</textcolor>
+					<disabledcolor>focus_text</disabledcolor>
+					<texturenofocus border="6" colordiffuse="red">lumen/rr6.png</texturenofocus>
+					<texturefocus border="6" colordiffuse="red">lumen/rr6.png</texturefocus>
+					<enable>false</enable>
+					<visible>$PARAM[live]</visible>
+				</control>
+			</control>
+		</definition>
+	</include>
+	<!-- a pill button on the programme card -->
+	<include name="LumenTvButton">
+		<param name="onclick2">noop</param>
+		<param name="onclick3">noop</param>
+		<param name="visible">true</param>
+		<definition>
+			<control type="button" id="$PARAM[id]">
+				<width>auto</width>
+				<height>60</height>
+				<label>$PARAM[label]</label>
+				<font>lm_label_bold</font>
+				<textoffsetx>32</textoffsetx>
+				<align>center</align>
+				<aligny>center</aligny>
+				<textcolor>text</textcolor>
+				<focusedcolor>focus_text</focusedcolor>
+				<texturefocus border="30" colordiffuse="FFFFFFFF">lumen/pill.png</texturefocus>
+				<texturenofocus border="30" colordiffuse="1AFFFFFF">lumen/pill.png</texturenofocus>
+				<onclick>$PARAM[onclick]</onclick>
+				<onclick>$PARAM[onclick2]</onclick>
+				<onclick>$PARAM[onclick3]</onclick>
+				<visible>$PARAM[visible]</visible>
+			</control>
+		</definition>
+	</include>
 	<variable name="LumenTvJumpRow">
 		<value condition="String.IsEqual(Container(11).ListItemAbsolute(0).FileName,Window(home).Property(lumen.tv.jump))">0</value>
 		<value condition="String.IsEqual(Container(11).ListItemAbsolute(1).FileName,Window(home).Property(lumen.tv.jump))">1</value>

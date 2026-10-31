@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Info while a video plays. Films and episodes: an invisible full-screen button (the seek bar dialog shows the info).
+     Live TV: the playing channel's programme (LumenLiveProgramme) with Channels, TV guide and Player controls. -->
 <window>
 	<defaultcontrol always="true">999</defaultcontrol>
+	<onload condition="VideoPlayer.Content(livetv)">SetFocus(1231)</onload>
 	<controls>
 		<control type="button" id="999">
 			<left>0</left>
@@ -14,6 +17,68 @@
 			<onup>ChapterOrBigStepForward</onup>
 			<ondown>ChapterOrBigStepBack</ondown>
 			<onclick>OSD</onclick>
+			<visible>!VideoPlayer.Content(livetv)</visible>
+		</control>
+		<control type="group">
+			<visible>VideoPlayer.Content(livetv)</visible>
+			<animation effect="fade" start="0" end="100" time="240" tween="sine" easing="out">WindowOpen</animation>
+			<animation effect="fade" start="100" end="0" time="200" tween="sine" easing="in">WindowClose</animation>
+			<control type="image">
+				<left>0</left>
+				<bottom>0</bottom>
+				<width>1920</width>
+				<height>760</height>
+				<texture colordiffuse="CC000000">lumen/grad_v.png</texture>
+			</control>
+			<control type="label">
+				<right>80</right>
+				<top>58</top>
+				<width>500</width>
+				<height>50</height>
+				<align>right</align>
+				<font>lm_clock</font>
+				<textcolor>text</textcolor>
+				<shadowcolor>text_shadow</shadowcolor>
+				<label>$INFO[System.Time]</label>
+			</control>
+			<include content="LumenLiveProgramme">
+				<param name="src" value="VideoPlayer" />
+				<param name="hasepg" value="VideoPlayer.HasEpg" />
+				<param name="live" value="true" />
+				<param name="pic" value="PVR.EpgEventIcon" />
+				<param name="logo" value="Player.Icon" />
+				<param name="progress" value="PVR.EpgEventProgress" />
+				<param name="remaining" value="$INFO[PVR.EpgEventRemainingTime(mins),, min left]" />
+			</include>
+			<control type="grouplist" id="1230">
+				<left>676</left>
+				<top>916</top>
+				<width>1124</width>
+				<height>60</height>
+				<orientation>horizontal</orientation>
+				<itemgap>14</itemgap>
+				<include content="LumenTvButton">
+					<param name="id" value="1231" />
+					<param name="label" value="Channels" />
+					<param name="onclick" value="Dialog.Close(fullscreeninfo,true)" />
+					<param name="onclick2" value="ActivateWindow(pvrosdchannels)" />
+				</include>
+				<include content="LumenTvButton">
+					<param name="id" value="1232" />
+					<param name="label" value="TV guide" />
+					<param name="onclick" value="Dialog.Close(fullscreeninfo,true)" />
+					<param name="onclick2" value="ActivateWindow(TVGuide,$INFO[Window(home).Property(lumen.tv.all)],return)" />
+					<param name="visible" value="!$EXP[LumenKids]" />
+				</include>
+				<include content="LumenTvButton">
+					<param name="id" value="1233" />
+					<param name="label" value="Player controls" />
+					<param name="onclick" value="SetProperty(lumen.liveosd,1,home)" />
+					<param name="onclick2" value="Dialog.Close(fullscreeninfo,true)" />
+					<param name="onclick3" value="ActivateWindow(videoosd)" />
+					<param name="visible" value="!$EXP[LumenKids]" />
+				</include>
+			</control>
 		</control>
 	</controls>
 </window>
