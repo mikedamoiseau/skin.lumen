@@ -12,10 +12,11 @@ import subprocess
 import sys
 import time
 import urllib.parse
+import xml.etree.ElementTree as ET
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kids_check  # noqa: E402
-from kodi_gui import HOST, SSH, cond, focus_id, lab, labs, reset_home, restart_kodi, rpc, shot, wait_for  # noqa: E402
+from kodi_gui import HOST, ROOT, SSH, cond, focus_id, lab, labs, reset_home, restart_kodi, rpc, shot, wait_for  # noqa: E402
 
 CHECKS = {}
 # the Live TV windows (each serves TV and radio)
@@ -853,6 +854,21 @@ def c_guide_noguide(r):
         shot("live-guide-noguide")
     finally:
         reset_home()
+
+
+@check("guide_layout")
+def c_guide_layout(r):
+    """The grid shows whole rows: Kodi stacks the date row and the time ruler above them (GUIEPGGridContainer.cpp:1885-1901),
+    so a part row was cut at the foot. One spare pixel: an exact fit halved the guide's scroll fps on the Pi (Down ×20:
+    20-25 fps against 43-46, measured; cause unknown). The header picture has no crossfade: with one, Kodi keeps the old
+    picture until the new one has loaded (GUIImage.cpp:140-158), seconds on the Pi, for good when its address is dead."""
+    guide = ET.parse(os.path.join(ROOT, "skin.lumen", "xml", "MyPVRGuide.xml")).getroot()
+    grid = guide.find(".//control[@type='epggrid'][@id='50']")
+    rows = int(grid.findtext("height")) - int(grid.find("rulerdatelayout").get("height")) - int(grid.find("rulerlayout").get("height"))
+    row = int(grid.find("channellayout").get("height"))
+    r.ok("grid shows whole rows, one spare pixel", rows % row == 1, f"{rows} px for rows of {row}")
+    pics = [c for c in guide.iter("control") if c.get("type") == "image" and "EpgEventIcon" in (c.findtext("texture") or "")]
+    r.ok("programme picture without crossfade", bool(pics) and all(c.find("fadetime") is None for c in pics), f"{len(pics)} picture(s)")
 
 
 @check("guide_fps")

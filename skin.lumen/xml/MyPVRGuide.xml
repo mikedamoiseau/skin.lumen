@@ -79,7 +79,6 @@
 					</control>
 					<control type="image">
 						<aspectratio>scale</aspectratio>
-						<fadetime>200</fadetime>
 						<texture background="true" diffuse="lumen/mask_landscape.png">$INFO[ListItem.EpgEventIcon]</texture>
 					</control>
 				</control>
@@ -163,7 +162,9 @@
 				<left>64</left>
 				<top>470</top>
 				<width>1788</width>
-				<height>578</height>
+				<!-- the date row and the time ruler (46 each) sit above the rows: 92 + 6 × 76 + 1, so no part row at the foot;
+				     the spare pixel matters: an exact fit halved the scroll fps on the Pi (measured) -->
+				<height>549</height>
 				<orientation>vertical</orientation>
 				<scrolltime tween="quadratic" easing="out">240</scrolltime>
 				<timeblocks>36</timeblocks>
