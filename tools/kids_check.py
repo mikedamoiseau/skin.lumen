@@ -15,7 +15,7 @@ import traceback
 import urllib.parse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from kodi_gui import ROOT, cond, conds, focus_id, keepalive, lab, labs, reset_home, restart_kodi, rpc, send_number, set_skin, shot, wait_for  # noqa: E402
+from kodi_gui import ROOT, cond, conds, film_state, focus_id, keepalive, lab, labs, reset_home, restart_kodi, restore_films, rpc, send_number, set_skin, shot, wait_for  # noqa: E402
 
 TAG = "Cinematheque Kids"
 KIDS_SETTING = "cinemathequekids"  # Kodi stores skin bools lower-cased; JSON-RPC ids are case-sensitive
@@ -767,6 +767,7 @@ def c_osd(r):
     film = max(pool, key=score)
     two_audio = score(film)[0]
     kids(True)
+    films_before = {film["movieid"]: film_state(film["movieid"])}
     t0 = time.time()
     rpc("Player.Open", {"item": {"movieid": film["movieid"]}})
     try:
@@ -823,6 +824,8 @@ def c_osd(r):
             rpc("Player.Stop", {"playerid": p["playerid"]})
         # Player.Open made the film the whole video queue, and it stays there after the stop
         rpc("Playlist.Clear", {"playlistid": 1})
+        print(f"INFO osd: test play of movie {film['movieid']} (kids mode) at {time.strftime('%H:%M:%S', time.localtime(t0))}, stopped at {time.strftime('%H:%M:%S')}", flush=True)
+        r.ok("last played put back", restore_films(films_before), film_state(film["movieid"]))
     r.ok("stopped within 2 minutes", time.time() - t0 < 120, f"{time.time() - t0:.0f} s")
     r.ok("nothing playing", wait_for(lambda: rpc("Player.GetActivePlayers")["result"] == [], 10))
     reset_home()
@@ -905,6 +908,7 @@ def c_queue(r):
         return
     kids(False)
     pin("2468")
+    films_before = {m: film_state(m) for m in films}
     t0 = time.time()
     try:
         r.ok(f"parent's queue playing {films}", play_queue(films))
@@ -935,6 +939,8 @@ def c_queue(r):
     finally:
         stop_all()
         rpc("Playlist.Clear", {"playlistid": 1})
+        print(f"INFO queue: test plays of movie {films[0]} (queue {films}; normal, kids, normal) from {time.strftime('%H:%M:%S', time.localtime(t0))}, stopped at {time.strftime('%H:%M:%S')}", flush=True)
+        r.ok("last played put back", restore_films(films_before), {m: film_state(m) for m in films_before})
     r.ok("stopped within 2 minutes", time.time() - t0 < 120, f"{time.time() - t0:.0f} s")
     r.ok("nothing playing, nothing queued", stop_all() and not rpc("Playlist.GetItems", {"playlistid": 1})["result"].get("items"))
     kids(False)

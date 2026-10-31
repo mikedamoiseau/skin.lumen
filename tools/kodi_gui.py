@@ -64,6 +64,21 @@ def wait_for(fn, timeout=20, step=0.3):
     return bool(fn())
 
 
+def film_state(movieid):
+    d = rpc("VideoLibrary.GetMovieDetails", {"movieid": movieid, "properties": ["playcount", "lastplayed"]})["result"]["moviedetails"]
+    return {"playcount": d["playcount"], "lastplayed": d["lastplayed"]}
+
+
+def restore_films(before):
+    """A test play stamps each film's last played date in the shared library, which the phone app syncs: put back
+    what they had ({movieid: film_state}). Kodi saves a stopped play in a background job, so let it finish first."""
+    wait_for(lambda: rpc("Player.GetActivePlayers")["result"] == [], 10)
+    time.sleep(2)
+    for movieid, b in before.items():
+        rpc("VideoLibrary.SetMovieDetails", {"movieid": movieid, **b})
+    return all(film_state(m) == b for m, b in before.items())
+
+
 def reset_home():
     """Close dialogs (keyboard, menus) and go to Home."""
     for _ in range(5):

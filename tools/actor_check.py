@@ -17,7 +17,7 @@ import urllib.parse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kids_check  # noqa: E402
 from kids_check import Report, goto_dbid, kids, list_items, open_listing, run_search  # noqa: E402,F401
-from kodi_gui import cond, conds, focus_id, lab, labs, reset_home, rpc, wait_for  # noqa: E402,F401
+from kodi_gui import cond, conds, film_state, focus_id, lab, labs, reset_home, restore_films, rpc, wait_for  # noqa: E402,F401
 
 CHECKS = {}
 
@@ -562,6 +562,7 @@ def c_play(r):
     if not r.ok(f"{b['title']}: its page opens", on_detail(b["id"])):
         return close_detail()
     r.ok("on Play", focus_id(8, ("Up",), 3) and lab("Control.GetLabel(8)") == "Play", lab("Control.GetLabel(8)"))
+    before = {b["id"]: film_state(b["id"])}
     t0 = time.strftime("%H:%M:%S")
     rpc("Input.Select")
     # the NAS can take most of a minute to open a file: wait it out, so a late start never runs on unattended
@@ -580,6 +581,7 @@ def c_play(r):
          lab("System.CurrentWindow"))
     resume = rpc("VideoLibrary.GetMovieDetails", {"movieid": b["id"], "properties": ["resume"]})["result"]["moviedetails"]["resume"]
     r.ok("no resume point left behind", resume["position"] == 0, resume)
+    r.ok("last played put back", restore_films(before), film_state(b["id"]))
     close_detail()
     reset_home()
 
@@ -836,6 +838,7 @@ def c_bgvideo_play(r):
     if not b or not fresh(f["movieid"]):
         r.skip("needs two films of theirs without a resume point")
         return
+    before = {m: film_state(m) for m in (f["movieid"], b["id"])}
     t0 = time.strftime("%H:%M:%S")
     try:
         rpc("Player.Open", {"item": {"movieid": f["movieid"]}})
@@ -865,7 +868,7 @@ def c_bgvideo_play(r):
         for p in rpc("Player.GetActivePlayers")["result"]:
             rpc("Player.Stop", {"playerid": p["playerid"]})
         print(f"INFO bgvideo_play: test plays of movies {f['movieid']} and {b['id']} from {t0}, stopped at {time.strftime('%H:%M:%S')}", flush=True)
-        wait_for(lambda: rpc("Player.GetActivePlayers")["result"] == [], 10)
+        r.ok("last played put back", restore_films(before), {m: film_state(m) for m in before})
         close_detail()
         reset_home()
     r.ok("no resume points left behind", fresh(f["movieid"]) and fresh(b["id"]))
