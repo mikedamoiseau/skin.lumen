@@ -11,6 +11,11 @@
 			<param name="path" value="pvr://channels/tv/" />
 			<param name="visible" value="PVR.HasTVChannels" />
 		</include>
+		<include content="LumenNextLookup">
+			<param name="id" value="9312" />
+			<param name="path" value="$INFO[Window(home).Property(lumen.tv.kids)]" />
+			<param name="visible" value="PVR.HasTVChannels" />
+		</include>
 		<control type="image" id="6017">
 			<width>1</width>
 			<height>1</height>

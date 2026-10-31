@@ -15,7 +15,7 @@ import urllib.parse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kids_check  # noqa: E402
-from kodi_gui import SSH, cond, focus_id, lab, labs, reset_home, rpc, shot, wait_for  # noqa: E402
+from kodi_gui import HOST, SSH, cond, focus_id, lab, labs, reset_home, rpc, shot, wait_for  # noqa: E402
 
 CHECKS = {}
 # the Live TV windows (each serves TV and radio)
@@ -649,6 +649,187 @@ def c_info_buttons(r):
             r.ok(f"Switch plays {b['channel']}", playing(b["channel"]), lab("VideoPlayer.ChannelName"))
     finally:
         stop()
+        reset_home()
+
+
+# Home's Live TV tab (Includes_Lumen.xml LumenTabBar) and the guide (MyPVRGuide.xml): its grid, the selected programme's
+# title in the header, the Now chip (the group chips are the list's ids, CHIPS)
+LIVE_TAB = 19
+GUIDE, GUIDE_TITLE, GUIDE_NOW = 50, 1301, 87
+
+
+def open_guide_from_home():
+    """Home, up to the tab bar, along to Live TV, OK: the guide on every channel, loaded."""
+    reset_home()
+    for _ in range(5):
+        if lab("System.CurrentControlId") in [str(i) for i in range(10, 21)]:
+            break
+        rpc("Input.Up")
+        time.sleep(0.4)
+    if not focus_id(LIVE_TAB, ["Right"], 12):
+        return False
+    rpc("Input.Select")
+    n = str(len(group_channels(all_label())))
+    return wait_for(lambda: cond("Window.IsActive(tvguide)") and lab("Container.NumItems") == n and lab("ListItem.ChannelName") != "", 10)
+
+
+def on_now():
+    """The selected guide entry is on now (ListItem.Progress is a number Kodi gives conditions, not labels)."""
+    return cond("Integer.IsGreater(ListItem.Progress,0) + Integer.IsLess(ListItem.Progress,100)")
+
+
+def selected():
+    return {**labs(["ListItem.ChannelName", "ListItem.Title", f"Control.GetLabel({GUIDE_TITLE})"]), "on now": on_now()}
+
+
+@check("home_tab")
+def c_home_tab(r):
+    """Home has a Live TV tab: it opens the guide on every channel."""
+    if not free(r):
+        return
+    kids_check.kids(False)
+    try:
+        reset_home()
+        r.ok("the Live TV tab shows", cond(f"Control.IsVisible({LIVE_TAB})") and lab(f"Control.GetLabel({LIVE_TAB})") == "Live TV",
+             lab(f"Control.GetLabel({LIVE_TAB})"))
+        r.ok("it opens the guide on every channel", open_guide_from_home(), labs(["System.CurrentWindow", "Container.NumItems"]))
+    finally:
+        reset_home()
+
+
+@check("guide")
+def c_guide(r):
+    """The guide: every channel, the selected programme in the header as Kodi has it; the chips jump to their group's
+    first channel, Now back to the programme on now."""
+    if not free(r):
+        return
+    kids_check.kids(False)
+    try:
+        if not r.ok("the guide opens on every channel", open_guide_from_home(), labs(["System.CurrentWindow", "Container.NumItems"])):
+            return
+        time.sleep(1)
+        s = selected()
+        c = next((x for x in group_channels(all_label()) if x["channel"] == s["ListItem.ChannelName"]), None)
+        now = ((c or {}).get("broadcastnow") or {}).get("title", "")
+        r.ok(f"selected: {s['ListItem.ChannelName']}, {now}", s["ListItem.Title"] == now and s[f"Control.GetLabel({GUIDE_TITLE})"] == now, s)
+        shot("live-guide")
+        want = chip_groups()
+        rpc("Input.Back")  # from the grid, Back goes up to the chips
+        r.ok("Back: the chips", wait_for(lambda: lab("System.CurrentControlId") in [str(i) for i in list(CHIPS) + [GUIDE_NOW]], 3),
+             lab("System.CurrentControlId"))
+        shown = shown_chips()
+        r.ok(f"chips: Now, {want}", cond(f"Control.IsVisible({GUIDE_NOW})") and [label for _, label in shown] == want, shown)
+        for i, label in reversed(shown):  # the first row is selected already: last chip first, so every jump moves
+            first = group_channels(label)[0]["channel"] if label in want else ""
+            if not r.ok(f"to the {label} chip", focus_id(i, ["Right"], len(CHIPS)) or focus_id(i, ["Left"], len(CHIPS) + 2),
+                        lab("System.CurrentControlId")):
+                return
+            rpc("Input.Select")
+            r.ok(f"{label}: OK selects {first}", wait_for(lambda: cond(f"Control.HasFocus({GUIDE})") and lab("ListItem.ChannelName") == first, 5),
+                 selected())
+            rpc("Input.Back")
+            wait_for(lambda: not cond(f"Control.HasFocus({GUIDE})"), 3)
+        rpc("Input.Down")  # back in the grid: a later programme, then Now
+        time.sleep(0.5)
+        for _ in range(3):
+            rpc("Input.Right")
+            time.sleep(0.5)
+        rpc("Input.Back")
+        if r.ok("to the Now chip", focus_id(GUIDE_NOW, ["Left"], len(CHIPS) + 2), lab("System.CurrentControlId")):
+            rpc("Input.Select")
+            r.ok("Now: the programme on now", wait_for(lambda: cond(f"Control.HasFocus({GUIDE})") and on_now(), 4), selected())
+    finally:
+        reset_home()
+
+
+@check("guide_ok")
+def c_guide_ok(r):
+    """OK in the guide on a programme on now plays its channel, through All channels; on a later one Kodi's smart select
+    asks whether to switch to the channel or set a reminder (Yes/No dialog: 11 Yes, 10 No)."""
+    if not free(r):
+        return
+    kids_check.kids(False)
+    try:
+        name = None
+        for k in range(3):  # the first channel whose stream opens (some relays are too slow at times)
+            if not r.ok("the guide opens", open_guide_from_home()):
+                return
+            for _ in range(k):
+                rpc("Input.Down")
+                time.sleep(0.4)
+            name = lab("ListItem.ChannelName")
+            played(name, "guide OK")
+            rpc("Input.Select")
+            if playing(name):
+                break
+            stop()
+            name = None
+        if not r.ok(f"OK on now plays it ({name})", name is not None):
+            return
+        r.ok("through All channels", lab("VideoPlayer.ChannelGroup") == all_label(), lab("VideoPlayer.ChannelGroup"))
+        stop()
+        if not r.ok("the guide opens", open_guide_from_home()):
+            return
+        for _ in range(3):
+            rpc("Input.Right")
+            time.sleep(0.5)
+        r.ok("→ a later programme", not on_now() and not cond("Integer.IsGreater(ListItem.Progress,99)"), selected())
+        rpc("Input.Select")
+        asked = wait_for(lambda: cond("Window.IsActive(yesnodialog)"), 4)
+        buttons = labs(["Control.GetLabel(11)", "Control.GetLabel(10)"])
+        r.ok("OK asks: Switch or Set reminder", asked and [buttons["Control.GetLabel(11)"], buttons["Control.GetLabel(10)"]] == ["Switch", "Set reminder"],
+             {"window": lab("System.CurrentWindow"), **buttons})
+        shot("live-guide-later")
+        r.ok("nothing plays", not rpc("Player.GetActivePlayers")["result"])
+        rpc("Input.Back")
+        r.ok("Back: the guide again, nothing plays", wait_for(lambda: not cond("Window.IsVisible(yesnodialog)"), 3)
+             and cond("Window.IsActive(tvguide)") and not rpc("Player.GetActivePlayers")["result"], lab("System.CurrentWindow"))
+    finally:
+        stop()
+        reset_home()
+
+
+@check("guide_focus")
+def c_guide_focus(r):
+    """The guide opens on the first channel when nothing plays, on the playing channel when one does."""
+    if not free(r):
+        return
+    every = group_channels(all_label())
+    kids_check.kids(False)
+    try:
+        r.ok("nothing playing: the guide opens", open_guide_from_home())
+        r.ok(f"on the first channel ({every[0]['channel']})", lab("ListItem.ChannelName") == every[0]["channel"], selected())
+        reset_home()
+        c = play_first([x for x in every[3:] if x.get("broadcastnow")])
+        if not r.ok(f"a channel plays ({c and c['channel']})", c is not None):
+            return
+        if not r.ok("Info opens programme info", open_info()):
+            return
+        if not r.ok("focus TV guide", focus_id(INFO_GUIDE, ["Right"], 4)):
+            return
+        rpc("Input.Select")
+        r.ok("TV guide opens it", wait_for(lambda: cond("Window.IsActive(tvguide)") and lab("Container.NumItems") == str(len(every)), 8))
+        r.ok(f"on the playing channel ({c['channel']})", wait_for(lambda: lab("ListItem.ChannelName") == c["channel"], 3), selected())
+    finally:
+        stop()
+        reset_home()
+
+
+@check("guide_fps")
+def c_guide_fps(r):
+    """Scrolling down the guide on this box: an average of at least 28 fps (Task 1's baseline, 31.3, less 10 %)."""
+    if not free(r):
+        return
+    kids_check.kids(False)
+    try:
+        if not r.ok("the guide opens", open_guide_from_home()):
+            return
+        time.sleep(3)
+        out = subprocess.run([os.path.join(os.path.dirname(os.path.abspath(__file__)), "navfps.sh"), "Down", "20"],
+                             capture_output=True, text=True, timeout=60, env={**os.environ, "KODI_HOST": HOST}).stdout
+        avg = float(out.rsplit("avg", 1)[-1]) if "avg" in out else 0.0
+        r.ok(f"Down ×20: {avg} fps ≥ 28", avg >= 28, out.strip())
+    finally:
         reset_home()
 
 

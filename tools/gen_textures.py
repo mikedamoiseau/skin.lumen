@@ -437,6 +437,10 @@ def main():
     out(f"{L}icons/kids.png", kids_icon())
     out(f"{L}icons/person.png", person_icon())
     out(f"{L}icons/audio.png", audio_icon())
+    # live TV guide: the now line (the grid stretches it from the timeline's start to now; only its right edge shows)
+    line = Image.new("RGBA", (32, 8), (0, 0, 0, 0))
+    ImageDraw.Draw(line).rectangle([29, 0, 31, 7], fill=WHITE + (255,))
+    out(f"{L}now_line.png", line)
     out(f"{L}icons/tv_tile.png", tv_icon(128, 9, ink=(11, 12, 16, 128), pad=0.16))
 
     # --- Estuary overrides: restyle every legacy window through shared textures ---

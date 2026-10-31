@@ -117,6 +117,7 @@
 		<param name="tex15"></param>
 		<param name="tex16"></param>
 		<param name="tex17"></param>
+		<param name="tex19"></param>
 		<param name="ondown">9100</param>
 		<definition>
 			<control type="group" id="9010">
@@ -155,6 +156,14 @@
 						<param name="label" value="$LOCALIZE[20343]" />
 						<param name="onclick" value="ActivateWindow(Videos,$VAR[LumenShowsTabPath],return)" />
 						<param name="visible" value="Library.HasContent(tvshows)" />
+					</include>
+					<!-- 19: 18 is the power button. Kids get it once the Kids group has channels (Home's list 9312) -->
+					<include content="LumenTabButton">
+						<param name="id" value="19" />
+						<param name="nofocustex" value="$PARAM[tex19]" />
+						<param name="label" value="Live TV" />
+						<param name="onclick" value="$VAR[LumenLiveTabAction]" />
+						<param name="visible" value="PVR.HasTVChannels + [!$EXP[LumenKids] | Integer.IsGreater(Container(9312).NumItems,0)]" />
 					</include>
 					<include content="LumenTabButton">
 						<param name="id" value="13" />
@@ -2206,6 +2215,504 @@
 			</control>
 		</definition>
 	</include>
+	<!-- the guide's chips (MyPVRGuide.xml): Kodi's grid has no "select row n", so a chip goes to the first channel and
+	     then down, row by row, to its group's first channel. Focusing the chip finds that channel's row in every channel
+	     (lookup 9337, by its file name, the same in every group) and keeps it in lumen.tv.jumprow, up to row 200 -->
+	<variable name="LumenTvJumpRowAll">
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(0).FileName,Window(home).Property(lumen.tv.jump))">0</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(1).FileName,Window(home).Property(lumen.tv.jump))">1</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(2).FileName,Window(home).Property(lumen.tv.jump))">2</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(3).FileName,Window(home).Property(lumen.tv.jump))">3</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(4).FileName,Window(home).Property(lumen.tv.jump))">4</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(5).FileName,Window(home).Property(lumen.tv.jump))">5</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(6).FileName,Window(home).Property(lumen.tv.jump))">6</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(7).FileName,Window(home).Property(lumen.tv.jump))">7</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(8).FileName,Window(home).Property(lumen.tv.jump))">8</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(9).FileName,Window(home).Property(lumen.tv.jump))">9</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(10).FileName,Window(home).Property(lumen.tv.jump))">10</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(11).FileName,Window(home).Property(lumen.tv.jump))">11</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(12).FileName,Window(home).Property(lumen.tv.jump))">12</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(13).FileName,Window(home).Property(lumen.tv.jump))">13</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(14).FileName,Window(home).Property(lumen.tv.jump))">14</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(15).FileName,Window(home).Property(lumen.tv.jump))">15</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(16).FileName,Window(home).Property(lumen.tv.jump))">16</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(17).FileName,Window(home).Property(lumen.tv.jump))">17</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(18).FileName,Window(home).Property(lumen.tv.jump))">18</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(19).FileName,Window(home).Property(lumen.tv.jump))">19</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(20).FileName,Window(home).Property(lumen.tv.jump))">20</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(21).FileName,Window(home).Property(lumen.tv.jump))">21</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(22).FileName,Window(home).Property(lumen.tv.jump))">22</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(23).FileName,Window(home).Property(lumen.tv.jump))">23</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(24).FileName,Window(home).Property(lumen.tv.jump))">24</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(25).FileName,Window(home).Property(lumen.tv.jump))">25</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(26).FileName,Window(home).Property(lumen.tv.jump))">26</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(27).FileName,Window(home).Property(lumen.tv.jump))">27</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(28).FileName,Window(home).Property(lumen.tv.jump))">28</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(29).FileName,Window(home).Property(lumen.tv.jump))">29</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(30).FileName,Window(home).Property(lumen.tv.jump))">30</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(31).FileName,Window(home).Property(lumen.tv.jump))">31</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(32).FileName,Window(home).Property(lumen.tv.jump))">32</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(33).FileName,Window(home).Property(lumen.tv.jump))">33</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(34).FileName,Window(home).Property(lumen.tv.jump))">34</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(35).FileName,Window(home).Property(lumen.tv.jump))">35</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(36).FileName,Window(home).Property(lumen.tv.jump))">36</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(37).FileName,Window(home).Property(lumen.tv.jump))">37</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(38).FileName,Window(home).Property(lumen.tv.jump))">38</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(39).FileName,Window(home).Property(lumen.tv.jump))">39</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(40).FileName,Window(home).Property(lumen.tv.jump))">40</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(41).FileName,Window(home).Property(lumen.tv.jump))">41</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(42).FileName,Window(home).Property(lumen.tv.jump))">42</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(43).FileName,Window(home).Property(lumen.tv.jump))">43</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(44).FileName,Window(home).Property(lumen.tv.jump))">44</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(45).FileName,Window(home).Property(lumen.tv.jump))">45</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(46).FileName,Window(home).Property(lumen.tv.jump))">46</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(47).FileName,Window(home).Property(lumen.tv.jump))">47</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(48).FileName,Window(home).Property(lumen.tv.jump))">48</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(49).FileName,Window(home).Property(lumen.tv.jump))">49</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(50).FileName,Window(home).Property(lumen.tv.jump))">50</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(51).FileName,Window(home).Property(lumen.tv.jump))">51</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(52).FileName,Window(home).Property(lumen.tv.jump))">52</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(53).FileName,Window(home).Property(lumen.tv.jump))">53</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(54).FileName,Window(home).Property(lumen.tv.jump))">54</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(55).FileName,Window(home).Property(lumen.tv.jump))">55</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(56).FileName,Window(home).Property(lumen.tv.jump))">56</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(57).FileName,Window(home).Property(lumen.tv.jump))">57</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(58).FileName,Window(home).Property(lumen.tv.jump))">58</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(59).FileName,Window(home).Property(lumen.tv.jump))">59</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(60).FileName,Window(home).Property(lumen.tv.jump))">60</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(61).FileName,Window(home).Property(lumen.tv.jump))">61</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(62).FileName,Window(home).Property(lumen.tv.jump))">62</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(63).FileName,Window(home).Property(lumen.tv.jump))">63</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(64).FileName,Window(home).Property(lumen.tv.jump))">64</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(65).FileName,Window(home).Property(lumen.tv.jump))">65</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(66).FileName,Window(home).Property(lumen.tv.jump))">66</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(67).FileName,Window(home).Property(lumen.tv.jump))">67</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(68).FileName,Window(home).Property(lumen.tv.jump))">68</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(69).FileName,Window(home).Property(lumen.tv.jump))">69</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(70).FileName,Window(home).Property(lumen.tv.jump))">70</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(71).FileName,Window(home).Property(lumen.tv.jump))">71</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(72).FileName,Window(home).Property(lumen.tv.jump))">72</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(73).FileName,Window(home).Property(lumen.tv.jump))">73</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(74).FileName,Window(home).Property(lumen.tv.jump))">74</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(75).FileName,Window(home).Property(lumen.tv.jump))">75</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(76).FileName,Window(home).Property(lumen.tv.jump))">76</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(77).FileName,Window(home).Property(lumen.tv.jump))">77</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(78).FileName,Window(home).Property(lumen.tv.jump))">78</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(79).FileName,Window(home).Property(lumen.tv.jump))">79</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(80).FileName,Window(home).Property(lumen.tv.jump))">80</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(81).FileName,Window(home).Property(lumen.tv.jump))">81</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(82).FileName,Window(home).Property(lumen.tv.jump))">82</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(83).FileName,Window(home).Property(lumen.tv.jump))">83</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(84).FileName,Window(home).Property(lumen.tv.jump))">84</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(85).FileName,Window(home).Property(lumen.tv.jump))">85</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(86).FileName,Window(home).Property(lumen.tv.jump))">86</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(87).FileName,Window(home).Property(lumen.tv.jump))">87</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(88).FileName,Window(home).Property(lumen.tv.jump))">88</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(89).FileName,Window(home).Property(lumen.tv.jump))">89</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(90).FileName,Window(home).Property(lumen.tv.jump))">90</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(91).FileName,Window(home).Property(lumen.tv.jump))">91</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(92).FileName,Window(home).Property(lumen.tv.jump))">92</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(93).FileName,Window(home).Property(lumen.tv.jump))">93</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(94).FileName,Window(home).Property(lumen.tv.jump))">94</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(95).FileName,Window(home).Property(lumen.tv.jump))">95</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(96).FileName,Window(home).Property(lumen.tv.jump))">96</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(97).FileName,Window(home).Property(lumen.tv.jump))">97</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(98).FileName,Window(home).Property(lumen.tv.jump))">98</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(99).FileName,Window(home).Property(lumen.tv.jump))">99</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(100).FileName,Window(home).Property(lumen.tv.jump))">100</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(101).FileName,Window(home).Property(lumen.tv.jump))">101</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(102).FileName,Window(home).Property(lumen.tv.jump))">102</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(103).FileName,Window(home).Property(lumen.tv.jump))">103</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(104).FileName,Window(home).Property(lumen.tv.jump))">104</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(105).FileName,Window(home).Property(lumen.tv.jump))">105</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(106).FileName,Window(home).Property(lumen.tv.jump))">106</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(107).FileName,Window(home).Property(lumen.tv.jump))">107</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(108).FileName,Window(home).Property(lumen.tv.jump))">108</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(109).FileName,Window(home).Property(lumen.tv.jump))">109</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(110).FileName,Window(home).Property(lumen.tv.jump))">110</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(111).FileName,Window(home).Property(lumen.tv.jump))">111</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(112).FileName,Window(home).Property(lumen.tv.jump))">112</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(113).FileName,Window(home).Property(lumen.tv.jump))">113</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(114).FileName,Window(home).Property(lumen.tv.jump))">114</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(115).FileName,Window(home).Property(lumen.tv.jump))">115</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(116).FileName,Window(home).Property(lumen.tv.jump))">116</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(117).FileName,Window(home).Property(lumen.tv.jump))">117</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(118).FileName,Window(home).Property(lumen.tv.jump))">118</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(119).FileName,Window(home).Property(lumen.tv.jump))">119</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(120).FileName,Window(home).Property(lumen.tv.jump))">120</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(121).FileName,Window(home).Property(lumen.tv.jump))">121</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(122).FileName,Window(home).Property(lumen.tv.jump))">122</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(123).FileName,Window(home).Property(lumen.tv.jump))">123</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(124).FileName,Window(home).Property(lumen.tv.jump))">124</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(125).FileName,Window(home).Property(lumen.tv.jump))">125</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(126).FileName,Window(home).Property(lumen.tv.jump))">126</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(127).FileName,Window(home).Property(lumen.tv.jump))">127</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(128).FileName,Window(home).Property(lumen.tv.jump))">128</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(129).FileName,Window(home).Property(lumen.tv.jump))">129</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(130).FileName,Window(home).Property(lumen.tv.jump))">130</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(131).FileName,Window(home).Property(lumen.tv.jump))">131</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(132).FileName,Window(home).Property(lumen.tv.jump))">132</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(133).FileName,Window(home).Property(lumen.tv.jump))">133</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(134).FileName,Window(home).Property(lumen.tv.jump))">134</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(135).FileName,Window(home).Property(lumen.tv.jump))">135</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(136).FileName,Window(home).Property(lumen.tv.jump))">136</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(137).FileName,Window(home).Property(lumen.tv.jump))">137</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(138).FileName,Window(home).Property(lumen.tv.jump))">138</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(139).FileName,Window(home).Property(lumen.tv.jump))">139</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(140).FileName,Window(home).Property(lumen.tv.jump))">140</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(141).FileName,Window(home).Property(lumen.tv.jump))">141</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(142).FileName,Window(home).Property(lumen.tv.jump))">142</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(143).FileName,Window(home).Property(lumen.tv.jump))">143</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(144).FileName,Window(home).Property(lumen.tv.jump))">144</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(145).FileName,Window(home).Property(lumen.tv.jump))">145</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(146).FileName,Window(home).Property(lumen.tv.jump))">146</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(147).FileName,Window(home).Property(lumen.tv.jump))">147</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(148).FileName,Window(home).Property(lumen.tv.jump))">148</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(149).FileName,Window(home).Property(lumen.tv.jump))">149</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(150).FileName,Window(home).Property(lumen.tv.jump))">150</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(151).FileName,Window(home).Property(lumen.tv.jump))">151</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(152).FileName,Window(home).Property(lumen.tv.jump))">152</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(153).FileName,Window(home).Property(lumen.tv.jump))">153</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(154).FileName,Window(home).Property(lumen.tv.jump))">154</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(155).FileName,Window(home).Property(lumen.tv.jump))">155</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(156).FileName,Window(home).Property(lumen.tv.jump))">156</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(157).FileName,Window(home).Property(lumen.tv.jump))">157</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(158).FileName,Window(home).Property(lumen.tv.jump))">158</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(159).FileName,Window(home).Property(lumen.tv.jump))">159</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(160).FileName,Window(home).Property(lumen.tv.jump))">160</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(161).FileName,Window(home).Property(lumen.tv.jump))">161</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(162).FileName,Window(home).Property(lumen.tv.jump))">162</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(163).FileName,Window(home).Property(lumen.tv.jump))">163</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(164).FileName,Window(home).Property(lumen.tv.jump))">164</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(165).FileName,Window(home).Property(lumen.tv.jump))">165</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(166).FileName,Window(home).Property(lumen.tv.jump))">166</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(167).FileName,Window(home).Property(lumen.tv.jump))">167</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(168).FileName,Window(home).Property(lumen.tv.jump))">168</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(169).FileName,Window(home).Property(lumen.tv.jump))">169</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(170).FileName,Window(home).Property(lumen.tv.jump))">170</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(171).FileName,Window(home).Property(lumen.tv.jump))">171</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(172).FileName,Window(home).Property(lumen.tv.jump))">172</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(173).FileName,Window(home).Property(lumen.tv.jump))">173</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(174).FileName,Window(home).Property(lumen.tv.jump))">174</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(175).FileName,Window(home).Property(lumen.tv.jump))">175</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(176).FileName,Window(home).Property(lumen.tv.jump))">176</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(177).FileName,Window(home).Property(lumen.tv.jump))">177</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(178).FileName,Window(home).Property(lumen.tv.jump))">178</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(179).FileName,Window(home).Property(lumen.tv.jump))">179</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(180).FileName,Window(home).Property(lumen.tv.jump))">180</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(181).FileName,Window(home).Property(lumen.tv.jump))">181</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(182).FileName,Window(home).Property(lumen.tv.jump))">182</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(183).FileName,Window(home).Property(lumen.tv.jump))">183</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(184).FileName,Window(home).Property(lumen.tv.jump))">184</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(185).FileName,Window(home).Property(lumen.tv.jump))">185</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(186).FileName,Window(home).Property(lumen.tv.jump))">186</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(187).FileName,Window(home).Property(lumen.tv.jump))">187</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(188).FileName,Window(home).Property(lumen.tv.jump))">188</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(189).FileName,Window(home).Property(lumen.tv.jump))">189</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(190).FileName,Window(home).Property(lumen.tv.jump))">190</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(191).FileName,Window(home).Property(lumen.tv.jump))">191</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(192).FileName,Window(home).Property(lumen.tv.jump))">192</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(193).FileName,Window(home).Property(lumen.tv.jump))">193</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(194).FileName,Window(home).Property(lumen.tv.jump))">194</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(195).FileName,Window(home).Property(lumen.tv.jump))">195</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(196).FileName,Window(home).Property(lumen.tv.jump))">196</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(197).FileName,Window(home).Property(lumen.tv.jump))">197</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(198).FileName,Window(home).Property(lumen.tv.jump))">198</value>
+		<value condition="String.IsEqual(Container(9337).ListItemAbsolute(199).FileName,Window(home).Property(lumen.tv.jump))">199</value>
+	</variable>
+	<include name="LumenTvGuideDowns">
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),0)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),1)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),2)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),3)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),4)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),5)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),6)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),7)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),8)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),9)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),10)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),11)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),12)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),13)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),14)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),15)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),16)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),17)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),18)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),19)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),20)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),21)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),22)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),23)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),24)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),25)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),26)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),27)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),28)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),29)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),30)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),31)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),32)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),33)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),34)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),35)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),36)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),37)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),38)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),39)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),40)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),41)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),42)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),43)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),44)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),45)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),46)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),47)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),48)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),49)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),50)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),51)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),52)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),53)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),54)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),55)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),56)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),57)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),58)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),59)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),60)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),61)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),62)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),63)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),64)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),65)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),66)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),67)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),68)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),69)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),70)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),71)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),72)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),73)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),74)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),75)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),76)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),77)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),78)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),79)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),80)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),81)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),82)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),83)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),84)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),85)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),86)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),87)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),88)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),89)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),90)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),91)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),92)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),93)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),94)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),95)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),96)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),97)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),98)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),99)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),100)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),101)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),102)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),103)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),104)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),105)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),106)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),107)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),108)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),109)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),110)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),111)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),112)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),113)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),114)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),115)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),116)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),117)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),118)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),119)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),120)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),121)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),122)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),123)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),124)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),125)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),126)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),127)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),128)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),129)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),130)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),131)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),132)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),133)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),134)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),135)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),136)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),137)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),138)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),139)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),140)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),141)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),142)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),143)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),144)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),145)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),146)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),147)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),148)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),149)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),150)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),151)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),152)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),153)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),154)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),155)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),156)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),157)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),158)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),159)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),160)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),161)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),162)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),163)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),164)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),165)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),166)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),167)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),168)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),169)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),170)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),171)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),172)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),173)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),174)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),175)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),176)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),177)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),178)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),179)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),180)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),181)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),182)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),183)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),184)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),185)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),186)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),187)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),188)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),189)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),190)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),191)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),192)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),193)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),194)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),195)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),196)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),197)">Action(Down)</onclick>
+			<onclick condition="Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),198)">Action(Down)</onclick>
+	</include>
+	<include name="LumenTvGuideChip">
+		<definition>
+			<control type="button" id="$PARAM[id]">
+				<width>auto</width>
+				<height>48</height>
+				<font>lm_caption_bold</font>
+				<textoffsetx>22</textoffsetx>
+				<align>center</align>
+				<aligny>center</aligny>
+				<textcolor>text</textcolor>
+				<focusedcolor>focus_text</focusedcolor>
+				<label>$INFO[Container(9311).ListItemAbsolute($PARAM[group]).Label]</label>
+				<texturefocus border="24" colordiffuse="FFFFFFFF">lumen/pill.png</texturefocus>
+				<texturenofocus border="24" colordiffuse="14FFFFFF">lumen/pill.png</texturenofocus>
+				<onfocus>SetProperty(lumen.tv.jump,$INFO[Container($PARAM[lookup]).ListItemAbsolute(0).FileName],home)</onfocus>
+				<onfocus>SetProperty(lumen.tv.jumprow,$VAR[LumenTvJumpRowAll],home)</onfocus>
+				<onclick>PVR.EpgGridControl(firstchannel)</onclick>
+				<onclick>SetFocus(50)</onclick>
+				<include>LumenTvGuideDowns</include>
+				<visible>Integer.IsGreater(Container($PARAM[lookup]).NumItems,0) + !String.IsEqual(Container(9311).ListItemAbsolute($PARAM[group]).Label,$LOCALIZE[19287]) + !String.IsEqual(Container(9311).ListItemAbsolute($PARAM[group]).Label,Kids)</visible>
+			</control>
+		</definition>
+	</include>
+	<!-- the guide's channel column: number, logo on a light tile, name, an orange mark on the playing channel (Kodi
+	     marks it selected, hence the selectedcolor); the selected row a shade lighter -->
+	<include name="LumenTvGuideChannel">
+		<definition>
+			<control type="image">
+				<width>336</width>
+				<height>70</height>
+				<texture border="14" colordiffuse="$PARAM[bg]">lumen/rr14.png</texture>
+			</control>
+			<control type="image">
+				<top>17</top>
+				<width>4</width>
+				<height>36</height>
+				<texture colordiffuse="accent">lumen/white.png</texture>
+				<visible>ListItem.IsPlaying</visible>
+			</control>
+			<control type="label">
+				<width>52</width>
+				<height>70</height>
+				<align>right</align>
+				<aligny>center</aligny>
+				<font>lm_label_bold</font>
+				<textcolor>text_mute</textcolor>
+				<selectedcolor>text_mute</selectedcolor>
+				<label>$INFO[ListItem.ChannelNumberLabel]</label>
+			</control>
+			<control type="group">
+				<left>66</left>
+				<top>8</top>
+				<width>54</width>
+				<height>54</height>
+				<control type="image">
+					<texture border="14" colordiffuse="logo_tile">lumen/rr14.png</texture>
+				</control>
+				<control type="image">
+					<left>5</left>
+					<top>5</top>
+					<width>44</width>
+					<height>44</height>
+					<aspectratio>keep</aspectratio>
+					<texture background="true" fallback="lumen/icons/tv_tile.png">$INFO[ListItem.Icon]</texture>
+				</control>
+			</control>
+			<control type="label">
+				<left>134</left>
+				<width>190</width>
+				<height>70</height>
+				<aligny>center</aligny>
+				<font>lm_label_bold</font>
+				<textcolor>$PARAM[name]</textcolor>
+				<selectedcolor>$PARAM[name]</selectedcolor>
+				<label>$INFO[ListItem.Label]</label>
+			</control>
+		</definition>
+	</include>
+	<!-- the focused guide entry is white while the grid has the focus: dark text on it -->
+	<variable name="LumenTvGuideCellText">
+		<value condition="Control.HasFocus(50)">focus_text</value>
+		<value>text</value>
+	</variable>
+	<variable name="LumenTvGuideCellDim">
+		<value condition="Control.HasFocus(50)">B30B0C10</value>
+		<value>text_dim</value>
+	</variable>
+	<!-- Home's Live TV tab: the guide on every channel; in kids mode the kids channels -->
+	<variable name="LumenLiveTabAction">
+		<value condition="$EXP[LumenKids]">ActivateWindow(TVChannels,$INFO[Window(home).Property(lumen.tv.kids)],return)</value>
+		<value>ActivateWindow(TVGuide,$INFO[Window(home).Property(lumen.tv.all)],return)</value>
+	</variable>
 	<variable name="LumenTvJumpRow">
 		<value condition="String.IsEqual(Container(11).ListItemAbsolute(0).FileName,Window(home).Property(lumen.tv.jump))">0</value>
 		<value condition="String.IsEqual(Container(11).ListItemAbsolute(1).FileName,Window(home).Property(lumen.tv.jump))">1</value>

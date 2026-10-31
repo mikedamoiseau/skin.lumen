@@ -144,6 +144,12 @@ def build():
     w('\t\t\t<param name="path" value="pvr://channels/tv/" />')
     w('\t\t\t<param name="visible" value="PVR.HasTVChannels" />')
     w("\t\t</include>")
+    # the Kids group's channels: kids get the Live TV tab once there are some
+    w('\t\t<include content="LumenNextLookup">')
+    w('\t\t\t<param name="id" value="9312" />')
+    w('\t\t\t<param name="path" value="$INFO[Window(home).Property(lumen.tv.kids)]" />')
+    w('\t\t\t<param name="visible" value="PVR.HasTVChannels" />')
+    w("\t\t</include>")
     # shown when no row is: Timers.xml (lumenhomeempty) reads it, as Kodi doesn't expand $EXP in Timers.xml
     w('\t\t<control type="image" id="6017">')
     w("\t\t\t<width>1</width>")
