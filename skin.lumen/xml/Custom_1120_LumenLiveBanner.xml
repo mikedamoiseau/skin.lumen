@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Live TV zap banner: while Kodi shows a channel's info (a channel starts, CH +/−, ↑/↓, or the channel previewed before
+     it switches), the channel's number, logo and name, and when the guide has it the programme now (times, progress, time
+     left) and next. Just labels: modeless, so the remote keeps zapping. The seek bar steps aside while it shows. -->
+<window type="dialog" id="1120">
+	<visible>Window.IsActive(fullscreenvideo) + VideoPlayer.Content(livetv) + [Player.ShowInfo | Player.ChannelPreviewActive] + String.IsEmpty(PVR.ChannelNumberInput) + !Window.IsActive(videoosd) + !Window.IsActive(fullscreeninfo) + !Window.IsActive(pvrosdchannels) + !Window.IsActive(pvrguideinfo) + !Window.IsActive(pvrchannelguide) + !System.HasActiveModalDialog</visible>
+	<depth>DepthOSD</depth>
+	<animation effect="fade" start="0" end="100" time="240" tween="sine" easing="out">WindowOpen</animation>
+	<animation effect="fade" start="100" end="0" time="240" tween="sine" easing="in">WindowClose</animation>
+	<controls>
+		<control type="image">
+			<left>0</left>
+			<bottom>0</bottom>
+			<width>1920</width>
+			<height>420</height>
+			<texture colordiffuse="B3000000">lumen/grad_v.png</texture>
+		</control>
+		<control type="label">
+			<right>80</right>
+			<top>58</top>
+			<width>500</width>
+			<height>50</height>
+			<align>right</align>
+			<font>lm_clock</font>
+			<textcolor>text</textcolor>
+			<shadowcolor>text_shadow</shadowcolor>
+			<label>$INFO[System.Time]</label>
+		</control>
+		<!-- the card: taller when there is a programme to show -->
+		<control type="group">
+			<left>lm_margin</left>
+			<bottom>72</bottom>
+			<width>1180</width>
+			<height>236</height>
+			<animation effect="slide" start="0,40" end="0,0" time="340" tween="cubic" easing="out">WindowOpen</animation>
+			<control type="group">
+				<visible>!String.IsEmpty(VideoPlayer.Title)</visible>
+				<control type="image">
+					<width>1180</width>
+					<height>236</height>
+					<texture border="28" colordiffuse="glass_strong">lumen/rr28.png</texture>
+				</control>
+				<control type="image">
+					<width>1180</width>
+					<height>236</height>
+					<texture border="28" colordiffuse="stroke">lumen/rr28_stroke1.png</texture>
+				</control>
+			</control>
+			<control type="group">
+				<top>36</top>
+				<visible>String.IsEmpty(VideoPlayer.Title)</visible>
+				<control type="image">
+					<width>1180</width>
+					<height>200</height>
+					<texture border="28" colordiffuse="glass_strong">lumen/rr28.png</texture>
+				</control>
+				<control type="image">
+					<width>1180</width>
+					<height>200</height>
+					<texture border="28" colordiffuse="stroke">lumen/rr28_stroke1.png</texture>
+				</control>
+			</control>
+			<!-- logo -->
+			<control type="group">
+				<left>36</left>
+				<bottom>26</bottom>
+				<width>148</width>
+				<height>148</height>
+				<control type="image">
+					<texture border="20" colordiffuse="logo_tile">lumen/rr20.png</texture>
+				</control>
+				<control type="image">
+					<texture border="20" colordiffuse="stroke">lumen/rr20_stroke1.png</texture>
+				</control>
+				<control type="image">
+					<left>16</left>
+					<top>16</top>
+					<width>116</width>
+					<height>116</height>
+					<aspectratio>keep</aspectratio>
+					<texture background="true">$INFO[Player.Icon]</texture>
+				</control>
+			</control>
+			<!-- number, name, LIVE; then the programme -->
+			<control type="grouplist">
+				<left>216</left>
+				<bottom>26</bottom>
+				<width>928</width>
+				<height>184</height>
+				<orientation>vertical</orientation>
+				<align>center</align>
+				<itemgap>6</itemgap>
+				<usecontrolcoords>true</usecontrolcoords>
+				<control type="grouplist">
+					<width>928</width>
+					<height>62</height>
+					<orientation>horizontal</orientation>
+					<itemgap>18</itemgap>
+					<usecontrolcoords>true</usecontrolcoords>
+					<control type="label">
+						<width>auto</width>
+						<height>62</height>
+						<aligny>center</aligny>
+						<font>lm_title</font>
+						<textcolor>accent</textcolor>
+						<label>$INFO[VideoPlayer.ChannelNumberLabel]</label>
+					</control>
+					<control type="label">
+						<width>auto</width>
+						<height>62</height>
+						<aligny>center</aligny>
+						<font>lm_title_s</font>
+						<textcolor>text</textcolor>
+						<label>$INFO[VideoPlayer.ChannelName]</label>
+					</control>
+					<control type="button">
+						<top>16</top>
+						<width>auto</width>
+						<height>30</height>
+						<label>LIVE</label>
+						<font>lm_micro</font>
+						<textoffsetx>10</textoffsetx>
+						<align>center</align>
+						<aligny>center</aligny>
+						<textcolor>focus_text</textcolor>
+						<disabledcolor>focus_text</disabledcolor>
+						<texturenofocus border="6" colordiffuse="red">lumen/rr6.png</texturenofocus>
+						<texturefocus border="6" colordiffuse="red">lumen/rr6.png</texturefocus>
+						<enable>false</enable>
+					</control>
+				</control>
+				<control type="label">
+					<width>928</width>
+					<height>44</height>
+					<aligny>center</aligny>
+					<font>lm_headline</font>
+					<textcolor>text</textcolor>
+					<label>$INFO[VideoPlayer.Title]</label>
+					<visible>!String.IsEmpty(VideoPlayer.Title)</visible>
+				</control>
+				<control type="group">
+					<width>928</width>
+					<height>34</height>
+					<visible>!String.IsEmpty(VideoPlayer.Title)</visible>
+					<control type="label">
+						<width>190</width>
+						<height>34</height>
+						<aligny>center</aligny>
+						<font>lm_body_s</font>
+						<textcolor>text_dim</textcolor>
+						<label>$INFO[VideoPlayer.StartTime]$INFO[VideoPlayer.EndTime, – ]</label>
+					</control>
+					<control type="image">
+						<left>200</left>
+						<top>13</top>
+						<width>530</width>
+						<height>8</height>
+						<texture border="4" colordiffuse="40FFFFFF">lumen/pill_s.png</texture>
+					</control>
+					<control type="progress">
+						<left>200</left>
+						<top>13</top>
+						<width>530</width>
+						<height>8</height>
+						<texturebg border="4" colordiffuse="00FFFFFF">lumen/pill_s.png</texturebg>
+						<midtexture border="4" colordiffuse="accent">lumen/pill_s.png</midtexture>
+						<info>PVR.EpgEventProgress</info>
+					</control>
+					<control type="label">
+						<right>0</right>
+						<width>180</width>
+						<height>34</height>
+						<align>right</align>
+						<aligny>center</aligny>
+						<font>lm_body_s</font>
+						<textcolor>text_dim</textcolor>
+						<label>$INFO[PVR.EpgEventRemainingTime(mins),, min left]</label>
+					</control>
+				</control>
+				<control type="label">
+					<width>928</width>
+					<height>34</height>
+					<aligny>center</aligny>
+					<font>lm_body_s</font>
+					<textcolor>text_dim</textcolor>
+					<label>Next · $INFO[VideoPlayer.NextStartTime]$INFO[VideoPlayer.NextTitle,  ]</label>
+					<visible>!String.IsEmpty(VideoPlayer.NextTitle)</visible>
+				</control>
+			</control>
+		</control>
+		<!-- what the remote does here -->
+		<control type="grouplist">
+			<right>80</right>
+			<bottom>84</bottom>
+			<width>500</width>
+			<height>76</height>
+			<orientation>vertical</orientation>
+			<itemgap>6</itemgap>
+			<control type="label">
+				<width>500</width>
+				<height>34</height>
+				<align>right</align>
+				<font>lm_caption</font>
+				<textcolor>text_dim</textcolor>
+				<label>↑ ↓  Next channel</label>
+			</control>
+			<control type="label">
+				<width>500</width>
+				<height>34</height>
+				<align>right</align>
+				<font>lm_caption</font>
+				<textcolor>text_dim</textcolor>
+				<label>OK  Channel list</label>
+			</control>
+		</control>
+	</controls>
+</window>

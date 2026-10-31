@@ -150,6 +150,126 @@ def c_groups(r):
         r.ok("no kids channels: empty, or the empty Kids group's path", kids in ("", group_path("Kids")), p)
 
 
+BANNER = 1120  # Custom_1120_LumenLiveBanner.xml
+
+
+def zap_to(action, name, timeout=5):
+    """Channel up/down (Kodi's own action, what the remote's keys send); True once that channel is the one shown."""
+    rpc("Input.ExecuteAction", {"action": action})
+    return wait_for(lambda: lab("VideoPlayer.ChannelName") == name, timeout, 0.2)
+
+
+def now_next(c):
+    """The channel's programme now and next as Kodi has them at this moment."""
+    fresh = next(x for x in group_channels(all_label()) if x["channelid"] == c["channelid"])
+    return (fresh.get("broadcastnow") or {}).get("title", ""), (fresh.get("broadcastnext") or {}).get("title", "")
+
+
+@check("banner")
+def c_banner(r):
+    """Zapping shows the banner: the new channel's number and name, its programme now (with times) and next."""
+    if not free(r):
+        return
+    every = group_channels(all_label())
+    pair = next(((a, b) for a, b in zip(every, every[1:]) if a.get("broadcastnow") and b.get("broadcastnow")), None)
+    if not pair:
+        r.skip("no two neighbouring channels with guide data")
+        return
+    a, b = pair
+    kids_check.kids(False)
+    reset_home()
+    try:
+        if not r.ok(f"{a['channel']} plays", play_in(all_label(), a)):
+            return
+        time.sleep(6)  # the banner from the start has gone
+        r.ok(f"CH+ → {b['channel']}", zap_to("channelup", b["channel"]))
+        r.ok("the banner shows", wait_for(lambda: cond(f"Window.IsVisible({BANNER})"), 3))
+        title, nxt = now_next(b)
+        l = labs(["VideoPlayer.ChannelNumberLabel", "VideoPlayer.ChannelName", "VideoPlayer.Title", "VideoPlayer.StartTime",
+                  "VideoPlayer.EndTime", "VideoPlayer.NextTitle"])
+        r.ok("number, name, programme now and next", l["VideoPlayer.ChannelNumberLabel"] == str(b["channelnumber"])
+             and l["VideoPlayer.ChannelName"] == b["channel"] and l["VideoPlayer.Title"] == title and l["VideoPlayer.NextTitle"] == nxt
+             and ":" in l["VideoPlayer.StartTime"] and ":" in l["VideoPlayer.EndTime"], l)
+        shot("live-banner")
+        r.ok("and goes after a few seconds", wait_for(lambda: not cond(f"Window.IsVisible({BANNER})"), 15))
+    finally:
+        stop()
+        reset_home()
+
+
+@check("banner_noguide")
+def c_banner_noguide(r):
+    """A channel the guide has nothing for: the banner shows number, logo and name, and no programme lines (Kodi's
+    programme labels are empty; the screenshot shows no empty boxes)."""
+    if not free(r):
+        return
+    every = group_channels(all_label())
+    i = next((i for i, c in enumerate(every) if i and not c.get("broadcastnow")), None)
+    if i is None:
+        r.skip("every channel has guide data")
+        return
+    a, b = every[i - 1], every[i]
+    kids_check.kids(False)
+    reset_home()
+    try:
+        if not r.ok(f"{a['channel']} plays", play_in(all_label(), a)):
+            return
+        time.sleep(6)
+        r.ok(f"CH+ → {b['channel']}", zap_to("channelup", b["channel"]))
+        r.ok("the banner shows", wait_for(lambda: cond(f"Window.IsVisible({BANNER})"), 3))
+        l = labs(["VideoPlayer.ChannelNumberLabel", "VideoPlayer.Title", "VideoPlayer.NextTitle"])
+        r.ok("its number, no programme", l["VideoPlayer.ChannelNumberLabel"] == str(b["channelnumber"])
+             and l["VideoPlayer.Title"] == "" and l["VideoPlayer.NextTitle"] == "", l)
+        shot("live-banner-noguide")
+    finally:
+        stop()
+        reset_home()
+
+
+@check("zap_wrap")
+def c_zap_wrap(r):
+    """The channel keys go round the whole list: CH+ on the last channel gives the first, CH− back gives the last."""
+    if not free(r):
+        return
+    every = group_channels(all_label())
+    first, last = every[0], every[-1]
+    kids_check.kids(False)
+    reset_home()
+    try:
+        if not r.ok(f"{last['channel']} (last) plays", play_in(all_label(), last)):
+            return
+        r.ok(f"CH+ → {first['channel']} (first)", zap_to("channelup", first["channel"]))
+        r.ok("still all channels", lab("VideoPlayer.ChannelGroup") == all_label(), lab("VideoPlayer.ChannelGroup"))
+        r.ok(f"CH− → {last['channel']} (last)", zap_to("channeldown", last["channel"]))
+    finally:
+        stop()
+        reset_home()
+
+
+@check("updown_switch")
+def c_updown_switch(r):
+    """↑/↓ change channel without OK (pvrplayback.confirmchannelswitch off): remotes without channel keys zap with them."""
+    if not free(r):
+        return
+    c = guide_channel() or group_channels(all_label())[0]
+    kids_check.kids(False)
+    reset_home()
+    try:
+        if not r.ok(f"{c['channel']} plays", play_in(all_label(), c)):
+            return
+        time.sleep(6)
+        rpc("Input.Up")
+        r.ok("↑ shows another channel", wait_for(lambda: lab("VideoPlayer.ChannelName") != c["channel"], 3))
+        other = lab("VideoPlayer.ChannelName")
+        time.sleep(8)  # a preview waiting for OK would fall back to the old channel by now
+        l = labs(["VideoPlayer.ChannelName"])
+        r.ok(f"and stays on it without OK ({other})", l["VideoPlayer.ChannelName"] == other and not cond("Player.ChannelPreviewActive")
+             and cond("Player.Playing"), l)
+    finally:
+        stop()
+        reset_home()
+
+
 @check("normal_channel")
 def c_normal_channel(r):
     """Normal mode: a channel plays full screen as live TV."""

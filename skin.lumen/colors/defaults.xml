@@ -32,5 +32,7 @@
 	<color name="stroke">24FFFFFF</color>
 	<color name="scrim">CC000000</color>
 	<color name="card_bg">FF1A1E27</color>
+	<!-- channel logos: most broadcast logos are drawn for a light background (France 2–5, franceinfo vanish on dark) -->
+	<color name="logo_tile">FFECEDF0</color>
 	<color name="shadow">B3000000</color>
 </colors>
