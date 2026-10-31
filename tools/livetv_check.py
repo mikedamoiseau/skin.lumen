@@ -115,6 +115,28 @@ def play_in(label, c):
     return playing(c["channel"])
 
 
+def play_first(cands):
+    """Plays the first of up to three channels whose stream opens, through All channels, and returns it (None when none
+    did): some relays are too slow to open at times."""
+    for c in cands[:3]:
+        if play_in(all_label(), c):
+            return c
+        stop()
+    return None
+
+
+def guide_pairs():
+    """Neighbouring channels (in the list's order) that both have a programme on now."""
+    every = group_channels(all_label())
+    return [(a, b) for a, b in zip(every, every[1:]) if a.get("broadcastnow") and b.get("broadcastnow")]
+
+
+def play_pair(pairs):
+    """Plays the first channel of the first pair whose stream opens; returns that pair, or None."""
+    a = play_first([p[0] for p in pairs])
+    return next((p for p in pairs if a and p[0]["channelid"] == a["channelid"]), None)
+
+
 def guide_channel():
     """A channel with a programme on now (none when the guide hasn't loaded)."""
     return next((c for c in group_channels(all_label()) if c.get("broadcastnow")), None)
@@ -180,17 +202,17 @@ def c_banner(r):
     """Zapping shows the banner: the new channel's number and name, its programme now (with times) and next."""
     if not free(r):
         return
-    every = group_channels(all_label())
-    pair = next(((a, b) for a, b in zip(every, every[1:]) if a.get("broadcastnow") and b.get("broadcastnow")), None)
-    if not pair:
+    pairs = guide_pairs()
+    if not pairs:
         r.skip("no two neighbouring channels with guide data")
         return
-    a, b = pair
     kids_check.kids(False)
     reset_home()
     try:
-        if not r.ok(f"{a['channel']} plays", play_in(all_label(), a)):
+        pair = play_pair(pairs)
+        if not r.ok(f"a channel with guide data next to another plays ({pair and pair[0]['channel']})", pair is not None):
             return
+        a, b = pair
         time.sleep(6)  # the banner from the start has gone
         r.ok(f"CH+ → {b['channel']}", zap_to("channelup", b["channel"]))
         r.ok("the banner shows", wait_for(lambda: cond(f"Window.IsVisible({BANNER})"), 3))
@@ -261,11 +283,12 @@ def c_updown_switch(r):
     """↑/↓ change channel without OK (pvrplayback.confirmchannelswitch off): remotes without channel keys zap with them."""
     if not free(r):
         return
-    c = guide_channel() or group_channels(all_label())[0]
+    every = group_channels(all_label())
     kids_check.kids(False)
     reset_home()
     try:
-        if not r.ok(f"{c['channel']} plays", play_in(all_label(), c)):
+        c = play_first([x for x in every if x.get("broadcastnow")] or every)
+        if not r.ok(f"a channel plays ({c and c['channel']})", c is not None):
             return
         time.sleep(6)
         played("(next)", "up")
@@ -330,11 +353,12 @@ def c_osd_list(r):
     focused and marked, the header "Channels"."""
     if not free(r):
         return
-    c = guide_channel() or group_channels(all_label())[0]
+    every = group_channels(all_label())
     kids_check.kids(False)
     reset_home()
     try:
-        if not r.ok(f"{c['channel']} plays", play_in(all_label(), c)):
+        c = play_first([x for x in every if x.get("broadcastnow")] or every)
+        if not r.ok(f"a channel plays ({c and c['channel']})", c is not None):
             return
         r.ok("OK opens the channel list", open_list(), lab("System.CurrentWindow"))
         n = len(group_channels(all_label()))
@@ -359,12 +383,13 @@ def c_list_play(r):
     if not free(r):
         return
     every = group_channels(all_label())
-    a, b = every[0], every[1]
     kids_check.kids(False)
     reset_home()
     try:
-        if not r.ok(f"{a['channel']} plays", play_in(all_label(), a)):
+        pair = play_pair(list(zip(every, every[1:])))
+        if not r.ok(f"a channel plays ({pair and pair[0]['channel']})", pair is not None):
             return
+        a, b = pair
         if not r.ok("the list opens", open_list()):
             return
         rpc("Input.Down")
@@ -412,11 +437,11 @@ def c_list_chips(r):
     if not free(r):
         return
     want = chip_groups()
-    c = group_channels(all_label())[0]
     kids_check.kids(False)
     reset_home()
     try:
-        if not r.ok(f"{c['channel']} plays", play_in(all_label(), c)):
+        c = play_first(group_channels(all_label()))
+        if not r.ok(f"a channel plays ({c and c['channel']})", c is not None):
             return
         if not r.ok("the list opens", open_list()):
             return
@@ -441,17 +466,17 @@ def c_list_info(r):
     """→ on a row opens programme info for that row's channel; Back returns to the list."""
     if not free(r):
         return
-    every = group_channels(all_label())
-    pair = next(((a, b) for a, b in zip(every, every[1:]) if a.get("broadcastnow") and b.get("broadcastnow")), None)
-    if not pair:
+    pairs = guide_pairs()
+    if not pairs:
         r.skip("no two neighbouring channels with guide data")
         return
-    a, b = pair
     kids_check.kids(False)
     reset_home()
     try:
-        if not r.ok(f"{a['channel']} plays", play_in(all_label(), a)):
+        pair = play_pair(pairs)
+        if not r.ok(f"a channel with guide data next to another plays ({pair and pair[0]['channel']})", pair is not None):
             return
+        a, b = pair
         if not r.ok("the list opens", open_list()):
             return
         rpc("Input.Down")
@@ -474,11 +499,12 @@ def c_player_controls(r):
     OK opens the list again."""
     if not free(r):
         return
-    c = guide_channel() or group_channels(all_label())[0]
+    every = group_channels(all_label())
     kids_check.kids(False)
     reset_home()
     try:
-        if not r.ok(f"{c['channel']} plays", play_in(all_label(), c)):
+        c = play_first([x for x in every if x.get("broadcastnow")] or every)
+        if not r.ok(f"a channel plays ({c and c['channel']})", c is not None):
             return
         if not r.ok("the list opens", open_list()):
             return
@@ -508,9 +534,10 @@ def open_info():
 
 
 def back_to_picture():
+    """Back, then wait until every dialog over the picture has faded out: a key pressed while one fades goes to it."""
     rpc("Input.Back")
     return wait_for(lambda: cond("Window.IsActive(fullscreenvideo)") and not cond("System.HasActiveModalDialog")
-                    and not cond("Window.IsVisible(fullscreeninfo)") and not cond("Window.IsVisible(videoosd)"), 4)
+                    and not any(cond(f"Window.IsVisible({w})") for w in ("fullscreeninfo", "videoosd", "pvrosdchannels", "pvrguideinfo")), 4)
 
 
 @check("info")
@@ -521,13 +548,7 @@ def c_info(r):
     kids_check.kids(False)
     reset_home()
     try:
-        # the first of three channels with a description on now whose stream opens (one can be down)
-        c = None
-        for x in [x for x in group_channels(all_label()) if (x.get("broadcastnow") or {}).get("plot")][:3]:
-            if play_in(all_label(), x):
-                c = x
-                break
-            stop()
+        c = play_first([x for x in group_channels(all_label()) if (x.get("broadcastnow") or {}).get("plot")])
         if not r.ok(f"a channel with a description on now plays ({c and c['channel']})", c is not None):
             return
         r.ok("Info opens programme info", open_info(), lab("System.CurrentWindow"))
@@ -582,17 +603,17 @@ def c_info_buttons(r):
     Player controls Kodi's OSD. From the list, → then Switch on another channel plays it."""
     if not free(r):
         return
-    every = group_channels(all_label())
-    pair = next(((a, b) for a, b in zip(every, every[1:]) if a.get("broadcastnow") and b.get("broadcastnow")), None)
-    if not pair:
+    pairs = guide_pairs()
+    if not pairs:
         r.skip("no two neighbouring channels with guide data")
         return
-    a, b = pair
     kids_check.kids(False)
     reset_home()
     try:
-        if not r.ok(f"{a['channel']} plays", play_in(all_label(), a)):
+        pair = play_pair(pairs)
+        if not r.ok(f"a channel with guide data next to another plays ({pair and pair[0]['channel']})", pair is not None):
             return
+        a, b = pair
         for button, name, target in ((INFO_CHANNELS, "Channels", "pvrosdchannels"), (INFO_GUIDE, "TV guide", "tvguide"),
                                      (INFO_CONTROLS, "Player controls", "videoosd")):
             if not r.ok("Info opens programme info", open_info(), labs(["System.CurrentWindow", "System.CurrentControl", "System.HasActiveModalDialog"])):
@@ -603,7 +624,7 @@ def c_info_buttons(r):
             r.ok(f"{name} opens {target}", wait_for(lambda: cond(f"Window.IsActive({target})") and not cond("Window.IsVisible(fullscreeninfo)"), 5),
                  lab("System.CurrentWindow"))
             if target == "tvguide":
-                n = str(len(every))
+                n = str(len(group_channels(all_label())))
                 r.ok(f"the guide on every channel ({n})", wait_for(lambda: lab("Container.NumItems") == n, 5), lab("Container.NumItems"))
                 rpc("Input.Back")
                 r.ok("Back: the picture again", wait_for(lambda: cond("Window.IsActive(fullscreenvideo)"), 5), lab("System.CurrentWindow"))
