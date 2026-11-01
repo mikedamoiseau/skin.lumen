@@ -162,7 +162,7 @@ def guard_stops(eid):
     rpc("Player.Open", {"item": {"episodeid": eid}, "options": {"resume": False}})
     if event("Player.OnPlay", t0, 40):
         PLAYS.append([t0, None, eid, cond("Skin.HasSetting(CinemathequeKids)")])
-    d = ended(t0, 20)
+    d = ended(t0, 15 + kids_check.GUARD_SECS)
     return bool(d) and not d.get("end")
 
 
@@ -402,7 +402,7 @@ def c_kids_flip(r):
         set_skin("cinemathequekids", True)
         r.ok("kids mode on: what was found goes", wait_for(lambda: lab("Window(home).Property(lumen.next.for)") == "", 4),
              lab("Window(home).Property(lumen.next.for)"))
-        d = ended(t, 15)
+        d = ended(t, kids_check.GUARD_SECS)
         r.ok("kids mode on: the guard stops the episode (no kids tag)", bool(d) and not d.get("end"), d)
         r.ok("no card", not cond(f"Window.IsVisible({CARD})"))
         nothing_plays(r, t)
@@ -412,7 +412,7 @@ def c_kids_flip(r):
         t = time.time()
         set_skin("cinemathequekids", True)
         r.ok("armed when kids mode came on", armed)
-        r.ok("episode stops (the guard, or its end)", bool(ended(t, 15)))
+        r.ok("episode stops (the guard, or its end)", bool(ended(t, kids_check.GUARD_SECS)))
         nothing_plays(r, t)
     finally:
         stop_all()

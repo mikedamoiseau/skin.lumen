@@ -274,11 +274,16 @@ tab.
 Films and episodes follow the same rule. In kids mode only a film tagged
 `Cinematheque Kids`, an episode of a show tagged so, or a file outside the
 library that the app lists for kids plays: anything else started while kids mode
-is on (from a phone app, say), or playing when it comes on, stops within a few
-seconds. The app writes that list (one full Kodi path per line) where the TVs
+is on (from a phone app, say), or playing when it comes on, stops after a few
+seconds (see the limitations below). The app writes that list (one full Kodi path per line) where the TVs
 can read it and sends each TV its path in the skin string
 `cinemathequekidsfiles`; *Configure skin* shows whether this TV has it. Without
 it, files outside the library stop too.
+
+Kodi lets an app write only the skin settings it loaded with the skin, and a new
+one is saved only when a skin setting changes. On a new TV, or after an update
+that adds one, switch any *Configure skin* setting on and off again and restart
+Kodi: then the app's PIN and list path reach the TV.
 
 Kids mode needs Kodi's "Show parent folder items" off (Kodi's own default is on;
 the table above turns it off): a ".." item would lead from the kids lists into
@@ -316,6 +321,9 @@ kids mode. Other apps can tell whether a device is in kids mode by reading
   can't be entered.
 - Kids mode lists only titles tagged `Cinematheque Kids`. With none tagged, Home
   says so and the kids grids and rows stay empty.
+- In kids mode a video that isn't for kids plays a few seconds before it stops:
+  the skin checks it with a script, and on a Raspberry Pi Kodi is slow to run one
+  while a video opens (up to about 20 s measured, 6 s typical).
 - Search matches words from their start ("man" finds "Spider-Man", not "Batman").
   It runs a small Python script inside the skin, as a skin can't build a search
   path for text with "&" or "+" (Kodi then logs a warning about a script outside

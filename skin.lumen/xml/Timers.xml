@@ -44,10 +44,17 @@
     </timer>
     <timer>
         <name>lumenkidsguard</name>
-        <description>Kids mode plays the kids' titles only (scripts/lumen_kidsguard.py): a film or show tagged Cinematheque Kids, or a file outside the library that the Cinémathèque app lists for kids. Any other video started while it's on (from a phone app, say), or playing when it comes on, stops. Once per video: lumen.kidsguard holds the last one let through. Again every 3 seconds if the script didn't answer. Live TV has its own rule (lumenkidslivetv)</description>
+        <description>Kids mode plays the kids' titles only (scripts/lumen_kidsguard.py): a film or show tagged Cinematheque Kids, or a file outside the library that the Cinémathèque app lists for kids. Any other video started while it's on (from a phone app, say), or playing when it comes on, stops. Once per video: lumen.kidsguard holds the last one let through. Again after 10 seconds if the script didn't answer (not sooner: on the Pi a script takes seconds to start while a video opens, and a second one started meanwhile slows both). Live TV has its own rule (lumenkidslivetv)</description>
         <start reset="true">Skin.HasSetting(CinemathequeKids) + Player.HasVideo + !PVR.IsPlayingTV + !PVR.IsPlayingRadio + !PVR.IsPlayingRecording + !PVR.IsPlayingEpgTag + !String.IsEqual(Player.FilenameAndPath,Window(home).Property(lumen.kidsguard))</start>
         <onstart>RunScript(special://skin/scripts/lumen_kidsguard.py)</onstart>
-        <stop>!Skin.HasSetting(CinemathequeKids) | !Player.HasVideo | String.IsEqual(Player.FilenameAndPath,Window(home).Property(lumen.kidsguard)) | Integer.IsGreaterOrEqual(Skin.TimerElapsedSecs(lumenkidsguard),3)</stop>
+        <stop>!Skin.HasSetting(CinemathequeKids) | !Player.HasVideo | String.IsEqual(Player.FilenameAndPath,Window(home).Property(lumen.kidsguard)) | Integer.IsGreaterOrEqual(Skin.TimerElapsedSecs(lumenkidsguard),10)</stop>
+    </timer>
+    <timer>
+        <name>lumenkidsguardreset</name>
+        <description>No video playing: lumenkidsguard forgets the one it let through, so that video is judged again next time (the app may have changed its tag or its list meanwhile)</description>
+        <start reset="true">!Player.HasVideo + !String.IsEmpty(Window(home).Property(lumen.kidsguard))</start>
+        <onstart>ClearProperty(lumen.kidsguard,home)</onstart>
+        <stop>String.IsEmpty(Window(home).Property(lumen.kidsguard))</stop>
     </timer>
     <timer>
         <name>lumenmoreopen</name>

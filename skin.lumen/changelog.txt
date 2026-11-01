@@ -1,5 +1,5 @@
 [B]0.12.0[/B]
-• Kids mode plays the kids' titles only: a film or episode the Cinémathèque app hasn't chosen for kids, started while kids mode is on (from a phone, say) or playing when it comes on, stops within a few seconds. Files outside Kodi's library play when the app lists them for kids; Configure skin shows whether this TV has the app's list.
+• Kids mode plays the kids' titles only: a film or episode the Cinémathèque app hasn't chosen for kids, started while kids mode is on (from a phone, say) or playing when it comes on, stops after a few seconds (up to about 20 on a Raspberry Pi). Files outside Kodi's library play when the app lists them for kids; Configure skin shows whether this TV has the app's list.
 • Kids PIN: it's the parents' code from the Cinémathèque app, which sends it to every TV. Configure skin says so instead of setting or removing a PIN.
 • Live TV guide: the grid shows whole rows only, and a programme without a picture no longer shows the previous programme's.
 

@@ -978,13 +978,28 @@ def plays_on(expect, secs=10):
     return cond("Player.Playing") and now_playing() == expect
 
 
-def stops(within=8):
-    """The video stops within seconds, and nothing plays in the 5 s after."""
+def judged():
+    """The guard let the video playing through (lumenkidsguard ran its script for it), not a memory of an earlier one."""
+    v = labs(["Window(home).Property(lumen.kidsguard)", "Player.FilenameAndPath"])
+    return v["Window(home).Property(lumen.kidsguard)"] != "" and len(set(v.values())) == 1
+
+
+def forgot():
+    """Nothing plays, so the guard has forgotten the last video it let through: it's judged again next time (its tag or
+    the app's list may have changed meanwhile)."""
+    return wait_for(lambda: lab("Window(home).Property(lumen.kidsguard)") == "", 3)
+
+
+GUARD_SECS = 25  # how long the guard may take: on the Pi a skin script takes seconds to start while a video opens
+
+
+def stops(within=GUARD_SECS):
+    """The video stops within GUARD_SECS, and nothing plays in the 5 s after."""
     gone = wait_for(lambda: rpc("Player.GetActivePlayers")["result"] == [], within, 0.3)
     return gone and not wait_for(lambda: rpc("Player.GetActivePlayers")["result"] != [], 5, 0.5)
 
 
-def starts_then_stops(item, within=8):
+def starts_then_stops(item, within=GUARD_SECS):
     """Open item: it must start (a file that can't open proves nothing), then stop."""
     rpc("Player.Open", {"item": item})
     started = wait_for(lambda: rpc("Player.GetActivePlayers")["result"] != [], 15, 0.2)
@@ -1027,7 +1042,9 @@ def c_guard_film(r):
         stop_all()
         time.sleep(3)
         r.ok(f"kids: tagged film {good} plays on", opens({"movieid": good}) and plays_on(("movie", good)), now_playing())
+        r.ok("kids: the guard judged it", judged())
         stop_all()
+        r.ok("kids: once it stops, the guard forgets it", forgot(), lab("Window(home).Property(lumen.kidsguard)"))
         rpc("Playlist.Clear", {"playlistid": 1})
         time.sleep(3)
         r.ok("kids: queue of the tagged film then the untagged one plays", play_queue([good, bad]) and plays_on(("movie", good), 3), now_playing())
@@ -1062,7 +1079,9 @@ def c_guard_episode(r):
         stop_all()
         time.sleep(3)
         r.ok(f"kids: episode {good} of a tagged show plays on", opens({"episodeid": good}) and plays_on(("episode", good)), now_playing())
+        r.ok("kids: the guard judged it", judged())
         stop_all()
+        r.ok("kids: once it stops, the guard forgets it", forgot(), lab("Window(home).Property(lumen.kidsguard)"))
         time.sleep(3)
         r.ok("kids: the untagged show's episode started again stops", starts_then_stops({"episodeid": bad}), now_playing())
     finally:
@@ -1108,7 +1127,9 @@ def c_guard_file(r):
         stop_all()
         time.sleep(3)
         r.ok(f"kids: listed {good.rsplit('/', 1)[-1]} plays on", opens({"file": good}) and plays_on(("unknown", good)), now_playing())
+        r.ok("kids: the guard judged it", judged())
         stop_all()
+        r.ok("kids: once it stops, the guard forgets it", forgot(), lab("Window(home).Property(lumen.kidsguard)"))
         time.sleep(3)
         r.ok("kids: the unlisted one started again stops", starts_then_stops({"file": bad}), now_playing())
     finally:
