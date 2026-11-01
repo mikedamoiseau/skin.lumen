@@ -92,7 +92,8 @@ hardware (see [Performance](#performance)).
   Continue Watching, New Episodes, Recently Added, TV Shows and Discover rows,
   Movies and TV Shows grids and a search limited to those titles. Anyone can
   switch it on with the smiling-face button next to power; leaving it with the
-  lock button asks for a parent's PIN. Live TV plays the kids channels only.
+  lock button asks for a parent's PIN. Live TV plays the kids channels only, and
+  a film or episode the app hasn't chosen for kids stops, however it was started.
   Settings, add-ons, the TV guide, the long-press menu, the cast row, trailers
   and the player's settings are out of reach, and kids mode stays on after a
   restart. See [Kids mode](#kids-mode).
@@ -155,6 +156,8 @@ Lumen is designed around these settings. Kodi's defaults work, but feel less lik
   rows. Each device keeps its own choice.
 - **Next episode card**: 30 s (default), 60 s, 90 s before an episode's end, or
   off.
+- **Kids PIN** and **Kids titles outside the library** only say what the
+  Cinémathèque app sends this TV (see [Kids mode](#kids-mode)).
 
 ## Performance
 
@@ -199,7 +202,7 @@ tools/
   fps.sh, navfps.sh, gpu.sh  frame-rate and GPU load sampling (gpu.sh is Raspberry Pi specific)
   log.sh                     recent warnings and errors from kodi.log
   kodi_gui.py                JSON-RPC driver shared by the checks below
-  kids_check.py NAME|all     kids-mode checks on a box: rows, grids, search, PIN, blocked windows, player
+  kids_check.py NAME|all     kids-mode checks on a box: rows, grids, search, PIN, blocked windows, player, what plays
   actor_check.py NAME|all    actor-page checks on a box: entry, titles, directors, Back, Play, kids mode
   morelike_check.py NAME|all detail page checks on a box: logo, More like this rows, walking and opening them, kids mode
   livetv_check.py NAME|all   live TV checks on a box: the zap banner, the channel list, programme info, the guide and
@@ -244,7 +247,9 @@ Android TV box is reached over ADB instead). They press keys on the box, so run
 them while nobody is watching. `all` runs every check, then puts the box back
 (kids mode off, the kids PIN as it was, nothing playing). Checks that change a Kodi setting run
 only with `KIDS_OK_SETTINGS=1`, and test plays use only films without a resume
-point.
+point. `kids_check.py guard_file` also needs `KIDS_LIST` (the app's kids list, as
+the computer running it reads it) and `KIDS_UNLISTED` (the Kodi path of a video
+in neither the library nor the list).
 
 ### Kids mode
 
@@ -265,6 +270,15 @@ send back to Home. Anything else started while kids mode is on (from a phone
 app, say) stops: another channel, a kids channel started outside the Kids group,
 a radio station or a recording. Without a Kids group, kids mode has no Live TV
 tab.
+
+Films and episodes follow the same rule. In kids mode only a film tagged
+`Cinematheque Kids`, an episode of a show tagged so, or a file outside the
+library that the app lists for kids plays: anything else started while kids mode
+is on (from a phone app, say), or playing when it comes on, stops within a few
+seconds. The app writes that list (one full Kodi path per line) where the TVs
+can read it and sends each TV its path in the skin string
+`cinemathequekidsfiles`; *Configure skin* shows whether this TV has it. Without
+it, files outside the library stop too.
 
 Kids mode needs Kodi's "Show parent folder items" off (Kodi's own default is on;
 the table above turns it off): a ".." item would lead from the kids lists into

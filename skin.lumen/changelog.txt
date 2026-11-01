@@ -1,3 +1,8 @@
+[B]0.12.0[/B]
+• Kids mode plays the kids' titles only: a film or episode the Cinémathèque app hasn't chosen for kids, started while kids mode is on (from a phone, say) or playing when it comes on, stops within a few seconds. Files outside Kodi's library play when the app lists them for kids; Configure skin shows whether this TV has the app's list.
+• Kids PIN: it's the parents' code from the Cinémathèque app, which sends it to every TV. Configure skin says so instead of setting or removing a PIN.
+• Live TV guide: the grid shows whole rows only, and a programme without a picture no longer shows the previous programme's.
+
 [B]0.11.0[/B]
 • Live TV guide: a Live TV tab on Home opens the guide on every channel. On top, the selected programme (title, channel, time, description, picture); then chips: Now, and one per channel group that jumps to its first channel; then the grid, with an orange line at the current time. OK on a programme on now plays its channel; on a later one Kodi asks whether to switch or set a reminder (with the guide's Default select action on Smart select).
 • Watching a channel: changing channel shows a banner with the channel's number, logo and name and, when the guide has it, the programme now (times, progress, time left) and next. ↑/↓ and the channel keys change channel at once (with Confirm channel switches off). OK opens the channel list over the picture: every channel with its programme now and progress; → shows a channel's programme info; ← reaches the group chips and Player controls (sleep timer, audio, subtitles). Info shows the programme on now with its picture, description and next, and buttons for the channel list, the guide and the player controls. Channels without guide data show their number, logo and name only.
