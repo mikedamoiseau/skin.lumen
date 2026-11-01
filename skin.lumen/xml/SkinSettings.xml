@@ -49,6 +49,13 @@
 				<label2>Set in the Cinémathèque app</label2>
 				<include>DefaultSettingButton</include>
 			</control>
+			<!-- the Kodi path of the app's list of kids files outside the library (scripts/lumen_kidsguard.py), which the
+			     app writes to every TV (Skin.String(cinemathequekidsfiles)): this says whether this TV has it -->
+			<control type="button" id="905">
+				<label>Kids titles outside the library</label>
+				<label2>$VAR[LumenKidsFiles]</label2>
+				<include>DefaultSettingButton</include>
+			</control>
 			<!-- next episode card: 30 s, 60 s, 90 s or off (Skin.String(lumen.nextcard): empty, 60, 90, off) -->
 			<control type="button" id="904">
 				<label>Next episode card</label>

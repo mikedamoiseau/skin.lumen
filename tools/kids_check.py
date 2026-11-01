@@ -12,10 +12,12 @@ import os
 import sys
 import time
 import traceback
+import unicodedata
 import urllib.parse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from kodi_gui import ROOT, cond, conds, film_state, focus_id, keepalive, lab, labs, reset_home, restart_kodi, restore_films, rpc, send_number, set_skin, shot, wait_for  # noqa: E402
+from kodi_gui import (ROOT, cond, conds, episode_state, file_state, film_state, focus_id, keepalive, lab, labs, reset_home,  # noqa: E402
+                      restart_kodi, restore_episodes, restore_files, restore_films, rpc, send_number, set_skin, shot, wait_for)
 
 TAG = "Cinematheque Kids"
 KIDS_SETTING = "cinemathequekids"  # Kodi stores skin bools lower-cased; JSON-RPC ids are case-sensitive
@@ -201,9 +203,10 @@ KIDS_GROUPS = range(6011, 6016)
 def ensure_settings():
     """JSON-RPC only sees the skin settings in the file Kodi loaded with the skin (Skin.cpp, SettingsFromXML); one the
     skin only refers to joins the file at the next save of any skin setting, every one it knows included (SettingsToXML).
-    Toggle Animated backdrops there and back to save, then restart Kodi so JSON-RPC can change both."""
+    Toggle Animated backdrops there and back to save, then restart Kodi so JSON-RPC can change them (the Cinémathèque
+    app writes cinemathequekidsfiles; Configure skin refers to it)."""
     known = lambda sid: "error" not in rpc("Settings.GetSkinSettingValue", {"setting": sid})
-    if known("lumen.pin") and known(KIDS_SETTING):
+    if known("lumen.pin") and known(KIDS_SETTING) and known("cinemathequekidsfiles"):
         return
     for _ in range(2):
         settings_button(901)
@@ -898,6 +901,222 @@ def c_queue(r):
     r.ok("nothing playing, nothing queued", stop_all() and not rpc("Playlist.GetItems", {"playlistid": 1})["result"].get("items"))
     kids(False)
     pin("")
+    reset_home()
+
+
+# ---------- the kids guard: in kids mode only tagged titles and the files the app lists play ----------
+
+# guard_file: the Cinémathèque app's list of kids files outside the library, as this computer reads it, and the Kodi path
+# of a video that is neither in the library nor on that list
+KIDS_LIST = os.environ.get("KIDS_LIST", "")
+KIDS_UNLISTED = os.environ.get("KIDS_UNLISTED", "")
+FAMILY = {"Animation", "Family"}
+
+
+def mildest(item):
+    """Sort key: an untagged title shows for a few seconds in the guard's test plays, so the lowest age rating first,
+    then a family one."""
+    age = item.get("mpaa", "").removeprefix("FSK ")
+    return (int(age) if age.isdigit() else 99, not FAMILY & set(item.get("genre", [])))
+
+
+def short_play_ok(m):
+    """h264 up to 1080p (the Pi's decoder opens it reliably) and never a half-watched title: a short play from the start
+    would overwrite its resume point."""
+    v = ((m.get("streamdetails") or {}).get("video") or [{}])[0]
+    return not (m.get("resume") or {}).get("position") and v.get("codec") in ("h264", "avc1") and 0 < v.get("width", 0) <= 1920
+
+
+def guard_films():
+    """(untagged, tagged) film ids, the untagged one the mildest."""
+    films = rpc("VideoLibrary.GetMovies", {"properties": ["streamdetails", "resume", "genre", "mpaa", "tag"]}, timeout=120)["result"]["movies"]
+    films = [m for m in films if short_play_ok(m)]
+    tagged = sorted(m["movieid"] for m in films if TAG in m["tag"])
+    untagged = sorted((m for m in films if TAG not in m["tag"]),
+                      key=lambda m: (mildest(m), m["movieid"]))
+    return (untagged[0]["movieid"] if untagged else None, tagged[0] if tagged else None)
+
+
+def guard_episode(tagged):
+    """An episode of a tagged show, or of the mildest untagged one."""
+    kids_shows = tagged_shows()
+    shows = rpc("VideoLibrary.GetTVShows", {"properties": ["genre", "mpaa"]}, timeout=60)["result"]["tvshows"]
+    shows = sorted((s for s in shows if (s["tvshowid"] in kids_shows) == tagged), key=lambda s: (mildest(s), s["tvshowid"]))
+    for s in shows:
+        eps = rpc("VideoLibrary.GetEpisodes", {"tvshowid": s["tvshowid"], "properties": ["streamdetails", "resume"]}, timeout=60)["result"]
+        for e in eps.get("episodes") or []:
+            if short_play_ok(e):
+                return e["episodeid"]
+    return None
+
+
+def kids_list():
+    """The app's kids files (full Kodi paths), or None when this computer can't read the list."""
+    try:
+        with open(KIDS_LIST, encoding="utf-8-sig") as f:
+            return [unicodedata.normalize("NFC", l.strip()) for l in f if l.strip() and not l.lstrip().startswith("#")]
+    except OSError:
+        return None
+
+
+def now_playing():
+    """(type, id) of the video playing ((type, file) outside the library), None when none plays."""
+    video = [p for p in rpc("Player.GetActivePlayers")["result"] if p["type"] == "video"]
+    if not video:
+        return None
+    it = rpc("Player.GetItem", {"playerid": video[0]["playerid"], "properties": ["file"]})["result"]["item"]
+    return (it["type"], it.get("id") or unicodedata.normalize("NFC", it.get("file", "")))
+
+
+def opens(item):
+    rpc("Player.Open", {"item": item})
+    return wait_for(lambda: cond("Player.HasVideo") and cond("Player.Playing"), 30)
+
+
+def plays_on(expect, secs=10):
+    time.sleep(secs)
+    return cond("Player.Playing") and now_playing() == expect
+
+
+def stops(within=8):
+    """The video stops within seconds, and nothing plays in the 5 s after."""
+    gone = wait_for(lambda: rpc("Player.GetActivePlayers")["result"] == [], within, 0.3)
+    return gone and not wait_for(lambda: rpc("Player.GetActivePlayers")["result"] != [], 5, 0.5)
+
+
+def starts_then_stops(item, within=8):
+    """Open item: it must start (a file that can't open proves nothing), then stop."""
+    rpc("Player.Open", {"item": item})
+    started = wait_for(lambda: rpc("Player.GetActivePlayers")["result"] != [], 15, 0.2)
+    return started and stops(within)
+
+
+def guard_free(r):
+    queues = {pl: rpc("Playlist.GetItems", {"playlistid": pl})["result"].get("items") for pl in (0, 1)}
+    if any(queues.values()) or rpc("Player.GetActivePlayers")["result"]:
+        r.skip("something is queued or playing on the box; not touching it")
+        return False
+    return True
+
+
+def stamp(t0):
+    return f"from {time.strftime('%H:%M:%S', time.localtime(t0))} to {time.strftime('%H:%M:%S')}"
+
+
+@check("guard_film")
+def c_guard_film(r):
+    """Kids mode stops a film without the kids tag within seconds and for good: one playing when kids mode comes on from
+    outside (the Cinémathèque app sets it over JSON-RPC), one started in kids mode (from a phone, say), one reached in a
+    queue. A tagged film plays on, and in normal mode the untagged one plays."""
+    if not guard_free(r):
+        return
+    bad, good = guard_films()
+    if bad is None or good is None:
+        r.skip(f"need an untagged and a tagged film that open fast and have no resume point (got {bad}, {good})")
+        return
+    films_before = {m: film_state(m) for m in (bad, good)}
+    t0 = time.time()
+    try:
+        kids(False)
+        r.ok(f"normal: untagged film {bad} plays", opens({"movieid": bad}) and plays_on(("movie", bad), 4), now_playing())
+        kids(True)
+        r.ok("kids mode switched on: it stops", stops(), now_playing())
+        stop_all()
+        time.sleep(3)  # the Pi's hardware decoder can stall on a film reopened a second after a stop
+        r.ok("kids: started again, it stops", starts_then_stops({"movieid": bad}), now_playing())
+        stop_all()
+        time.sleep(3)
+        r.ok(f"kids: tagged film {good} plays on", opens({"movieid": good}) and plays_on(("movie", good)), now_playing())
+        stop_all()
+        rpc("Playlist.Clear", {"playlistid": 1})
+        time.sleep(3)
+        r.ok("kids: queue of the tagged film then the untagged one plays", play_queue([good, bad]) and plays_on(("movie", good), 3), now_playing())
+        rpc("Player.GoTo", {"playerid": 1, "to": "next"})
+        r.ok("kids: the untagged one stops when the queue reaches it",
+             wait_for(lambda: now_playing() != ("movie", good), 15, 0.3) and stops(), now_playing())
+    finally:
+        stop_all()
+        rpc("Playlist.Clear", {"playlistid": 1})
+        kids(False)
+        print(f"INFO guard_film: test plays of movies {bad} (untagged) and {good} (tagged) {stamp(t0)}", flush=True)
+        r.ok("last played put back", restore_films(films_before), {m: film_state(m) for m in films_before})
+    reset_home()
+
+
+@check("guard_episode")
+def c_guard_episode(r):
+    """guard_film for episodes: an episode counts as tagged when its show is."""
+    if not guard_free(r):
+        return
+    bad, good = guard_episode(False), guard_episode(True)
+    if bad is None or good is None:
+        r.skip(f"need episodes of an untagged and a tagged show that open fast and have no resume point (got {bad}, {good})")
+        return
+    eps_before = {e: episode_state(e) for e in (bad, good)}
+    t0 = time.time()
+    try:
+        kids(False)
+        r.ok(f"normal: episode {bad} of an untagged show plays", opens({"episodeid": bad}) and plays_on(("episode", bad), 4), now_playing())
+        kids(True)
+        r.ok("kids mode switched on: it stops", stops(), now_playing())
+        stop_all()
+        time.sleep(3)
+        r.ok(f"kids: episode {good} of a tagged show plays on", opens({"episodeid": good}) and plays_on(("episode", good)), now_playing())
+        stop_all()
+        time.sleep(3)
+        r.ok("kids: the untagged show's episode started again stops", starts_then_stops({"episodeid": bad}), now_playing())
+    finally:
+        stop_all()
+        rpc("Playlist.Clear", {"playlistid": 1})
+        kids(False)
+        print(f"INFO guard_episode: test plays of episodes {bad} (untagged show) and {good} (tagged show) {stamp(t0)}", flush=True)
+        r.ok("last played put back", restore_episodes(eps_before), {e: episode_state(e) for e in eps_before})
+    reset_home()
+
+
+@check("guard_file")
+def c_guard_file(r):
+    """A file outside the library plays in kids mode only when the app's list names it (Kodi reports it as type unknown,
+    with no tag)."""
+    if not guard_free(r):
+        return
+    listed = kids_list()
+    if not listed or not KIDS_UNLISTED:
+        r.skip("set KIDS_LIST (the app's kids-files.txt as this computer reads it) and KIDS_UNLISTED (a video in neither)")
+        return
+    ensure_settings()
+    if not lab("Skin.String(cinemathequekidsfiles)"):
+        r.skip("the Cinémathèque app hasn't sent this TV where its kids list is (Skin.String(cinemathequekidsfiles))")
+        return
+    lib = {m["file"] for m in rpc("VideoLibrary.GetMovies", {"properties": ["file"]}, timeout=120)["result"]["movies"]}
+    lib |= {e["file"] for e in rpc("VideoLibrary.GetEpisodes", {"properties": ["file"]}, timeout=300)["result"].get("episodes", [])}
+    if not r.ok("KIDS_UNLISTED is in neither the library nor the list", KIDS_UNLISTED not in lib and KIDS_UNLISTED not in listed):
+        return
+    # one with accents where there is one: the list is NFC, and Kodi returns names as the NAS stores them
+    outside = [p for p in listed if p not in lib and p.lower().endswith((".mkv", ".mp4", ".avi"))]
+    good, bad = next((p for p in outside if not p.isascii()), outside[0] if outside else None), unicodedata.normalize("NFC", KIDS_UNLISTED)
+    if good is None:
+        r.skip("no listed video outside the library")
+        return
+    files_before = {p: file_state(p) for p in (bad, good)}
+    t0 = time.time()
+    try:
+        kids(False)
+        r.ok(f"normal: unlisted {bad.rsplit('/', 1)[-1]} plays", opens({"file": bad}) and plays_on(("unknown", bad), 4), now_playing())
+        kids(True)
+        r.ok("kids mode switched on: it stops", stops(), now_playing())
+        stop_all()
+        time.sleep(3)
+        r.ok(f"kids: listed {good.rsplit('/', 1)[-1]} plays on", opens({"file": good}) and plays_on(("unknown", good)), now_playing())
+        stop_all()
+        time.sleep(3)
+        r.ok("kids: the unlisted one started again stops", starts_then_stops({"file": bad}), now_playing())
+    finally:
+        stop_all()
+        rpc("Playlist.Clear", {"playlistid": 1})
+        kids(False)
+        print(f"INFO guard_file: test plays of files outside the library {bad} (unlisted) and {good} (listed) {stamp(t0)}", flush=True)
+        r.ok("play count and last played put back", restore_files(files_before), {p: file_state(p) for p in files_before})
     reset_home()
 
 

@@ -3106,7 +3106,13 @@
 		<value condition="String.IsEqual(Skin.String(lumen.nextcard),90)">90 s</value>
 		<value>30 s</value>
 	</variable>
+	<!-- Configure skin › Kids titles outside the library: whether the Cinémathèque app has sent this TV its list -->
+	<variable name="LumenKidsFiles">
+		<value condition="!String.IsEmpty(Skin.String(cinemathequekidsfiles))">From the Cinémathèque app</value>
+		<value>None</value>
+	</variable>
 	<variable name="LumenSkinSettingHelp">
+		<value condition="Control.HasFocus(905)">In kids mode only the kids' titles play: films and shows tagged in the Cinémathèque app, and the files it lists that Kodi's library doesn't have (it sends this TV where its list is). Any other video started on this TV stops.</value>
 		<value condition="Control.HasFocus(902)">Kids mode shows only the titles chosen in the Cinémathèque app. Its kids PIN is the parents' code from the app, which sends it to this TV: the Kids button shows on Home once it's set, and leaving kids mode asks for it.</value>
 		<value condition="Integer.IsGreaterOrEqual(System.CurrentControlId,911) + Integer.IsLessOrEqual(System.CurrentControlId,918)">Shows or hides this row on Home.[CR][CR]Kids mode keeps its own rows.</value>
 		<value condition="Control.HasFocus(921) | Control.HasFocus(922) | Control.HasFocus(923)">Adds a row at the end of Home from a smart playlist you pick, then asks for its name. Up to three.[CR][CR]Not shown in kids mode.</value>

@@ -79,6 +79,35 @@ def restore_films(before):
     return all(film_state(m) == b for m, b in before.items())
 
 
+def episode_state(episodeid):
+    d = rpc("VideoLibrary.GetEpisodeDetails", {"episodeid": episodeid, "properties": ["playcount", "lastplayed"]})["result"]["episodedetails"]
+    return {"playcount": d["playcount"], "lastplayed": d["lastplayed"]}
+
+
+def restore_episodes(before):
+    """restore_films for episodes ({episodeid: episode_state})."""
+    wait_for(lambda: rpc("Player.GetActivePlayers")["result"] == [], 10)
+    time.sleep(2)
+    for episodeid, b in before.items():
+        rpc("VideoLibrary.SetEpisodeDetails", {"episodeid": episodeid, **b})
+    return all(episode_state(e) == b for e, b in before.items())
+
+
+def file_state(path):
+    """A file outside the library keeps its play count and last played date in the shared database too."""
+    d = rpc("Files.GetFileDetails", {"file": path, "media": "video", "properties": ["playcount", "lastplayed"]})["result"]["filedetails"]
+    return {"playcount": d.get("playcount", 0), "lastplayed": d.get("lastplayed", "")}
+
+
+def restore_files(before):
+    """restore_films for files outside the library ({path: file_state})."""
+    wait_for(lambda: rpc("Player.GetActivePlayers")["result"] == [], 10)
+    time.sleep(2)
+    for path, b in before.items():
+        rpc("Files.SetFileDetails", {"file": path, "media": "video", **b})
+    return all(file_state(p) == b for p, b in before.items())
+
+
 def reset_home():
     """Close dialogs (keyboard, menus) and go to Home."""
     for _ in range(5):

@@ -154,6 +154,18 @@ def play_near_end(eid, secs_left):
     return wait_for(lambda: 0 < remaining() <= secs_left + 2 and cond("Player.Playing") and cond("Window.IsActive(fullscreenvideo)"), 20)
 
 
+def guard_stops(eid):
+    """Start episode eid from the beginning in kids mode, as a phone would; True once the kids guard has stopped it
+    (Player.OnStop without end: it was its show's missing tag, not the episode's end)."""
+    touch(eid)
+    t0 = time.time()
+    rpc("Player.Open", {"item": {"episodeid": eid}, "options": {"resume": False}})
+    if event("Player.OnPlay", t0, 40):
+        PLAYS.append([t0, None, eid, cond("Skin.HasSetting(CinemathequeKids)")])
+    d = ended(t0, 20)
+    return bool(d) and not d.get("end")
+
+
 def ended(since, timeout):
     """The OnStop notification after since (its data), noting the play's end."""
     e = event("Player.OnStop", since, timeout)
@@ -377,31 +389,30 @@ def c_seek_back(r):
 
 @check("kids_flip")
 def c_kids_flip(r):
-    """Kids mode switched on from outside (the phone app) while another show plays: its next episode never comes,
-    whether the card had found it before (lumen.next.* made in normal mode) or the episode was already in its last
-    seconds (armed)."""
+    """Kids mode switched on from outside (the phone app) while another show plays: the kids guard stops it, and its
+    next episode never comes, whether the card had found it before (lumen.next.* made in normal mode) or the episode
+    was already in its last seconds (armed)."""
     e, n, _ = first_pair()
     if not e:
         return r.skip("no unstarted show with two episodes")
     try:
         r.ok("episode plays 45 s before its end", play_near_end(e["episodeid"], 45))
         r.ok("its next episode found in normal mode", wait_for(lambda: lab("Window(home).Property(lumen.next.for)") == str(e["episodeid"]), 5))
+        t = time.time()
         set_skin("cinemathequekids", True)
         r.ok("kids mode on: what was found goes", wait_for(lambda: lab("Window(home).Property(lumen.next.for)") == "", 4),
              lab("Window(home).Property(lumen.next.for)"))
-        r.ok("no card in kids mode", not card_at(25))
-        t = time.time()
-        d = ended(t, 40)
-        r.ok("episode ends by itself", bool(d and d.get("end")), d)
+        d = ended(t, 15)
+        r.ok("kids mode on: the guard stops the episode (no kids tag)", bool(d) and not d.get("end"), d)
+        r.ok("no card", not cond(f"Window.IsVisible({CARD})"))
         nothing_plays(r, t)
         set_skin("cinemathequekids", False)
         r.ok("again 9 s before its end, kids mode off", play_near_end(e["episodeid"], 9))
         armed = wait_for(lambda: cond("Skin.TimerIsRunning(lumennextplay)"), 12, 0.1)
+        t = time.time()
         set_skin("cinemathequekids", True)
         r.ok("armed when kids mode came on", armed)
-        t = time.time()
-        d = ended(t, 15)
-        r.ok("episode ends by itself", bool(d and d.get("end")), d)
+        r.ok("episode stops (the guard, or its end)", bool(ended(t, 15)))
         nothing_plays(r, t)
     finally:
         stop_all()
@@ -521,7 +532,8 @@ def c_last_episode(r):
 
 @check("kids")
 def c_kids(r):
-    """Kids mode: a kids show gets its card; another show playing in kids mode (started from a phone) gets none."""
+    """Kids mode: a kids show gets its card; another show started in kids mode (from a phone) stops at once (the kids
+    guard), so it never gets one."""
     k, kn, _ = pick(library_shows(True))
     e, _, _ = first_pair()
     if not k or not e:
@@ -537,8 +549,8 @@ def c_kids(r):
         r.ok("card shows for a kids show", card_at(29))
         r.ok("card names its next episode", lab(f"Control.GetLabel({LINE})") == line(kn), (lab(f"Control.GetLabel({LINE})"), line(kn)))
         stop_all()
-        r.ok("other episode plays 35 s before its end", play_near_end(e["episodeid"], 35))
-        r.ok("no card for a show without the kids tag", not card_at(25))
+        r.ok("an episode of a show without the kids tag stops", guard_stops(e["episodeid"]))
+        r.ok("no card for it", not cond(f"Window.IsVisible({CARD})"))
         stop_all()
     finally:
         stop_all()

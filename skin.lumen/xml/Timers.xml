@@ -43,6 +43,13 @@
         <stop>!Skin.HasSetting(CinemathequeKids) | [!PVR.IsPlayingRadio + !PVR.IsPlayingRecording + !PVR.IsPlayingEpgTag + [!PVR.IsPlayingTV | String.IsEqual(VideoPlayer.ChannelGroup,Kids)]]</stop>
     </timer>
     <timer>
+        <name>lumenkidsguard</name>
+        <description>Kids mode plays the kids' titles only (scripts/lumen_kidsguard.py): a film or show tagged Cinematheque Kids, or a file outside the library that the Cinémathèque app lists for kids. Any other video started while it's on (from a phone app, say), or playing when it comes on, stops. Once per video: lumen.kidsguard holds the last one let through. Again every 3 seconds if the script didn't answer. Live TV has its own rule (lumenkidslivetv)</description>
+        <start reset="true">Skin.HasSetting(CinemathequeKids) + Player.HasVideo + !PVR.IsPlayingTV + !PVR.IsPlayingRadio + !PVR.IsPlayingRecording + !PVR.IsPlayingEpgTag + !String.IsEqual(Player.FilenameAndPath,Window(home).Property(lumen.kidsguard))</start>
+        <onstart>RunScript(special://skin/scripts/lumen_kidsguard.py)</onstart>
+        <stop>!Skin.HasSetting(CinemathequeKids) | !Player.HasVideo | String.IsEqual(Player.FilenameAndPath,Window(home).Property(lumen.kidsguard)) | Integer.IsGreaterOrEqual(Skin.TimerElapsedSecs(lumenkidsguard),3)</stop>
+    </timer>
+    <timer>
         <name>lumenmoreopen</name>
         <description>A film picked in a More like this row (Custom_1116_LumenOpen.xml): once its one-film list has loaded, Info on it opens its detail page like from any grid; then the helper goes, so Back leaves the page for where it was opened from</description>
         <start reset="true">Window.IsTopMost(1116) + Integer.IsGreater(Container(5180).NumItems,0) + !Container(5180).IsUpdating</start>
