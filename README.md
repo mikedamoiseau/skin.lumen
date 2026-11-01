@@ -248,13 +248,15 @@ point.
 
 ### Kids mode
 
-1. In *Configure skin*, choose **Set kids PIN** and type a PIN twice. The kids
-   button (a smiling face) then appears at the end of the Home tab bar.
+1. The kids PIN is the parents' code from the Cinémathèque app, which writes it
+   to every TV (the skin string `lumen.pin`); *Configure skin* only says where
+   it's set. Once a TV has it, the kids button (a smiling face) appears at the
+   end of the Home tab bar.
 2. Press it to switch the TV to kids mode. A video that is playing stops and
    the play queue is cleared. The lock button in the same place leaves kids
    mode after asking for the PIN.
-3. To change the PIN, choose **Remove kids PIN** (it asks for the current one),
-   then set a new one. Each device keeps its own PIN.
+3. To change the PIN, change the parents' code in the app. Without the app, on
+   LibreELEC: `kodi-send --action="Skin.SetString(lumen.pin,1234)"`.
 
 In kids mode, live TV plays the kids channels only: the channel group named
 "Kids" (from the playlist's `group-title`). Home's Live TV tab lists them, and
@@ -296,8 +298,8 @@ kids mode. Other apps can tell whether a device is in kids mode by reading
 - Kids mode is a simple lock for remote-control users, not a hard lockdown: a
   keyboard, a custom keymap or leaving Kodi from the Android TV home screen gets
   out. Anyone on the home network can read the PIN.
-- The kids PIN screen asks for 4 digits, but Kodi can't check a PIN's length, so
-  any number is accepted.
+- The kids PIN is typed on Kodi's number pad, so a code with anything but digits
+  can't be entered.
 - Kids mode lists only titles tagged `Cinematheque Kids`. With none tagged, Home
   says so and the kids grids and rows stay empty.
 - Search matches words from their start ("man" finds "Spider-Man", not "Batman").

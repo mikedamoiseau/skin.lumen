@@ -199,23 +199,15 @@ KIDS_GROUPS = range(6011, 6016)
 
 
 def ensure_settings():
-    """Kodi creates a skin setting the first time a skin action sets it, and JSON-RPC only sees the settings that
-    existed when the skin loaded. Create lumen.pin and CinemathequeKids once through the real UI (Set kids PIN,
-    then the kids button) and restart Kodi so JSON-RPC can change them."""
+    """JSON-RPC only sees the skin settings in the file Kodi loaded with the skin (Skin.cpp, SettingsFromXML); one the
+    skin only refers to joins the file at the next save of any skin setting, every one it knows included (SettingsToXML).
+    Toggle Animated backdrops there and back to save, then restart Kodi so JSON-RPC can change both."""
     known = lambda sid: "error" not in rpc("Settings.GetSkinSettingValue", {"setting": sid})
     if known("lumen.pin") and known(KIDS_SETTING):
         return
-    if not known("lumen.pin"):
-        settings_button(902)
-        send_number("2468")
-        wait_for(lambda: lab("Window(home).Property(lumen.pinprompt)") == "again", 5)
-        send_number("2468")
-        wait_for(lambda: not cond("Window.IsVisible(1113)"), 5)
-    if not known(KIDS_SETTING):
-        if lab("Skin.String(lumen.pin)") == "":
-            set_skin("lumen.pin", "2468")
-        kids_button()
-        wait_for(lambda: cond("Skin.HasSetting(CinemathequeKids)"), 5)
+    for _ in range(2):
+        settings_button(901)
+        time.sleep(1)
     restart_kodi()
     set_skin(KIDS_SETTING, False)
     set_skin("lumen.pin", "")
@@ -444,34 +436,24 @@ def pin_result(timeout=3):
 
 
 def pin_state():
-    return labs(["Skin.String(lumen.pin)", "Skin.String(lumen.pinnew)", "Skin.String(lumen.pinentry)", "Window(home).Property(lumen.pinflow)",
+    return labs(["Skin.String(lumen.pin)", "Skin.String(lumen.pinentry)", "Window(home).Property(lumen.pinflow)",
                  "Window(home).Property(lumen.pinprompt)"])
 
 
-@check("pin_set")
-def c_pin_set(r):
+@check("pin_settings")
+def c_pin_settings(r):
+    """The PIN is the parents' code from the Cinémathèque app, which writes it to every TV: Configure skin only says so.
+    A PIN set on the TV would be overwritten the next time the app connects."""
     kids(False)
-    pin("")
-    r.ok("press Set kids PIN", settings_button(902))
-    r.ok("first prompt", wait_for(lambda: cond("Window.IsVisible(numericinput)"), 5))
-    r.ok("first prompt says choose", lab("Window(home).Property(lumen.pinprompt)") == "new")
-    r.ok("typed digits hidden", not cond("Control.IsVisible(4)"))
-    send_number("1111")
-    r.ok("second prompt", wait_for(lambda: cond("Window.IsVisible(numericinput)") and lab("Window(home).Property(lumen.pinprompt)") == "again", 5))
-    send_number("2222")
-    r.ok("mismatch reported", pin_result() == "mismatch")
-    r.ok("nothing saved", lab("Skin.String(lumen.pin)") == "")
-    wait_for(lambda: not cond("Window.IsVisible(1113)"), 5)
-    r.ok("press Set kids PIN again", settings_button(902))
-    send_number("2468")
-    wait_for(lambda: lab("Window(home).Property(lumen.pinprompt)") == "again", 5)
-    send_number("2468")
-    r.ok("saved reported", pin_result() == "saved")
-    st = pin_state()
-    r.ok("PIN stored", st["Skin.String(lumen.pin)"] == "2468")
-    r.ok("scratch values cleared", not any(v for k, v in st.items() if k != "Skin.String(lumen.pin)"), st)
-    wait_for(lambda: not cond("Window.IsVisible(1113)"), 5)
-    r.ok("Set hidden, Remove shown once a PIN exists", not cond("Control.IsVisible(902)") and cond("Control.IsVisible(903)"))
+    for value in ("", "2468"):
+        pin(value)
+        r.ok(f"PIN {value or 'empty'}: Configure skin opens", settings_button(902))
+        r.ok(f"PIN {value or 'empty'}: the Kids PIN item", lab("Control.GetLabel(902)") == "Kids PIN", lab("Control.GetLabel(902)"))
+        shot(f"pin-settings-{value or 'empty'}")  # "Set in the Cinémathèque app" is the button's label2, which JSON-RPC can't read
+        r.ok(f"PIN {value or 'empty'}: OK asks for nothing", not wait_for(lambda: cond("Window.IsVisible(numericinput)"), 1.5))
+        r.ok(f"PIN {value or 'empty'}: no remove button", not cond("Control.IsVisible(903)"))
+        r.ok(f"PIN {value or 'empty'}: PIN unchanged", lab("Skin.String(lumen.pin)") == value)
+    reset_home()
 
 
 @check("pin_unlock")
@@ -495,37 +477,8 @@ def c_pin_unlock(r):
     r.ok("scratch values cleared", not any(v for k, v in pin_state().items() if k != "Skin.String(lumen.pin)"))
 
 
-@check("pin_remove")
-def c_pin_remove(r):
-    kids(False)
-    pin("2468")
-    r.ok("press Remove kids PIN", settings_button(903))
-    r.ok("prompt asks for the PIN", wait_for(lambda: lab("Window(home).Property(lumen.pinprompt)") == "current", 5))
-    send_number("1357")
-    r.ok("wrong PIN reported", pin_result() == "wrong")
-    r.ok("PIN unchanged", lab("Skin.String(lumen.pin)") == "2468")
-    wait_for(lambda: not cond("Window.IsVisible(1113)"), 5)
-    r.ok("press Remove kids PIN again", settings_button(903))
-    send_number("2468")
-    r.ok("removed reported", pin_result() == "removed")
-    r.ok("PIN gone", lab("Skin.String(lumen.pin)") == "")
-    reset_home()
-    time.sleep(2)
-    r.ok("no kids button on Home", not cond("Control.IsVisible(20)"))
-
-
 @check("pin_cancel")
 def c_pin_cancel(r):
-    kids(False)
-    pin("")
-    r.ok("press Set kids PIN", settings_button(902))
-    wait_for(lambda: cond("Window.IsVisible(numericinput)"), 5)
-    rpc("Input.Back")
-    r.ok("second prompt still opens", wait_for(lambda: cond("Window.IsVisible(numericinput)") and lab("Window(home).Property(lumen.pinprompt)") == "again", 5))
-    rpc("Input.Back")
-    time.sleep(1)
-    r.ok("no message", not cond("Window.IsVisible(1113)"))
-    r.ok("nothing saved", lab("Skin.String(lumen.pin)") == "")
     pin("2468")
     kids(True)
     r.ok("press the lock", kids_button())
@@ -985,15 +938,10 @@ def c_blocked(r):
 
 @check("restart")
 def c_restart(r):
-    """Kids mode entered with the real button must survive Kodi being killed (a TV losing power)."""
+    """Kids mode entered with the real button must survive Kodi being killed (a TV losing power). The PIN is set the way
+    the Cinémathèque app sets it (JSON-RPC, in memory only): the kids button's save writes it out with kids mode."""
     kids(False)
-    pin("")
-    r.ok("press Set kids PIN", settings_button(902))
-    send_number("2468")
-    wait_for(lambda: lab("Window(home).Property(lumen.pinprompt)") == "again", 5)
-    send_number("2468")
-    r.ok("PIN saved", pin_result() == "saved")
-    wait_for(lambda: not cond("Window.IsVisible(1113)"), 5)
+    pin("2468")
     r.ok("press the kids button", kids_button())
     r.ok("kids mode on", wait_for(lambda: cond("Skin.HasSetting(CinemathequeKids)"), 3))
     time.sleep(2)

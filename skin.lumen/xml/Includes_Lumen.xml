@@ -23,19 +23,12 @@
 	<expression name="LumenDirFront3">String.IsEqual(ListItem.DBType,movie) + Integer.IsGreater(Container(5060).NumItems,2) + !Container(50).HasPrevious + Integer.IsLess(Container(50).Position,5)</expression>
 	<!-- PIN prompts (Custom_1113_LumenPin.xml): what is being asked, and the numeric dialog hides the digits meanwhile -->
 	<expression name="LumenPinUnlock">String.IsEqual(Window(home).Property(lumen.pinflow),unlock)</expression>
-	<expression name="LumenPinSet">String.IsEqual(Window(home).Property(lumen.pinflow),set)</expression>
-	<expression name="LumenPinRemove">String.IsEqual(Window(home).Property(lumen.pinflow),remove)</expression>
 	<expression name="LumenPinPrompt">!String.IsEmpty(Window(home).Property(lumen.pinprompt))</expression>
 	<variable name="LumenPinHeading">
-		<value condition="String.IsEqual(Window(home).Property(lumen.pinprompt),new)">Choose a 4-digit PIN</value>
-		<value condition="String.IsEqual(Window(home).Property(lumen.pinprompt),again)">Type the PIN again</value>
 		<value>Enter the kids PIN</value>
 	</variable>
 	<variable name="LumenPinResult">
 		<value condition="String.IsEqual(Window.Property(result),wrong)">Wrong PIN</value>
-		<value condition="String.IsEqual(Window.Property(result),mismatch)">The two PINs didn't match. Nothing was saved.</value>
-		<value condition="String.IsEqual(Window.Property(result),saved)">Kids PIN saved</value>
-		<value condition="String.IsEqual(Window.Property(result),removed)">Kids PIN removed</value>
 	</variable>
 	<!-- ============ Animations ============ -->
 	<include name="LumenFadeInWindow">
@@ -3114,8 +3107,7 @@
 		<value>30 s</value>
 	</variable>
 	<variable name="LumenSkinSettingHelp">
-		<value condition="Control.HasFocus(902)">Kids mode shows only the titles chosen in the Cinémathèque app. Set a PIN to show the Kids button on Home; leaving kids mode asks for it.</value>
-		<value condition="Control.HasFocus(903)">Asks for the current PIN, then removes it and hides the Kids button.[CR][CR]To change the PIN, remove it and set a new one.</value>
+		<value condition="Control.HasFocus(902)">Kids mode shows only the titles chosen in the Cinémathèque app. Its kids PIN is the parents' code from the app, which sends it to this TV: the Kids button shows on Home once it's set, and leaving kids mode asks for it.</value>
 		<value condition="Integer.IsGreaterOrEqual(System.CurrentControlId,911) + Integer.IsLessOrEqual(System.CurrentControlId,918)">Shows or hides this row on Home.[CR][CR]Kids mode keeps its own rows.</value>
 		<value condition="Control.HasFocus(921) | Control.HasFocus(922) | Control.HasFocus(923)">Adds a row at the end of Home from a smart playlist you pick, then asks for its name. Up to three.[CR][CR]Not shown in kids mode.</value>
 		<value condition="Control.HasFocus(931) | Control.HasFocus(932) | Control.HasFocus(933)">Changes the row's name on Home.</value>
