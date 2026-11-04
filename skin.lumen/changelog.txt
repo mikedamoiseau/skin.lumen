@@ -1,3 +1,6 @@
+[B]0.12.1[/B]
+• Live TV with many channels: the group chips in the channel list and the guide jump to groups beyond the 200th channel (up to the 1000th), and the guide has room for 3-digit channel numbers.
+
 [B]0.12.0[/B]
 • Kids mode plays the kids' titles only: a film or episode the Cinémathèque app hasn't chosen for kids, started while kids mode is on (from a phone, say) or playing when it comes on, stops after a few seconds (up to about 20 on a Raspberry Pi). Files outside Kodi's library play when the app lists them for kids; Configure skin shows whether this TV has the app's list.
 • Kids PIN: it's the parents' code from the Cinémathèque app, which sends it to every TV. Configure skin says so instead of setting or removing a PIN.

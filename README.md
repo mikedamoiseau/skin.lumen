@@ -308,7 +308,7 @@ kids mode. Other apps can tell whether a device is in kids mode by reading
 
 - Music, Pictures, Games and Live TV's recordings, timers and search keep Estuary's layouts with Lumen's styling.
 - Live TV is built for IPTV playlists: no record or timeshift buttons. Group chips
-  cover up to 16 groups and jump within the first 200 channels. Remotes without channel or Info keys
+  cover up to 16 groups and jump within the first 1000 channels. Remotes without channel or Info keys
   change channel with ↑/↓, and → on a channel in the list shows its programme.
 - Labels added by Lumen ("Collections", "Up Next", "Back", …) are English only.
 - Kodi doesn't expose Dolby Atmos, so TrueHD and DD+ are shown instead.

@@ -871,6 +871,62 @@ def c_guide_layout(r):
     r.ok("programme picture without crossfade", bool(pics) and all(c.find("fadetime") is None for c in pics), f"{len(pics)} picture(s)")
 
 
+# the most channels a chip's jump reaches: the app's list has about 520
+JUMP_ROWS = 1000
+
+
+@check("jump_rows")
+def c_jump_rows(r):
+    """A chip jumps to its group's first channel by finding that channel's row among every channel, one condition per
+    row (Includes_Lumen.xml): in the channel list LumenTvJumpRow, in the guide LumenTvJumpRowAll and then one Down per
+    row (LumenTvGuideDowns). They reach the last of JUMP_ROWS rows."""
+    inc = ET.parse(os.path.join(ROOT, "skin.lumen", "xml", "Includes_Lumen.xml")).getroot()
+    for name, lookup in (("LumenTvJumpRow", 11), ("LumenTvJumpRowAll", 9337)):
+        rows = [(v.get("condition"), v.text) for v in inc.find(f"variable[@name='{name}']").findall("value")]
+        want = [(f"String.IsEqual(Container({lookup}).ListItemAbsolute({n}).FileName,Window(home).Property(lumen.tv.jump))", str(n))
+                for n in range(JUMP_ROWS)]
+        r.ok(f"{name}: rows 0–{JUMP_ROWS - 1}", rows == want, f"{len(rows)} rows")
+    downs = [(d.get("condition"), d.text) for d in inc.find("include[@name='LumenTvGuideDowns']").findall("onclick")]
+    want = [(f"Integer.IsGreater(Window(home).Property(lumen.tv.jumprow),{n})", "Action(Down)") for n in range(JUMP_ROWS - 1)]
+    r.ok(f"LumenTvGuideDowns: down to row {JUMP_ROWS - 1}", downs == want, f"{len(downs)} downs")
+
+
+def text_width(font, text):
+    """Width in skin pixels of text in one of the skin's fonts (Font.xml's Default set): its glyphs' advance widths
+    (the font's cmap format 4 and hmtx tables)."""
+    fonts = ET.parse(os.path.join(ROOT, "skin.lumen", "xml", "Font.xml")).getroot().find("fontset[@id='Default']")
+    f = next(x for x in fonts.findall("font") if x.findtext("name") == font)
+    d = open(os.path.join(ROOT, "skin.lumen", "fonts", f.findtext("filename")), "rb").read()
+    u16 = lambda o: int.from_bytes(d[o:o + 2], "big")  # noqa: E731
+    tables = {d[12 + 16 * i:16 + 16 * i].decode(): int.from_bytes(d[20 + 16 * i:24 + 16 * i], "big") for i in range(u16(4))}
+    cmap = tables["cmap"]
+    sub = next(cmap + int.from_bytes(d[cmap + 8 + 8 * i:cmap + 12 + 8 * i], "big") for i in range(u16(cmap + 2))
+               if u16(cmap + int.from_bytes(d[cmap + 8 + 8 * i:cmap + 12 + 8 * i], "big")) == 4)
+    seg = u16(sub + 6) // 2
+    ends, starts, deltas, ranges = (sub + 14, sub + 16 + 2 * seg, sub + 16 + 4 * seg, sub + 16 + 6 * seg)
+
+    def glyph(ch):
+        i = next(i for i in range(seg) if u16(starts + 2 * i) <= ch <= u16(ends + 2 * i))
+        if u16(ranges + 2 * i):
+            return u16(ranges + 2 * i + u16(ranges + 2 * i) + 2 * (ch - u16(starts + 2 * i))) + u16(deltas + 2 * i) & 0xFFFF
+        return ch + u16(deltas + 2 * i) & 0xFFFF
+    advances = u16(tables["hhea"] + 34)
+    width = sum(u16(tables["hmtx"] + 4 * min(glyph(ord(ch)), advances - 1)) for ch in text)
+    return width / u16(tables["head"] + 18) * int(f.findtext("size"))
+
+
+@check("number_width")
+def c_number_width(r):
+    """Channel numbers in a column of their own (the channel list's rows, the guide's channel column) fit up to 999:
+    the app's list has about 520 channels. 4 px spare for Kodi's rounding."""
+    inc = ET.parse(os.path.join(ROOT, "skin.lumen", "xml", "Includes_Lumen.xml")).getroot()
+    labels = [c for c in inc.iter("control") if c.get("type") == "label" and c.findtext("label") == "$INFO[ListItem.ChannelNumberLabel]"]
+    r.ok("two number columns", len(labels) == 2, len(labels))
+    for c in labels:
+        widest = max(text_width(c.findtext("font"), d * 3) for d in "0123456789")
+        r.ok(f"{c.findtext('width')} px fits 3 digits ({widest:.1f} px)", int(c.findtext("width")) >= widest + 4)
+
+
 @check("guide_fps")
 def c_guide_fps(r):
     """Scrolling down the guide on this box: an average of at least 28 fps (31.3 with the old Estuary layout, less 10 %)."""
